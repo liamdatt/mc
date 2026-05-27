@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 export function PageLoadCurtain() {
   const [done, setDone] = useState(false);
   useEffect(() => {
-    const t = setTimeout(() => setDone(true), 1200);
+    const t = setTimeout(() => setDone(true), 800);
     return () => clearTimeout(t);
   }, []);
   return (
