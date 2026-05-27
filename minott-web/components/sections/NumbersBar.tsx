@@ -27,7 +27,7 @@ export function NumbersBar() {
               <div className="relative">
                 <span
                   aria-hidden
-                  className="absolute -left-3 -top-3 select-none font-display text-[clamp(6rem,10vw,9rem)] leading-none text-mec-pure/[0.25]"
+                  className="absolute -left-3 -top-3 select-none font-display text-[clamp(6rem,10vw,9rem)] leading-none text-mec-pure/[0.35]"
                   style={{ transform: "scale(1.3)" }}
                 >
                   {s.value}
