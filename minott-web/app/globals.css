@@ -173,3 +173,10 @@ html.has-custom-cursor * {
 @keyframes loaderOut {
   to { opacity: 0; visibility: hidden; }
 }
+
+@keyframes scrollLine {
+  0% { transform: scaleY(0); transform-origin: top; }
+  50% { transform: scaleY(1); transform-origin: top; }
+  51% { transform-origin: bottom; }
+  100% { transform: scaleY(0); transform-origin: bottom; }
+}

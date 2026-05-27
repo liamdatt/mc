@@ -36,8 +36,10 @@ export function Hero() {
   useGSAP(
     () => {
       if (reduced) return;
-      const line1 = document.querySelector(".hero-line-1");
-      const line2 = document.querySelector(".hero-line-2");
+      const root = ref.current;
+      if (!root) return;
+      const line1 = root.querySelector(".hero-line-1");
+      const line2 = root.querySelector(".hero-line-2");
       if (!line1 || !line2) return;
 
       const s1 = new SplitText(line1, { type: "chars" });
@@ -205,14 +207,6 @@ export function Hero() {
         <span className="block h-10 w-px animate-[scrollLine_2s_ease-in-out_infinite] bg-mec-ink/40" />
       </div>
 
-      <style jsx>{`
-        @keyframes scrollLine {
-          0% { transform: scaleY(0); transform-origin: top; }
-          50% { transform: scaleY(1); transform-origin: top; }
-          51% { transform-origin: bottom; }
-          100% { transform: scaleY(0); transform-origin: bottom; }
-        }
-      `}</style>
     </section>
   );
 }
