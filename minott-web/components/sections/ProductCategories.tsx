@@ -39,6 +39,32 @@ const CARDS = [
   },
 ];
 
+function Header({ progressRef }: { progressRef?: React.RefObject<HTMLDivElement | null> }) {
+  return (
+    <>
+      <p>
+        <Eyebrow tone="white">Our Catalog</Eyebrow>
+      </p>
+      <h2 className="mt-4 font-display-tight text-[clamp(2.25rem,4.5vw,4rem)] leading-[1]">
+        Four categories. <span className="text-mec-red">One supplier.</span>
+      </h2>
+      <p className="mt-3 max-w-2xl text-sm text-mec-pure/70 md:text-base">
+        From hospital-grade disinfectant to bulk bathroom tissue, every line on
+        this list ships from our Kingston floor or one of fifteen overseas
+        partners — usually within forty-eight hours.
+      </p>
+      {progressRef && (
+        <div className="mt-6 relative h-px w-full bg-mec-pure/15">
+          <div
+            ref={progressRef}
+            className="absolute left-0 top-0 h-px w-full origin-left scale-x-0 bg-mec-red"
+          />
+        </div>
+      )}
+    </>
+  );
+}
+
 export function ProductCategories() {
   const sectionRef = useRef<HTMLElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -92,56 +118,46 @@ export function ProductCategories() {
       id="products"
       className="relative bg-mec-ink text-mec-pure"
     >
-      <div className="mx-auto w-full max-w-[1440px] px-6 pt-32 md:px-10">
-        <p>
-          <Eyebrow tone="white">Our Catalog</Eyebrow>
-        </p>
-        <h2 className="mt-6 font-display-tight text-h2">
-          Four categories.{" "}
-          <span className="text-mec-red">One supplier.</span>
-        </h2>
-        <p className="mt-4 max-w-2xl text-mec-pure/70">
-          From hospital-grade disinfectant to bulk bathroom tissue, every line
-          on this list ships from our Kingston floor or one of fifteen overseas
-          partners — usually within forty-eight hours.
-        </p>
-      </div>
-
-      {/* Progress bar */}
-      <div className="mx-auto mt-12 w-full max-w-[1440px] px-6 md:px-10">
-        <div className="relative h-px w-full bg-mec-pure/15">
-          <div
-            ref={progressRef}
-            className="absolute left-0 top-0 h-px w-full origin-left scale-x-0 bg-mec-red"
-          />
-        </div>
-      </div>
-
       {reduced ? (
-        // Reduced-motion: always show snap carousel (no pinned scroll on any viewport)
-        <div className="mt-12 flex snap-x snap-mandatory gap-6 overflow-x-auto px-6 pb-16">
-          {CARDS.map((c) => (
-            <ProductCard key={c.cat} {...c} />
-          ))}
-        </div>
-      ) : (
+        // Reduced-motion: header + snap carousel in normal flow
         <>
-          {/* Mobile fallback: native horizontal snap carousel */}
-          <div className="mt-12 flex snap-x snap-mandatory gap-6 overflow-x-auto px-6 pb-16 md:hidden">
+          <div className="mx-auto w-full max-w-[1440px] px-6 pt-24 md:px-10">
+            <Header />
+          </div>
+          <div className="mt-10 flex snap-x snap-mandatory gap-6 overflow-x-auto px-6 pb-16">
             {CARDS.map((c) => (
               <ProductCard key={c.cat} {...c} />
             ))}
           </div>
-
-          {/* Desktop: pinned horizontal scroll */}
-          <div className="hidden overflow-hidden pb-24 md:block">
-            <div
-              ref={trackRef}
-              className="mt-12 flex gap-10 pl-[max(2.5rem,calc((100vw-1440px)/2+2.5rem))] pr-[10vw] will-change-transform"
-            >
+        </>
+      ) : (
+        <>
+          {/* Mobile: header + snap carousel */}
+          <div className="md:hidden">
+            <div className="px-6 pt-24">
+              <Header />
+            </div>
+            <div className="mt-10 flex snap-x snap-mandatory gap-6 overflow-x-auto px-6 pb-16">
               {CARDS.map((c) => (
                 <ProductCard key={c.cat} {...c} />
               ))}
+            </div>
+          </div>
+
+          {/* Desktop: pinned 100vh column — header on top, cards fill remaining vertical space */}
+          <div className="hidden h-screen flex-col md:flex">
+            <div className="mx-auto w-full max-w-[1440px] flex-shrink-0 px-10 pt-24">
+              <Header progressRef={progressRef} />
+            </div>
+            <div className="flex flex-1 items-center overflow-hidden">
+              <div
+                ref={trackRef}
+                className="flex gap-10 pl-[max(2.5rem,calc((100vw-1440px)/2+2.5rem))] pr-[10vw] will-change-transform"
+              >
+                {CARDS.map((c) => (
+                  <ProductCard key={c.cat} {...c} desktopPinned />
+                ))}
+              </div>
             </div>
           </div>
         </>
@@ -156,23 +172,28 @@ function ProductCard({
   title,
   cat,
   items,
+  desktopPinned = false,
 }: {
   img: string;
   eyebrow: string;
   title: string;
   cat: string;
   items: string[];
+  desktopPinned?: boolean;
 }) {
+  const heightCls = desktopPinned
+    ? "h-[min(62vh,640px)] w-[72vw] max-w-[1040px]"
+    : "h-[68vh] w-[88vw] md:h-[78vh] md:w-[78vw] md:max-w-[1080px]";
   return (
     <article
-      className="group relative flex h-[68vh] w-[88vw] shrink-0 snap-start overflow-hidden rounded-md md:h-[78vh] md:w-[78vw] md:max-w-[1080px]"
+      className={`group relative flex shrink-0 snap-start overflow-hidden rounded-md ${heightCls}`}
       data-cursor="View"
     >
       <Image
         src={img}
         alt={cat}
         fill
-        sizes="(min-width: 768px) 78vw, 88vw"
+        sizes={desktopPinned ? "72vw" : "(min-width: 768px) 78vw, 88vw"}
         className="object-cover transition-transform duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105"
       />
       <div className="absolute inset-0 bg-gradient-to-tr from-mec-ink via-mec-ink/40 to-transparent" />
@@ -186,10 +207,10 @@ function ProductCard({
           </span>
         </div>
         <div className="max-w-xl">
-          <h3 className="font-display-tight text-[clamp(2.5rem,5vw,5rem)] leading-[0.95] text-mec-pure">
+          <h3 className="font-display-tight text-[clamp(2.25rem,4vw,4rem)] leading-[0.95] text-mec-pure">
             {title}
           </h3>
-          <ul className="mt-6 flex flex-wrap gap-x-4 gap-y-2 text-sm text-mec-pure/80">
+          <ul className="mt-5 flex flex-wrap gap-x-4 gap-y-2 text-sm text-mec-pure/80">
             {items.map((i) => (
               <li
                 key={i}
@@ -199,7 +220,7 @@ function ProductCard({
               </li>
             ))}
           </ul>
-          <div className="mt-8">
+          <div className="mt-6">
             <Button href="#contact" variant="ghost-dark" arrow>
               View Products
             </Button>
