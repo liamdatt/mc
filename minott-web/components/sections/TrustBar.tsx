@@ -27,7 +27,10 @@ export function TrustBar() {
 
   useGSAP(
     () => {
-      if (reduced) return;
+      if (reduced) {
+        tweenRef.current = null;
+        return;
+      }
       const track = trackRef.current;
       if (!track) return;
       tweenRef.current = gsap.to(track, {
@@ -83,13 +86,13 @@ export function TrustBar() {
                   height={80}
                   className="h-full w-full text-mec-ink transition-all duration-300"
                   style={{
-                    opacity: isOther ? 0.18 : isActive ? 1 : 0.55,
+                    opacity: isOther ? 0.3 : isActive ? 1 : 0.55,
                     transform: isActive ? "scale(1.06)" : "scale(1)",
                     filter: isActive ? "none" : "grayscale(1)",
                   }}
                 />
                 <div
-                  aria-hidden={!isActive}
+                  aria-hidden="true"
                   className="pointer-events-none absolute -bottom-2 left-1/2 -translate-x-1/2 translate-y-3 whitespace-nowrap rounded-md bg-mec-ink px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-mec-pure transition-all duration-200"
                   style={
                     isActive
