@@ -94,7 +94,7 @@ export function ProductCategories() {
     >
       <div className="mx-auto w-full max-w-[1440px] px-6 pt-32 md:px-10">
         <p>
-          <Eyebrow tone="red">Our Catalog</Eyebrow>
+          <Eyebrow tone="white">Our Catalog</Eyebrow>
         </p>
         <h2 className="mt-6 font-display-tight text-h2">
           Four categories.{" "}
