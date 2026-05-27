@@ -15,8 +15,9 @@ export function DualPlay() {
   return (
     <section className="relative flex min-h-[80vh] w-full flex-col overflow-hidden lg:flex-row">
       {/* Left: WE MAKE */}
-      <motion.button
-        type="button"
+      <motion.div
+        role="region"
+        aria-label="We make our own chemical line"
         animate={{ flex: flexLeft }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         onMouseEnter={() => setHover("left")}
@@ -42,7 +43,7 @@ export function DualPlay() {
             facility, tuned for Jamaican climate, regulations, and use cases.
           </p>
         </div>
-      </motion.button>
+      </motion.div>
 
       {/* Center red rule */}
       <motion.span
@@ -55,8 +56,9 @@ export function DualPlay() {
       />
 
       {/* Right: WE DISTRIBUTE */}
-      <motion.button
-        type="button"
+      <motion.div
+        role="region"
+        aria-label="We distribute the world's best equipment"
         animate={{ flex: flexRight }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         onMouseEnter={() => setHover("right")}
@@ -82,7 +84,7 @@ export function DualPlay() {
             and Purell — the brands that set global standards.
           </p>
         </div>
-      </motion.button>
+      </motion.div>
     </section>
   );
 }
