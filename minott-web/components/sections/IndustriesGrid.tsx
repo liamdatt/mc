@@ -70,7 +70,7 @@ export function IndustriesGrid() {
                 onMouseEnter={() => setActive(name)}
                 onMouseLeave={() => setActive(null)}
                 className="relative aspect-square overflow-hidden rounded-md transition-opacity duration-300"
-                style={{ opacity: isOther ? 0.35 : 1 }}
+                style={{ opacity: isOther ? 0.4 : 1 }}
                 data-cursor={name}
               >
                 <motion.div
