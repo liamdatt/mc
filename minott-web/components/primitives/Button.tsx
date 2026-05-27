@@ -77,6 +77,7 @@ export const Button = forwardRef<HTMLElement, ButtonProps>(function Button(
   }
   return (
     <button
+      type="button"
       ref={ref as React.Ref<HTMLButtonElement>}
       className={cn(base, variants[variant], className)}
       data-cursor="Click"
