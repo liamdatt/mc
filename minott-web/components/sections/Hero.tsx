@@ -119,7 +119,7 @@ export function Hero() {
         />
       </svg>
 
-      <div className="relative mx-auto grid min-h-[100svh] w-full max-w-[1440px] grid-cols-1 items-center gap-12 px-6 pt-32 pb-24 md:px-10 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16">
+      <div className="relative mx-auto grid min-h-[100svh] w-full max-w-[1440px] grid-cols-1 items-center gap-12 px-6 pt-32 pb-24 md:px-10 lg:grid-cols-[1.25fr_0.85fr] lg:gap-12">
         <motion.div style={{ opacity: fadeText }} className="relative z-[2]">
           <p className="hero-eyebrow">
             <Eyebrow tone="red">
@@ -127,11 +127,17 @@ export function Hero() {
             </Eyebrow>
           </p>
 
-          <h1 className="mt-8 font-display-tight text-[clamp(3.5rem,8vw,7.5rem)] leading-[0.92]">
-            <span role="text" className="hero-line-1 block overflow-hidden text-mec-ink">
+          <h1 className="mt-8 font-display-tight text-[clamp(3rem,6.4vw,6rem)] leading-[0.95]">
+            <span
+              role="text"
+              className="hero-line-1 block overflow-hidden whitespace-nowrap text-mec-ink"
+            >
               CLEANER SPACES.
             </span>
-            <span role="text" className="hero-line-2 block overflow-hidden text-mec-red">
+            <span
+              role="text"
+              className="hero-line-2 block overflow-hidden whitespace-nowrap text-mec-red"
+            >
               STRONGER BUSINESS.
             </span>
           </h1>

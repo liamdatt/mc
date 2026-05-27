@@ -56,7 +56,7 @@ export function Nav() {
             href="#top"
             className={cn(
               "font-display text-2xl tracking-wider transition-colors",
-              scrolled || open ? "text-mec-pure" : "text-mec-pure",
+              scrolled ? "text-mec-pure" : "text-mec-ink",
             )}
             data-cursor="Top"
           >
@@ -71,7 +71,10 @@ export function Nav() {
               <Link
                 key={l.href}
                 href={l.href}
-                className="group relative text-sm font-semibold uppercase tracking-[0.14em] text-mec-pure transition-colors hover:text-mec-red"
+                className={cn(
+                  "group relative text-sm font-semibold uppercase tracking-[0.14em] transition-colors hover:text-mec-red",
+                  scrolled ? "text-mec-pure" : "text-mec-ink",
+                )}
                 data-cursor="View"
               >
                 <span className="relative">
@@ -90,7 +93,10 @@ export function Nav() {
 
           <button
             type="button"
-            className="md:hidden text-mec-pure"
+            className={cn(
+              "md:hidden transition-colors",
+              scrolled || open ? "text-mec-pure" : "text-mec-ink",
+            )}
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
             onClick={() => setOpen((v) => !v)}
