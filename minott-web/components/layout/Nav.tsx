@@ -71,7 +71,7 @@ export function Nav() {
               <Link
                 key={l.href}
                 href={l.href}
-                className="relative text-sm font-semibold uppercase tracking-[0.14em] text-mec-pure transition-colors hover:text-mec-red"
+                className="group relative text-sm font-semibold uppercase tracking-[0.14em] text-mec-pure transition-colors hover:text-mec-red"
                 data-cursor="View"
               >
                 <span className="relative">
