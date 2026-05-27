@@ -36,6 +36,7 @@ export function LenisProvider({ children }: { children: React.ReactNode }) {
     <ReactLenis
       root
       options={{
+        autoRaf: false,
         lerp: 0.08,
         duration: 1.4,
         smoothWheel: true,
