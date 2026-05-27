@@ -35,9 +35,9 @@ export function DualPlay() {
         <div className="absolute inset-0 bg-gradient-to-t from-mec-ink via-mec-ink/60 to-transparent" />
         <div className="relative max-w-md">
           <Eyebrow tone="white">We Make</Eyebrow>
-          <h3 className="mt-4 font-display text-h3 leading-tight">
+          <h2 className="mt-4 font-display text-h3 leading-tight">
             Our Own Chemical Line.
-          </h3>
+          </h2>
           <p className="mt-4 text-sm text-mec-pure/80 md:text-base">
             Industrial and household formulations, mixed at our Kingston
             facility, tuned for Jamaican climate, regulations, and use cases.
@@ -76,9 +76,9 @@ export function DualPlay() {
         <div className="absolute inset-0 bg-gradient-to-t from-mec-ink via-mec-ink/50 to-transparent" />
         <div className="relative max-w-md lg:text-right">
           <Eyebrow tone="white" className="lg:flex-row-reverse">We Distribute</Eyebrow>
-          <h3 className="mt-4 font-display text-h3 leading-tight">
+          <h2 className="mt-4 font-display text-h3 leading-tight">
             The World&apos;s Best Equipment.
-          </h3>
+          </h2>
           <p className="mt-4 text-sm text-mec-pure/80 md:text-base">
             Elite Distributor for 3M, NSS, San Jamar, Rubbermaid Commercial,
             and Purell — the brands that set global standards.
