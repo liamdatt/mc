@@ -1,6 +1,15 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
+
+const POINTER_QUERY = "(pointer: fine)";
+const subscribePointer = (cb: () => void) => {
+  const mq = window.matchMedia(POINTER_QUERY);
+  mq.addEventListener("change", cb);
+  return () => mq.removeEventListener("change", cb);
+};
+const getPointerSnapshot = () => window.matchMedia(POINTER_QUERY).matches;
+const getPointerServerSnapshot = () => false;
 
 export function CustomCursor() {
   const reduced = useReducedMotion();
@@ -8,19 +17,11 @@ export function CustomCursor() {
   const ringRef = useRef<HTMLDivElement>(null);
   const [label, setLabel] = useState("");
   const [active, setActive] = useState(false);
-  const [fine, setFine] = useState<boolean>(() =>
-    typeof window !== "undefined"
-      ? window.matchMedia("(pointer: fine)").matches
-      : false,
+  const fine = useSyncExternalStore(
+    subscribePointer,
+    getPointerSnapshot,
+    getPointerServerSnapshot,
   );
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const mq = window.matchMedia("(pointer: fine)");
-    const on = (e: MediaQueryListEvent) => setFine(e.matches);
-    mq.addEventListener("change", on);
-    return () => mq.removeEventListener("change", on);
-  }, []);
 
   useEffect(() => {
     if (!fine || reduced) return;
