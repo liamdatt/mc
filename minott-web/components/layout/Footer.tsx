@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { Facebook } from "lucide-react";
+import { Share2 } from "lucide-react";
 import { Container } from "@/components/primitives/Container";
 
 const QUICK = [
@@ -49,7 +49,7 @@ export function Footer() {
             className="mt-6 inline-flex h-10 w-10 items-center justify-center rounded-full border border-mec-pure/20 transition hover:border-mec-red hover:text-mec-red"
             data-cursor="Open"
           >
-            <Facebook size={18} />
+            <Share2 size={18} />
           </a>
         </div>
 

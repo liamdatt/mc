@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import { Bebas_Neue, Montserrat, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { LenisProvider } from "@/components/motion/LenisProvider";
+import { CustomCursor } from "@/components/motion/CustomCursor";
+import { ScrollProgress } from "@/components/motion/ScrollProgress";
+import { Nav } from "@/components/layout/Nav";
+import { Footer } from "@/components/layout/Footer";
+import { PageLoadCurtain } from "@/components/layout/PageTransition";
 
 const bebas = Bebas_Neue({
   weight: "400",
@@ -48,11 +54,18 @@ export default function RootLayout({
       lang="en"
       className={`${bebas.variable} ${montserrat.variable} ${jetbrains.variable}`}
     >
-      <body>
+      <body className="bg-mec-pure text-mec-ink">
         <a href="#main" className="skip-to-content">
           Skip to content
         </a>
-        {children}
+        <PageLoadCurtain />
+        <CustomCursor />
+        <ScrollProgress />
+        <LenisProvider>
+          <Nav />
+          <main id="main">{children}</main>
+          <Footer />
+        </LenisProvider>
       </body>
     </html>
   );
