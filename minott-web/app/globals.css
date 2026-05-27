@@ -169,7 +169,6 @@ html.has-custom-cursor * {
 }
 .page-loader.is-done {
   animation: loaderOut 400ms var(--ease-out-expo) forwards;
-  animation-delay: 700ms;
 }
 @keyframes loaderOut {
   to { opacity: 0; visibility: hidden; }

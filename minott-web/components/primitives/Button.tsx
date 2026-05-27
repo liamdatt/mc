@@ -59,8 +59,8 @@ export const Button = forwardRef<HTMLElement, ButtonProps>(function Button(
 
   if ("href" in rest && rest.href) {
     const { href, external, ...linkProps } = rest;
-    const props = external
-      ? { target: "_blank", rel: "noopener noreferrer" }
+    const secureProps = external
+      ? { target: "_blank" as const, rel: "noopener noreferrer" as const }
       : {};
     return (
       <Link
@@ -68,8 +68,8 @@ export const Button = forwardRef<HTMLElement, ButtonProps>(function Button(
         href={href}
         className={cn(base, variants[variant], className)}
         data-cursor="View"
-        {...props}
         {...linkProps}
+        {...secureProps}
       >
         {content}
       </Link>

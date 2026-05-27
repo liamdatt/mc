@@ -4,6 +4,7 @@ import "./globals.css";
 import { LenisProvider } from "@/components/motion/LenisProvider";
 import { CustomCursor } from "@/components/motion/CustomCursor";
 import { ScrollProgress } from "@/components/motion/ScrollProgress";
+import { MotionRoot } from "@/components/motion/MotionRoot";
 import { Nav } from "@/components/layout/Nav";
 import { Footer } from "@/components/layout/Footer";
 import { PageLoadCurtain } from "@/components/layout/PageTransition";
@@ -61,11 +62,13 @@ export default function RootLayout({
         <PageLoadCurtain />
         <CustomCursor />
         <ScrollProgress />
-        <LenisProvider>
-          <Nav />
-          <main id="main">{children}</main>
-          <Footer />
-        </LenisProvider>
+        <MotionRoot>
+          <LenisProvider>
+            <Nav />
+            <main id="main">{children}</main>
+            <Footer />
+          </LenisProvider>
+        </MotionRoot>
       </body>
     </html>
   );

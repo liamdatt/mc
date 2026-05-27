@@ -37,7 +37,7 @@ export function Footer() {
             />
           </Link>
           <p className="mt-4 max-w-xs text-sm leading-relaxed">
-            Cleaner Spaces. Stronger Business. Jamaica's most trusted partner in
+            Cleaner Spaces. Stronger Business. Jamaica&apos;s most trusted partner in
             clean — since 1990.
           </p>
           <a

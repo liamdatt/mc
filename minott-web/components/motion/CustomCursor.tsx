@@ -8,12 +8,15 @@ export function CustomCursor() {
   const ringRef = useRef<HTMLDivElement>(null);
   const [label, setLabel] = useState("");
   const [active, setActive] = useState(false);
-  const [fine, setFine] = useState(false);
+  const [fine, setFine] = useState<boolean>(() =>
+    typeof window !== "undefined"
+      ? window.matchMedia("(pointer: fine)").matches
+      : false,
+  );
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     const mq = window.matchMedia("(pointer: fine)");
-    setFine(mq.matches);
     const on = (e: MediaQueryListEvent) => setFine(e.matches);
     mq.addEventListener("change", on);
     return () => mq.removeEventListener("change", on);
