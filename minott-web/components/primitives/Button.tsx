@@ -15,10 +15,11 @@ interface BaseProps {
 
 type ButtonAsButton = BaseProps &
   React.ButtonHTMLAttributes<HTMLButtonElement> & { href?: undefined };
-type ButtonAsLink = BaseProps & {
-  href: string;
-  external?: boolean;
-};
+type ButtonAsLink = BaseProps &
+  Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, "href"> & {
+    href: string;
+    external?: boolean;
+  };
 
 type ButtonProps = ButtonAsButton | ButtonAsLink;
 
