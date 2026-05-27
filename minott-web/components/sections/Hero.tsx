@@ -128,10 +128,10 @@ export function Hero() {
           </p>
 
           <h1 className="mt-8 font-display-tight text-[clamp(3.5rem,8vw,7.5rem)] leading-[0.92]">
-            <span className="hero-line-1 block overflow-hidden text-mec-ink">
+            <span role="text" className="hero-line-1 block overflow-hidden text-mec-ink">
               CLEANER SPACES.
             </span>
-            <span className="hero-line-2 block overflow-hidden text-mec-red">
+            <span role="text" className="hero-line-2 block overflow-hidden text-mec-red">
               STRONGER BUSINESS.
             </span>
           </h1>
