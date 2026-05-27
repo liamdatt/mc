@@ -98,7 +98,7 @@ export function FounderStory() {
               </h2>
               <div className="mt-10 space-y-6 text-lg leading-relaxed text-mec-ink/80">
                 {PARAS.map((p, i) => (
-                  <p key={i} className="founder-line overflow-hidden">
+                  <p key={i} role="text" className="founder-line overflow-hidden">
                     {p}
                   </p>
                 ))}
