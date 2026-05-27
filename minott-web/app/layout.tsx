@@ -56,6 +56,47 @@ export default function RootLayout({
       className={`${bebas.variable} ${montserrat.variable} ${jetbrains.variable}`}
     >
       <body className="bg-mec-pure text-mec-ink">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "LocalBusiness",
+              name: "Minott Equipment & Chemicals Limited",
+              image: "https://minottchem.com/og.jpg",
+              url: "https://minottchem.com",
+              telephone: "+1-876-929-5284",
+              email: "sales@minottchem.com",
+              priceRange: "$$",
+              address: {
+                "@type": "PostalAddress",
+                streetAddress: "14 1/2 Retirement Road",
+                addressLocality: "Kingston 5",
+                addressCountry: "JM",
+              },
+              geo: {
+                "@type": "GeoCoordinates",
+                latitude: 18.0179,
+                longitude: -76.7972,
+              },
+              openingHoursSpecification: [
+                {
+                  "@type": "OpeningHoursSpecification",
+                  dayOfWeek: [
+                    "Monday",
+                    "Tuesday",
+                    "Wednesday",
+                    "Thursday",
+                    "Friday",
+                  ],
+                  opens: "08:00",
+                  closes: "16:30",
+                },
+              ],
+              sameAs: ["https://facebook.com/minottchemicalsja"],
+            }),
+          }}
+        />
         <a href="#main" className="skip-to-content">
           Skip to content
         </a>
