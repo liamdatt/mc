@@ -5,9 +5,12 @@ import { Eyebrow } from "@/components/primitives/Eyebrow";
 import { Button } from "@/components/primitives/Button";
 import { motion } from "framer-motion";
 import { MapPin, Phone, Mail, Clock, Printer } from "lucide-react";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 
 const DIRECTIONS_HREF =
-  "https://www.google.com/maps/dir/?api=1&destination=14.5+Retirement+Road,+Kingston+5,+Jamaica";
+  `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+    "14½ Retirement Road, Kingston 5, Jamaica",
+  )}`;
 
 const PHONES = [
   { tel: "+18769295284", label: "(876) 929-5284" },
@@ -97,6 +100,7 @@ function InfoRow({
 }
 
 function BrandedMap() {
+  const reduced = useReducedMotion();
   return (
     <div className="relative aspect-square w-full overflow-hidden rounded-md bg-mec-ink text-mec-pure">
       <svg
@@ -159,20 +163,24 @@ function BrandedMap() {
 
         <g>
           <circle cx="300" cy="360" r="22" fill="none" stroke="#E10600" strokeWidth="3">
-            <animate
-              attributeName="r"
-              from="22"
-              to="44"
-              dur="2s"
-              repeatCount="indefinite"
-            />
-            <animate
-              attributeName="opacity"
-              from="1"
-              to="0"
-              dur="2s"
-              repeatCount="indefinite"
-            />
+            {!reduced && (
+              <>
+                <animate
+                  attributeName="r"
+                  from="22"
+                  to="44"
+                  dur="2s"
+                  repeatCount="indefinite"
+                />
+                <animate
+                  attributeName="opacity"
+                  from="1"
+                  to="0"
+                  dur="2s"
+                  repeatCount="indefinite"
+                />
+              </>
+            )}
           </circle>
           <circle cx="300" cy="360" r="10" fill="#E10600" />
           <circle cx="300" cy="360" r="3.5" fill="#FFFFFF" />
