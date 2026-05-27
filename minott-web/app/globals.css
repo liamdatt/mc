@@ -1,26 +1,176 @@
 @import "tailwindcss";
 
+@theme {
+  /* Brand colors */
+  --color-mec-red: #E10600;
+  --color-mec-red-hover: #c10500;
+  --color-mec-ink: #0D0D0D;
+  --color-mec-graphite: #2B2B2B;
+  --color-mec-mist: #F2F2F2;
+  --color-mec-pure: #FFFFFF;
+
+  /* Brand fonts (wired in layout.tsx) */
+  --font-display: var(--font-bebas);
+  --font-body: var(--font-montserrat);
+  --font-mono: var(--font-jetbrains);
+
+  /* Type scale */
+  --text-eyebrow: 0.75rem;
+  --text-h1: clamp(3.5rem, 8vw, 7.5rem);
+  --text-h2: clamp(2.5rem, 5vw, 4.5rem);
+  --text-h3: clamp(1.5rem, 2.5vw, 2.25rem);
+  --text-lede: clamp(1.125rem, 1.4vw, 1.375rem);
+  --text-body: clamp(1rem, 1.1vw, 1.125rem);
+
+  /* Spacing scale */
+  --spacing-section-y: clamp(96px, 12vw, 192px);
+
+  /* Radii */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+
+  /* Shadows */
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.04), 0 12px 24px -8px rgba(0, 0, 0, 0.08);
+  --shadow-lift: 0 24px 48px -12px rgba(225, 6, 0, 0.18);
+
+  /* Easing */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+  --ease-out-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Special tints */
+  --color-mec-red-glow: rgba(225, 6, 0, 0.18);
+  --color-mec-grid: rgba(225, 6, 0, 0.06);
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: auto; /* Lenis owns scroll */
+  background: var(--color-mec-pure);
+  color: var(--color-mec-ink);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body), system-ui, -apple-system, sans-serif;
+  font-weight: 400;
+  line-height: 1.55;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--color-mec-red);
+  color: var(--color-mec-pure);
+}
+
+/* Custom cursor — hide native on fine pointer when active */
+html.has-custom-cursor,
+html.has-custom-cursor * {
+  cursor: none !important;
+}
+
+/* Utility: industrial grid backdrop (subtle dot grid on light bg) */
+.bg-grid {
+  background-image:
+    radial-gradient(circle, var(--color-mec-grid) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Utility: diagonal cut wedge (used on hero) */
+.clip-diagonal-down {
+  clip-path: polygon(0 0, 100% 0, 100% 92%, 0 100%);
+}
+
+/* Skip-to-content link */
+.skip-to-content {
+  position: absolute;
+  top: -64px;
+  left: 16px;
+  z-index: 100;
+  padding: 8px 16px;
+  background: var(--color-mec-ink);
+  color: var(--color-mec-pure);
+  font-weight: 700;
+  transition: top 200ms var(--ease-out-expo);
+}
+.skip-to-content:focus {
+  top: 16px;
+}
+
+/* Focus rings */
+:focus-visible {
+  outline: 2px solid var(--color-mec-red);
+  outline-offset: 2px;
+}
+
+/* Reduced motion: kill all animations & transitions */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Typography helpers */
+.font-display {
+  font-family: var(--font-display), Impact, sans-serif;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+.font-display-tight {
+  font-family: var(--font-display), Impact, sans-serif;
+  letter-spacing: -0.01em;
+  line-height: 0.95;
+}
+
+/* Eyebrow utility */
+.eyebrow {
+  font-size: var(--text-eyebrow);
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-family: var(--font-body), system-ui, sans-serif;
+}
+
+/* Loader bar (initial page load) */
+.page-loader {
+  position: fixed;
+  inset: 0;
+  background: var(--color-mec-ink);
+  z-index: 999;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+.page-loader__bar {
+  width: min(60vw, 320px);
+  height: 2px;
+  background: var(--color-mec-red);
+  transform-origin: left center;
+  animation: loaderGrow 700ms var(--ease-out-expo) forwards;
+}
+@keyframes loaderGrow {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+.page-loader.is-done {
+  animation: loaderOut 400ms var(--ease-out-expo) forwards;
+  animation-delay: 700ms;
+}
+@keyframes loaderOut {
+  to { opacity: 0; visibility: hidden; }
 }
