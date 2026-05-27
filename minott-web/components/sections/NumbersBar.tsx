@@ -7,7 +7,7 @@ const STATS = [
   { value: 35, suffix: "+", label: "Years building Jamaica’s clean standard" },
   { value: 15, suffix: "+", label: "Suppliers across the U.S. and China" },
   { value: 5, suffix: "", label: "Global Elite brands under one roof" },
-  { value: 8, suffix: "", label: "Cities with twice-weekly delivery" },
+  { value: 8, suffix: "", label: "Jamaican cities with twice-weekly delivery" },
 ];
 
 export function NumbersBar() {
@@ -20,14 +20,14 @@ export function NumbersBar() {
               key={s.label}
               className={`relative flex flex-col items-start ${
                 i < STATS.length - 1
-                  ? "lg:border-r lg:border-mec-pure/10 lg:pr-8"
+                  ? "lg:border-r lg:border-mec-red/30 lg:pr-8"
                   : ""
               }`}
             >
               <div className="relative">
                 <span
                   aria-hidden
-                  className="absolute -left-3 -top-3 select-none font-display text-[clamp(6rem,10vw,9rem)] leading-none text-mec-pure/[0.06]"
+                  className="absolute -left-3 -top-3 select-none font-display text-[clamp(6rem,10vw,9rem)] leading-none text-mec-pure/[0.08]"
                   style={{ transform: "scale(1.3)" }}
                 >
                   {s.value}
