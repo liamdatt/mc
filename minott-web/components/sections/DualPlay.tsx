@@ -75,7 +75,7 @@ export function DualPlay() {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-mec-ink via-mec-ink/50 to-transparent" />
         <div className="relative max-w-md lg:text-right">
-          <Eyebrow tone="white">We Distribute</Eyebrow>
+          <Eyebrow tone="white" className="lg:flex-row-reverse">We Distribute</Eyebrow>
           <h3 className="mt-4 font-display text-h3 leading-tight">
             The World&apos;s Best Equipment.
           </h3>
