@@ -40,7 +40,7 @@ export default async function ProductDetailPage({
           </Link>{" "}
           /{" "}
           <Link
-            href={`/products/${product.category.slug}`}
+            href={`/products/all?category=${product.category.slug}`}
             className="hover:text-mec-red"
           >
             {product.category.name}

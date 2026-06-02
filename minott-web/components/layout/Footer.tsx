@@ -12,10 +12,10 @@ const QUICK = [
 ];
 
 const PRODUCTS = [
-  { href: "/products/industrial-and-household-chemicals", label: "Industrial & Household Chemicals" },
-  { href: "/products/janitorial-equipment-and-supplies", label: "Janitorial Equipment & Supplies" },
-  { href: "/products/personal-protection-equipment-ppe", label: "Personal Protection Equipment" },
-  { href: "/products/paper-products", label: "Paper Products" },
+  { href: "/products/all?category=industrial-and-household-chemicals", label: "Industrial & Household Chemicals" },
+  { href: "/products/all?category=janitorial-equipment-and-supplies", label: "Janitorial Equipment & Supplies" },
+  { href: "/products/all?category=personal-protection-equipment-ppe", label: "Personal Protection Equipment" },
+  { href: "/products/all?category=paper-products", label: "Paper Products" },
 ];
 
 export function Footer() {

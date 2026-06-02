@@ -1,12 +1,24 @@
 "use client";
 import { ReactLenis, useLenis } from "lenis/react";
 import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
+}
+
+// Lenis keeps its own scroll position across client navigations, so without
+// this the new page renders scrolled to wherever the previous one was.
+function ScrollResetOnRouteChange() {
+  const lenis = useLenis();
+  const pathname = usePathname();
+  useEffect(() => {
+    lenis?.scrollTo(0, { immediate: true });
+  }, [pathname, lenis]);
+  return null;
 }
 
 function LenisGsapSync() {
@@ -44,6 +56,7 @@ export function LenisProvider({ children }: { children: React.ReactNode }) {
       }}
     >
       <LenisGsapSync />
+      <ScrollResetOnRouteChange />
       {children}
     </ReactLenis>
   );

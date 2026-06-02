@@ -105,7 +105,7 @@ export function Nav({ categories }: { categories: CategoryLink[] }) {
                   <div className="invisible absolute left-1/2 top-full z-[130] w-64 -translate-x-1/2 pt-4 opacity-0 transition-all duration-200 group-hover:visible group-hover:opacity-100">
                     <div className="overflow-hidden rounded-md border border-black/10 bg-mec-pure py-2 shadow-[var(--shadow-card)]">
                       <Link
-                        href="/products"
+                        href="/products/all"
                         className="block px-5 py-2 text-sm font-semibold text-mec-ink hover:bg-mec-mist hover:text-mec-red"
                       >
                         All Products
@@ -114,7 +114,7 @@ export function Nav({ categories }: { categories: CategoryLink[] }) {
                       {categories.map((c) => (
                         <Link
                           key={c.slug}
-                          href={`/products/${c.slug}`}
+                          href={`/products/all?category=${c.slug}`}
                           className="block px-5 py-2 text-sm text-mec-ink/80 hover:bg-mec-mist hover:text-mec-red"
                         >
                           {c.name}
