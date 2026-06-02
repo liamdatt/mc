@@ -4,7 +4,6 @@ import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { SplitText } from "gsap/SplitText";
-import { DrawSVGPlugin } from "gsap/DrawSVGPlugin";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Eyebrow } from "@/components/primitives/Eyebrow";
 import { Button } from "@/components/primitives/Button";
@@ -12,7 +11,7 @@ import { Shield, Truck, Headphones } from "lucide-react";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
 
 if (typeof window !== "undefined") {
-  gsap.registerPlugin(SplitText, DrawSVGPlugin);
+  gsap.registerPlugin(SplitText);
 }
 
 const TRUST_ITEMS = [
@@ -72,11 +71,6 @@ export function Hero() {
           { y: 0, opacity: 1, stagger: 0.06, duration: 0.4 },
           "-=0.3",
         )
-        .from(
-          ".hero-sweep path",
-          { drawSVG: "0%", duration: 1.4, ease: "power2.inOut" },
-          0,
-        )
         .to(
           ".hero-image-clip",
           { clipPath: "inset(0 0 0% 0)", duration: 1.2 },
@@ -103,21 +97,6 @@ export function Hero() {
     >
       {/* Background grid */}
       <div aria-hidden className="absolute inset-0 bg-grid opacity-60" />
-
-      {/* Diagonal sweep across the boundary */}
-      <svg
-        aria-hidden
-        viewBox="0 0 1440 900"
-        preserveAspectRatio="none"
-        className="hero-sweep pointer-events-none absolute inset-0 h-full w-full"
-      >
-        <path
-          d="M 0 760 L 1440 200"
-          stroke="#E10600"
-          strokeWidth="3"
-          fill="none"
-        />
-      </svg>
 
       <div className="relative mx-auto grid w-full max-w-[1440px] flex-1 grid-cols-1 items-center gap-8 px-6 pt-28 pb-8 md:px-10 lg:grid-cols-[1.25fr_0.85fr] lg:gap-12">
         <motion.div style={{ opacity: fadeText }} className="relative z-[2]">
