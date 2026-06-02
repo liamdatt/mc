@@ -5,8 +5,7 @@ import { LenisProvider } from "@/components/motion/LenisProvider";
 import { CustomCursor } from "@/components/motion/CustomCursor";
 import { ScrollProgress } from "@/components/motion/ScrollProgress";
 import { MotionRoot } from "@/components/motion/MotionRoot";
-import { Nav } from "@/components/layout/Nav";
-import { Footer } from "@/components/layout/Footer";
+import { PublicChrome } from "@/components/layout/PublicChrome";
 import { PageLoadCurtain } from "@/components/layout/PageTransition";
 import { QuoteCartProvider } from "@/components/quote/QuoteCartProvider";
 import { getCategories } from "@/lib/products";
@@ -109,14 +108,14 @@ export default async function RootLayout({
         <QuoteCartProvider>
           <MotionRoot>
             <LenisProvider>
-              <Nav
+              <PublicChrome
                 categories={categories.map((c) => ({
                   slug: c.slug,
                   name: c.name,
                 }))}
-              />
-              <main id="main">{children}</main>
-              <Footer />
+              >
+                {children}
+              </PublicChrome>
             </LenisProvider>
           </MotionRoot>
         </QuoteCartProvider>
