@@ -46,7 +46,10 @@ export function Nav({ categories }: { categories: CategoryLink[] }) {
     };
   }, [open]);
 
+  // Close the mobile overlay on route change (covers browser back/forward,
+  // not just link clicks); setting state in response to navigation is intended.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setOpen(false);
   }, [pathname]);
 

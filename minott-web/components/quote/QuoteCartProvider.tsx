@@ -35,6 +35,10 @@ export function QuoteCartProvider({ children }: { children: React.ReactNode }) {
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
+    // One-time hydration from localStorage on mount. localStorage is
+    // unavailable during SSR, so this must run in an effect (not a lazy
+    // initializer), which makes the setState-in-effect here intentional.
+    /* eslint-disable react-hooks/set-state-in-effect */
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) setItems(JSON.parse(raw));
@@ -42,6 +46,7 @@ export function QuoteCartProvider({ children }: { children: React.ReactNode }) {
       /* ignore corrupt storage */
     }
     setHydrated(true);
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
   useEffect(() => {
