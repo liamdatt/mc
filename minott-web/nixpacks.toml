@@ -1,0 +1,13 @@
+# Pin the nixpkgs snapshot Nixpacks builds against.
+#
+# Why: Nixpacks only honours the *major* Node version (NIXPACKS_NODE_VERSION),
+# resolving it against its built-in nixpkgs pin. That default pin ships
+# Node 22.11.0 — below Prisma 7's floor of 22.12 — and predates Node 24
+# entirely (so NIXPACKS_NODE_VERSION=24 fails with "undefined variable
+# 'nodejs_24'"). This commit's nixpkgs snapshot provides Node 22.13.1,
+# which satisfies Prisma's `^22.12` requirement.
+#
+# Used together with the Coolify env var NIXPACKS_NODE_VERSION=22.
+# Ref: https://coolify.io/docs/applications/build-packs/nixpacks/node-versioning
+[phases.setup]
+nixpkgsArchive = '51ad838b03a05b1de6f9f2a0fffecee64a9788ee'
