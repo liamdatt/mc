@@ -1,22 +1,30 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ChevronDown, FileText } from "lucide-react";
 import { Button } from "@/components/primitives/Button";
+import { useQuoteCart } from "@/components/quote/QuoteCartProvider";
 import { cn } from "@/lib/cn";
 
+type CategoryLink = { slug: string; name: string };
+
 const LINKS = [
-  { href: "#products", label: "Products" },
-  { href: "#industries", label: "Industries" },
-  { href: "#founder", label: "About" },
-  { href: "#contact", label: "Contact" },
+  { href: "/", label: "Home" },
+  { href: "/about", label: "About Us" },
+  { href: "/products", label: "Products", hasDropdown: true },
+  { href: "/solutions", label: "Solutions" },
+  { href: "/social-responsibility", label: "Social Responsibility" },
+  { href: "/contact", label: "Contact" },
 ];
 
-export function Nav() {
+export function Nav({ categories }: { categories: CategoryLink[] }) {
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  const { count } = useQuoteCart();
 
   useEffect(() => {
     let lastY = window.scrollY;
@@ -38,6 +46,15 @@ export function Nav() {
     };
   }, [open]);
 
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  const isActive = (href: string) =>
+    href === "/" ? pathname === "/" : pathname.startsWith(href);
+
+  const linkColor = scrolled ? "text-mec-pure" : "text-mec-ink";
+
   return (
     <>
       <motion.header
@@ -46,19 +63,17 @@ export function Nav() {
         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
         className={cn(
           "fixed left-0 right-0 top-0 z-[120] transition-[background,backdrop-filter] duration-300",
-          scrolled
-            ? "bg-mec-ink/90 backdrop-blur-md"
-            : "bg-transparent",
+          scrolled ? "bg-mec-ink/90 backdrop-blur-md" : "bg-transparent",
         )}
       >
         <div className="mx-auto flex w-full max-w-[1440px] items-center justify-between px-6 py-4 md:px-10">
           <Link
-            href="#top"
+            href="/"
             className={cn(
               "font-display text-2xl tracking-wider transition-colors",
-              scrolled ? "text-mec-pure" : "text-mec-ink",
+              linkColor,
             )}
-            data-cursor="Top"
+            data-cursor="Home"
           >
             <span className="text-mec-red">MEC</span>{" "}
             <span className="text-[11px] font-semibold uppercase tracking-[0.2em] opacity-70 font-[var(--font-body)]">
@@ -66,35 +81,75 @@ export function Nav() {
             </span>
           </Link>
 
-          <nav className="hidden items-center gap-10 md:flex">
+          <nav className="hidden items-center gap-8 lg:flex">
             {LINKS.map((l) => (
-              <Link
-                key={l.href}
-                href={l.href}
-                className={cn(
-                  "group relative text-sm font-semibold uppercase tracking-[0.14em] transition-colors hover:text-mec-red",
-                  scrolled ? "text-mec-pure" : "text-mec-ink",
-                )}
-                data-cursor="View"
-              >
-                <span className="relative">
+              <div key={l.href} className="group relative">
+                <Link
+                  href={l.href}
+                  className={cn(
+                    "relative flex items-center gap-1 text-sm font-semibold uppercase tracking-[0.12em] transition-colors hover:text-mec-red",
+                    linkColor,
+                    isActive(l.href) && "text-mec-red",
+                  )}
+                  data-cursor="View"
+                >
                   {l.label}
-                  <span className="absolute -bottom-1 left-0 h-px w-0 bg-mec-red transition-[width] duration-200 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:w-full" />
-                </span>
-              </Link>
+                  {l.hasDropdown && (
+                    <ChevronDown className="h-3.5 w-3.5 opacity-70" aria-hidden />
+                  )}
+                </Link>
+                {l.hasDropdown && categories.length > 0 && (
+                  <div className="invisible absolute left-1/2 top-full z-[130] w-64 -translate-x-1/2 pt-4 opacity-0 transition-all duration-200 group-hover:visible group-hover:opacity-100">
+                    <div className="overflow-hidden rounded-md border border-black/10 bg-mec-pure py-2 shadow-[var(--shadow-card)]">
+                      <Link
+                        href="/products"
+                        className="block px-5 py-2 text-sm font-semibold text-mec-ink hover:bg-mec-mist hover:text-mec-red"
+                      >
+                        All Products
+                      </Link>
+                      <div className="my-1 h-px bg-black/5" />
+                      {categories.map((c) => (
+                        <Link
+                          key={c.slug}
+                          href={`/products/${c.slug}`}
+                          className="block px-5 py-2 text-sm text-mec-ink/80 hover:bg-mec-mist hover:text-mec-red"
+                        >
+                          {c.name}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             ))}
           </nav>
 
-          <div className="hidden md:block">
-            <Button href="#contact" variant="primary" arrow>
-              Request a Quote
+          <div className="hidden items-center gap-4 lg:flex">
+            <Link
+              href="/quote"
+              className={cn(
+                "relative inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.12em] transition-colors hover:text-mec-red",
+                linkColor,
+              )}
+              data-cursor="View"
+            >
+              <FileText className="h-4 w-4" aria-hidden />
+              Quote
+              {count > 0 && (
+                <span className="grid h-5 min-w-5 place-items-center rounded-full bg-mec-red px-1 text-[11px] font-bold text-mec-pure">
+                  {count}
+                </span>
+              )}
+            </Link>
+            <Button href="/contact" variant="primary" arrow>
+              Contact
             </Button>
           </div>
 
           <button
             type="button"
             className={cn(
-              "md:hidden transition-colors",
+              "lg:hidden transition-colors",
               scrolled || open ? "text-mec-pure" : "text-mec-ink",
             )}
             aria-label={open ? "Close menu" : "Open menu"}
@@ -113,16 +168,16 @@ export function Nav() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-[110] grid place-items-center bg-mec-ink md:hidden"
+            className="fixed inset-0 z-[110] grid place-items-center overflow-y-auto bg-mec-ink lg:hidden"
           >
-            <nav className="flex flex-col items-center gap-8 text-center">
+            <nav className="flex flex-col items-center gap-6 py-24 text-center">
               {LINKS.map((l, i) => (
                 <motion.div
                   key={l.href}
                   initial={{ y: 24, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{
-                    delay: 0.1 + i * 0.05,
+                    delay: 0.08 + i * 0.05,
                     duration: 0.5,
                     ease: [0.16, 1, 0.3, 1],
                   }}
@@ -130,7 +185,10 @@ export function Nav() {
                   <Link
                     href={l.href}
                     onClick={() => setOpen(false)}
-                    className="font-display text-5xl tracking-wider text-mec-pure"
+                    className={cn(
+                      "font-display text-4xl tracking-wider text-mec-pure",
+                      isActive(l.href) && "text-mec-red",
+                    )}
                   >
                     {l.label}
                   </Link>
@@ -139,17 +197,15 @@ export function Nav() {
               <motion.div
                 initial={{ y: 24, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.35, duration: 0.5 }}
-                className="mt-8"
+                transition={{ delay: 0.4, duration: 0.5 }}
               >
-                <Button
-                  href="#contact"
-                  variant="primary"
-                  arrow
+                <Link
+                  href="/quote"
                   onClick={() => setOpen(false)}
+                  className="font-display text-2xl tracking-wider text-mec-pure/80"
                 >
-                  Request a Quote
-                </Button>
+                  My Quote {count > 0 ? `(${count})` : ""}
+                </Link>
               </motion.div>
             </nav>
           </motion.div>
