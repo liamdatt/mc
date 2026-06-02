@@ -8,6 +8,8 @@ import { MotionRoot } from "@/components/motion/MotionRoot";
 import { Nav } from "@/components/layout/Nav";
 import { Footer } from "@/components/layout/Footer";
 import { PageLoadCurtain } from "@/components/layout/PageTransition";
+import { QuoteCartProvider } from "@/components/quote/QuoteCartProvider";
+import { getCategories } from "@/lib/products";
 
 const bebas = Bebas_Neue({
   weight: "400",
@@ -47,9 +49,10 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image" },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const categories = await getCategories();
   return (
     <html
       lang="en"
@@ -103,13 +106,20 @@ export default function RootLayout({
         <PageLoadCurtain />
         <CustomCursor />
         <ScrollProgress />
-        <MotionRoot>
-          <LenisProvider>
-            <Nav />
-            <main id="main">{children}</main>
-            <Footer />
-          </LenisProvider>
-        </MotionRoot>
+        <QuoteCartProvider>
+          <MotionRoot>
+            <LenisProvider>
+              <Nav
+                categories={categories.map((c) => ({
+                  slug: c.slug,
+                  name: c.name,
+                }))}
+              />
+              <main id="main">{children}</main>
+              <Footer />
+            </LenisProvider>
+          </MotionRoot>
+        </QuoteCartProvider>
       </body>
     </html>
   );
