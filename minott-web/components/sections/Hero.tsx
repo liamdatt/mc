@@ -149,10 +149,10 @@ export function Hero() {
           </p>
 
           <div className="hero-cta mt-10 flex flex-wrap items-center gap-4">
-            <Button href="#contact" variant="primary" arrow>
+            <Button href="/quote" variant="primary" arrow>
               Request a Quote
             </Button>
-            <Button href="#products" variant="ghost">
+            <Button href="/products" variant="ghost">
               See Our Products
             </Button>
           </div>

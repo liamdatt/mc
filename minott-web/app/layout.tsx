@@ -5,9 +5,16 @@ import { LenisProvider } from "@/components/motion/LenisProvider";
 import { CustomCursor } from "@/components/motion/CustomCursor";
 import { ScrollProgress } from "@/components/motion/ScrollProgress";
 import { MotionRoot } from "@/components/motion/MotionRoot";
-import { Nav } from "@/components/layout/Nav";
-import { Footer } from "@/components/layout/Footer";
+import { PublicChrome } from "@/components/layout/PublicChrome";
 import { PageLoadCurtain } from "@/components/layout/PageTransition";
+import { QuoteCartProvider } from "@/components/quote/QuoteCartProvider";
+import { getCategories } from "@/lib/products";
+
+// The site is DB-backed and edited live via /admin, so render on demand
+// (rather than prerendering at build time) — this keeps the nav category
+// dropdown and all catalog pages in sync with admin changes. Applies to every
+// route as a root-layout segment config.
+export const dynamic = "force-dynamic";
 
 const bebas = Bebas_Neue({
   weight: "400",
@@ -47,9 +54,10 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image" },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const categories = await getCategories();
   return (
     <html
       lang="en"
@@ -103,13 +111,20 @@ export default function RootLayout({
         <PageLoadCurtain />
         <CustomCursor />
         <ScrollProgress />
-        <MotionRoot>
-          <LenisProvider>
-            <Nav />
-            <main id="main">{children}</main>
-            <Footer />
-          </LenisProvider>
-        </MotionRoot>
+        <QuoteCartProvider>
+          <MotionRoot>
+            <LenisProvider>
+              <PublicChrome
+                categories={categories.map((c) => ({
+                  slug: c.slug,
+                  name: c.name,
+                }))}
+              >
+                {children}
+              </PublicChrome>
+            </LenisProvider>
+          </MotionRoot>
+        </QuoteCartProvider>
       </body>
     </html>
   );

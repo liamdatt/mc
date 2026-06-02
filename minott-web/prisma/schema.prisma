@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Category {
+  id          Int       @id @default(autoincrement())
+  slug        String    @unique
+  name        String
+  description String?
+  imagePath   String?
+  sortOrder   Int       @default(0)
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Product {
+  id               Int           @id @default(autoincrement())
+  slug             String        @unique
+  name             String
+  category         Category      @relation(fields: [categoryId], references: [id])
+  categoryId       Int
+  shortDescription String?
+  description      String?
+  imagePath        String        @default("/images/product-placeholder.png")
+  isChemical       Boolean       @default(false)
+  sdsUrl           String?
+  sampleAvailable  Boolean       @default(false)
+  sku              String?
+  featured         Boolean       @default(false)
+  active           Boolean       @default(true)
+  sortOrder        Int           @default(0)
+  inquiryItems     InquiryItem[]
+  sampleInquiries  Inquiry[]     @relation("SampleInquiryProduct")
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+}
+
+model Inquiry {
+  id        Int           @id @default(autoincrement())
+  type      String // "QUOTE" | "SAMPLE" | "CONTACT"
+  status    String        @default("NEW") // "NEW" | "IN_PROGRESS" | "CLOSED"
+  name      String
+  company   String?
+  email     String
+  phone     String?
+  message   String?
+  product   Product?      @relation("SampleInquiryProduct", fields: [productId], references: [id], onDelete: SetNull)
+  productId Int?
+  items     InquiryItem[]
+  createdAt DateTime      @default(now())
+}
+
+model InquiryItem {
+  id          Int      @id @default(autoincrement())
+  inquiry     Inquiry  @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+  inquiryId   Int
+  product     Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productId   Int?
+  productName String
+  quantity    Int      @default(1)
+}

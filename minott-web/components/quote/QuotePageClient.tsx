@@ -1,0 +1,157 @@
+"use client";
+
+import { useActionState, useEffect, useRef } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { Trash2 } from "lucide-react";
+import { useQuoteCart } from "@/components/quote/QuoteCartProvider";
+import { submitQuote, type InquiryResult } from "@/lib/actions/inquiries";
+
+const initial: InquiryResult = { ok: false };
+const inputCls =
+  "mt-1 w-full rounded-sm border border-black/15 bg-mec-pure px-4 py-3 text-mec-ink outline-none focus:border-mec-red";
+
+export function QuotePageClient() {
+  const { items, setQuantity, removeItem, clear } = useQuoteCart();
+  const [state, formAction, pending] = useActionState(submitQuote, initial);
+  const clearedRef = useRef(false);
+
+  // Clear the cart once after a successful submission.
+  useEffect(() => {
+    if (state.ok && !clearedRef.current) {
+      clearedRef.current = true;
+      clear();
+    }
+  }, [state.ok, clear]);
+
+  if (state.ok) {
+    return (
+      <div className="rounded-md border border-mec-red/30 bg-mec-red/5 p-8">
+        <h2 className="font-display-tight text-h2 text-mec-ink">
+          Quote request sent.
+        </h2>
+        <p className="mt-3 max-w-xl text-mec-ink/75">
+          Thanks — a sales consultant will price your list and respond within one
+          business day.
+        </p>
+        <Link
+          href="/products"
+          className="mt-6 inline-block bg-mec-red px-6 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-mec-pure hover:bg-mec-red-hover"
+        >
+          Back to Products
+        </Link>
+      </div>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <div className="rounded-md border border-black/10 bg-mec-pure p-8">
+        <p className="text-mec-ink/70">Your quote list is empty.</p>
+        <Link
+          href="/products"
+          className="mt-4 inline-block bg-mec-red px-6 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-mec-pure hover:bg-mec-red-hover"
+        >
+          Browse Products
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1.4fr_1fr]">
+      {/* Line items */}
+      <div className="space-y-4">
+        {items.map((it) => (
+          <div
+            key={it.productId}
+            className="flex items-center gap-4 rounded-md border border-black/10 bg-mec-pure p-4"
+          >
+            <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-sm bg-mec-mist">
+              <Image
+                src={it.imagePath}
+                alt={it.name}
+                fill
+                sizes="64px"
+                className="object-cover"
+              />
+            </div>
+            <div className="min-w-0 flex-1">
+              <Link
+                href={`/products/${it.categorySlug}/${it.slug}`}
+                className="font-semibold text-mec-ink hover:text-mec-red"
+              >
+                {it.name}
+              </Link>
+            </div>
+            <input
+              type="number"
+              min={1}
+              value={it.quantity}
+              onChange={(e) =>
+                setQuantity(it.productId, Number(e.target.value) || 1)
+              }
+              className="w-20 rounded-sm border border-black/15 px-3 py-2 text-mec-ink outline-none focus:border-mec-red"
+              aria-label={`Quantity for ${it.name}`}
+            />
+            <button
+              type="button"
+              onClick={() => removeItem(it.productId)}
+              className="text-mec-ink/50 hover:text-mec-red"
+              aria-label={`Remove ${it.name}`}
+            >
+              <Trash2 className="h-5 w-5" />
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {/* Contact form */}
+      <form
+        action={formAction}
+        className="h-fit rounded-md border border-black/10 bg-mec-pure p-6"
+      >
+        <input
+          type="hidden"
+          name="items"
+          value={JSON.stringify(
+            items.map((i) => ({
+              productId: i.productId,
+              productName: i.name,
+              quantity: i.quantity,
+            })),
+          )}
+        />
+        <h2 className="font-display-tight text-h3 text-mec-ink">Your details</h2>
+        <label className="mt-4 block text-xs font-semibold uppercase tracking-[0.12em] text-mec-ink/70">
+          Name *
+          <input name="name" required className={inputCls} />
+        </label>
+        <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.12em] text-mec-ink/70">
+          Company
+          <input name="company" className={inputCls} />
+        </label>
+        <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.12em] text-mec-ink/70">
+          Email *
+          <input name="email" type="email" required className={inputCls} />
+        </label>
+        <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.12em] text-mec-ink/70">
+          Phone
+          <input name="phone" className={inputCls} />
+        </label>
+        <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.12em] text-mec-ink/70">
+          Notes
+          <textarea name="message" rows={3} className={`${inputCls} resize-none`} />
+        </label>
+        {state.error && <p className="mt-3 text-sm text-mec-red">{state.error}</p>}
+        <button
+          type="submit"
+          disabled={pending}
+          className="mt-5 w-full bg-mec-red px-6 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-mec-pure transition hover:bg-mec-red-hover disabled:opacity-50"
+        >
+          {pending ? "Sending…" : "Submit Quote Request"}
+        </button>
+      </form>
+    </div>
+  );
+}

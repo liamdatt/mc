@@ -15,6 +15,7 @@ const CARDS = [
     title: "Formulated for Jamaica.",
     cat: "Industrial & Household Chemicals",
     items: ["Floor cleaners", "Disinfectants", "Degreasers", "Bleach", "Sanitizers"],
+    href: "/products/industrial-and-household-chemicals",
   },
   {
     img: "/images/product-janitorial.jpg",
@@ -22,6 +23,7 @@ const CARDS = [
     title: "Built for the work.",
     cat: "Janitorial Equipment & Supplies",
     items: ["Vacuums", "Mops", "Carts", "Brooms", "Buckets", "Bins"],
+    href: "/products/janitorial-equipment-and-supplies",
   },
   {
     img: "/images/product-ppe.jpg",
@@ -29,6 +31,7 @@ const CARDS = [
     title: "Protection that fits.",
     cat: "Personal Protection Equipment",
     items: ["Surgical gloves", "Nitrile", "Latex", "Masks", "Isolation gowns"],
+    href: "/products/personal-protection-equipment-ppe",
   },
   {
     img: "/images/product-paper.jpg",
@@ -36,6 +39,7 @@ const CARDS = [
     title: "Never run out.",
     cat: "Paper Products",
     items: ["Hand towels", "Jumbo roll", "Bathroom tissue", "Napkins", "Dispensers"],
+    href: "/products/paper-products",
   },
 ];
 
@@ -172,6 +176,7 @@ function ProductCard({
   title,
   cat,
   items,
+  href,
   desktopPinned = false,
 }: {
   img: string;
@@ -179,6 +184,7 @@ function ProductCard({
   title: string;
   cat: string;
   items: string[];
+  href: string;
   desktopPinned?: boolean;
 }) {
   const heightCls = desktopPinned
@@ -221,7 +227,7 @@ function ProductCard({
             ))}
           </ul>
           <div className="mt-6">
-            <Button href="#contact" variant="ghost-dark" arrow>
+            <Button href={href} variant="ghost-dark" arrow>
               View Products
             </Button>
           </div>
