@@ -1,4 +1,8 @@
+"use client";
+
+import { useActionState } from "react";
 import Link from "next/link";
+import type { ProductFormState } from "@/lib/actions/admin-products";
 
 type Category = { id: number; name: string };
 type ProductValues = {
@@ -27,13 +31,17 @@ export function ProductForm({
   categories,
   product,
 }: {
-  action: (formData: FormData) => void | Promise<void>;
+  action: (
+    prevState: ProductFormState,
+    formData: FormData,
+  ) => Promise<ProductFormState>;
   categories: Category[];
   product?: ProductValues;
 }) {
+  const [state, formAction, pending] = useActionState(action, {});
   const p = product ?? {};
   return (
-    <form action={action} className="max-w-2xl space-y-5">
+    <form action={formAction} className="max-w-2xl space-y-5">
       {p.id != null && <input type="hidden" name="id" value={p.id} />}
 
       <label className={label}>
@@ -130,10 +138,13 @@ export function ProductForm({
         </label>
       </fieldset>
 
+      {state.error && <p className="text-sm text-mec-red">{state.error}</p>}
+
       <div className="flex items-center gap-3">
         <button
           type="submit"
-          className="bg-mec-red px-6 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-mec-pure hover:bg-mec-red-hover"
+          disabled={pending}
+          className="bg-mec-red px-6 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-mec-pure hover:bg-mec-red-hover disabled:opacity-50"
         >
           Save Product
         </button>

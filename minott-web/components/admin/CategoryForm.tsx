@@ -1,4 +1,8 @@
+"use client";
+
+import { useActionState } from "react";
 import Link from "next/link";
+import type { CategoryFormState } from "@/lib/actions/admin-categories";
 
 type CategoryValues = {
   id?: number;
@@ -17,12 +21,16 @@ export function CategoryForm({
   action,
   category,
 }: {
-  action: (formData: FormData) => void | Promise<void>;
+  action: (
+    prevState: CategoryFormState,
+    formData: FormData,
+  ) => Promise<CategoryFormState>;
   category?: CategoryValues;
 }) {
+  const [state, formAction, pending] = useActionState(action, {});
   const c = category ?? {};
   return (
-    <form action={action} className="max-w-xl space-y-5">
+    <form action={formAction} className="max-w-xl space-y-5">
       {c.id != null && <input type="hidden" name="id" value={c.id} />}
       <label className={label}>
         Name
@@ -54,10 +62,12 @@ export function CategoryForm({
           className={field}
         />
       </label>
+      {state.error && <p className="text-sm text-mec-red">{state.error}</p>}
       <div className="flex items-center gap-3">
         <button
           type="submit"
-          className="bg-mec-red px-6 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-mec-pure hover:bg-mec-red-hover"
+          disabled={pending}
+          className="bg-mec-red px-6 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-mec-pure hover:bg-mec-red-hover disabled:opacity-50"
         >
           Save Category
         </button>

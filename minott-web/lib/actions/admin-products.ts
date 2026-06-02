@@ -2,8 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { slugify } from "@/lib/slug";
+import { requireAdmin } from "@/lib/auth/require-admin";
+
+export type ProductFormState = { error?: string };
 
 function num(formData: FormData, key: string, fallback = 0): number {
   const n = Number(formData.get(key));
@@ -36,22 +40,62 @@ function buildData(formData: FormData) {
   };
 }
 
-export async function createProduct(formData: FormData): Promise<void> {
-  await db.product.create({ data: buildData(formData) });
+function isUniqueViolation(e: unknown): boolean {
+  return e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002";
+}
+
+export async function createProduct(
+  _prev: ProductFormState,
+  formData: FormData,
+): Promise<ProductFormState> {
+  await requireAdmin();
+  const data = buildData(formData);
+  if (!data.name) return { error: "Name is required." };
+  if (!data.slug) return { error: "Could not derive a slug from the name." };
+  const category = await db.category.findUnique({
+    where: { id: data.categoryId },
+  });
+  if (!category) return { error: "Please choose a valid category." };
+  try {
+    await db.product.create({ data });
+  } catch (e) {
+    if (isUniqueViolation(e))
+      return { error: "A product with that name or slug already exists." };
+    throw e;
+  }
   revalidatePath("/admin/products");
   revalidatePath("/products");
   redirect("/admin/products");
 }
 
-export async function updateProduct(formData: FormData): Promise<void> {
+export async function updateProduct(
+  _prev: ProductFormState,
+  formData: FormData,
+): Promise<ProductFormState> {
+  await requireAdmin();
   const id = Number(formData.get("id"));
-  await db.product.update({ where: { id }, data: buildData(formData) });
+  if (!Number.isFinite(id)) return { error: "Invalid product id." };
+  const data = buildData(formData);
+  if (!data.name) return { error: "Name is required." };
+  if (!data.slug) return { error: "Could not derive a slug from the name." };
+  const category = await db.category.findUnique({
+    where: { id: data.categoryId },
+  });
+  if (!category) return { error: "Please choose a valid category." };
+  try {
+    await db.product.update({ where: { id }, data });
+  } catch (e) {
+    if (isUniqueViolation(e))
+      return { error: "A product with that name or slug already exists." };
+    throw e;
+  }
   revalidatePath("/admin/products");
   revalidatePath("/products");
   redirect("/admin/products");
 }
 
 export async function deleteProduct(formData: FormData): Promise<void> {
+  await requireAdmin();
   const id = Number(formData.get("id"));
   await db.product.delete({ where: { id } });
   revalidatePath("/admin/products");
