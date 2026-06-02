@@ -31,6 +31,9 @@ model Product {
   sdsUrl           String?
   sampleAvailable  Boolean       @default(false)
   sku              String?
+  packSize         String?
+  specLabel        String?
+  specValue        String?
   featured         Boolean       @default(false)
   active           Boolean       @default(true)
   sortOrder        Int           @default(0)

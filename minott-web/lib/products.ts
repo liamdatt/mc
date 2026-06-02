@@ -1,4 +1,51 @@
+import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
+
+export type ListingSort = "az" | "za";
+
+/** Categories with their active-product counts, for the filter sidebar. */
+export async function getCategoriesWithCounts() {
+  const cats = await db.category.findMany({
+    orderBy: { sortOrder: "asc" },
+    include: { products: { where: { active: true }, select: { id: true } } },
+  });
+  return cats.map((c) => ({
+    id: c.id,
+    slug: c.slug,
+    name: c.name,
+    count: c.products.length,
+  }));
+}
+
+/** Distinct "Form" spec values present on active products (e.g. Liquid). */
+export async function getFormOptions(): Promise<string[]> {
+  const rows = await db.product.findMany({
+    where: { active: true, specLabel: "Form", specValue: { not: null } },
+    select: { specValue: true },
+    distinct: ["specValue"],
+    orderBy: { specValue: "asc" },
+  });
+  return rows.map((r) => r.specValue as string);
+}
+
+/** Filtered + sorted product list for the catalog listing page. */
+export function getProductsForListing(opts: {
+  categorySlug?: string;
+  form?: string;
+  sort?: ListingSort;
+}) {
+  const where: Prisma.ProductWhereInput = { active: true };
+  if (opts.categorySlug) where.category = { slug: opts.categorySlug };
+  if (opts.form) {
+    where.specLabel = "Form";
+    where.specValue = opts.form;
+  }
+  return db.product.findMany({
+    where,
+    include: { category: true },
+    orderBy: { name: opts.sort === "za" ? "desc" : "asc" },
+  });
+}
 
 export function getCategories() {
   return db.category.findMany({ orderBy: { sortOrder: "asc" } });
