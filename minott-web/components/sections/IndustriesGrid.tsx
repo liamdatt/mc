@@ -20,15 +20,69 @@ import { Eyebrow } from "@/components/primitives/Eyebrow";
 import { RevealOnScroll } from "@/components/motion/RevealOnScroll";
 
 const TILES = [
-  { name: "Hospitality", icon: Hotel, img: "industry-hospitality.jpg" },
-  { name: "Medical", icon: Stethoscope, img: "industry-medical.jpg" },
-  { name: "Manufacturing", icon: Factory, img: "industry-manufacturing.jpg" },
-  { name: "Financial", icon: Landmark, img: "industry-financial.jpg" },
-  { name: "Telecoms", icon: Antenna, img: "industry-telecoms.jpg" },
-  { name: "Entertainment", icon: Music, img: "industry-entertainment.jpg" },
-  { name: "Retail", icon: ShoppingBag, img: "industry-retail.jpg" },
-  { name: "Janitorial", icon: Brush, img: "industry-janitorial.jpg" },
-  { name: "Sanitation", icon: SprayCan, img: "industry-sanitation.jpg" },
+  {
+    name: "Hospitality",
+    icon: Hotel,
+    img: "industry-hospitality.jpg",
+    blurb:
+      "Hotels and resorts: housekeeping carts, amenities, paper, and floor care that protect guest experience.",
+  },
+  {
+    name: "Medical",
+    icon: Stethoscope,
+    img: "industry-medical.jpg",
+    blurb:
+      "Clinics and hospitals: hospital-grade disinfectants, PPE, and biohazard handling that meet sanitation specs.",
+  },
+  {
+    name: "Manufacturing",
+    icon: Factory,
+    img: "industry-manufacturing.jpg",
+    blurb:
+      "Plants and factories: industrial degreasers, floor machines, and safety gear for demanding environments.",
+  },
+  {
+    name: "Financial",
+    icon: Landmark,
+    img: "industry-financial.jpg",
+    blurb:
+      "Banks and offices: discreet, dependable janitorial supply that keeps institutional spaces immaculate.",
+  },
+  {
+    name: "Telecoms",
+    icon: Antenna,
+    img: "industry-telecoms.jpg",
+    blurb:
+      "Data and network facilities: precise, low-residue cleaning for sensitive equipment areas.",
+  },
+  {
+    name: "Entertainment",
+    icon: Music,
+    img: "industry-entertainment.jpg",
+    blurb:
+      "Venues and theatres: fast-turnaround cleaning supplies for high-traffic public spaces.",
+  },
+  {
+    name: "Retail",
+    icon: ShoppingBag,
+    img: "industry-retail.jpg",
+    blurb:
+      "Stores and malls: nightly maintenance programs that keep sales floors spotless.",
+  },
+  {
+    name: "Janitorial",
+    icon: Brush,
+    img: "industry-janitorial.jpg",
+    blurb:
+      "Contract cleaners: bulk chemicals, equipment, and consumables with island-wide twice-weekly delivery.",
+  },
+  {
+    name: "Sanitation",
+    icon: SprayCan,
+    img: "industry-sanitation.jpg",
+    blurb:
+      "Facility hygiene programs: high-volume disinfectants and dispensers that keep public spaces safe.",
+  },
 ];
 
 export function IndustriesGrid() {
@@ -51,9 +105,9 @@ export function IndustriesGrid() {
           whileInView="visible"
           viewport={{ once: true, amount: 0.1 }}
           variants={{ visible: { transition: { staggerChildren: 0.06 } } }}
-          className="mt-16 grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4"
+          className="mt-16 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 md:gap-4"
         >
-          {TILES.map(({ name, icon: Icon, img }) => {
+          {TILES.map(({ name, icon: Icon, img, blurb }) => {
             const isActive = active === name;
             const isOther = active && !isActive;
             return (
@@ -69,8 +123,8 @@ export function IndustriesGrid() {
                 }}
                 onMouseEnter={() => setActive(name)}
                 onMouseLeave={() => setActive(null)}
-                className="relative aspect-square overflow-hidden rounded-md transition-opacity duration-300"
-                style={{ opacity: isOther ? 0.4 : 1 }}
+                className="relative aspect-[4/5] overflow-hidden rounded-md transition-opacity duration-300"
+                style={{ opacity: isOther ? 0.5 : 1 }}
                 data-cursor={name}
               >
                 <motion.div
@@ -83,29 +137,25 @@ export function IndustriesGrid() {
                     src={`/images/${img}`}
                     alt={name}
                     fill
-                    sizes="(min-width: 768px) 33vw, 50vw"
-                    className="object-cover transition-all duration-500"
-                    style={{
-                      filter: isActive ? "grayscale(1) brightness(0.6)" : "grayscale(0.3)",
-                      opacity: isActive ? 0.35 : 0.55,
-                    }}
+                    sizes="(min-width: 768px) 33vw, (min-width: 640px) 50vw, 100vw"
+                    className="object-cover transition-transform duration-500"
                   />
+                  {/* Base scrim — keeps the always-visible copy legible over any photo */}
+                  <div
+                    aria-hidden
+                    className="absolute inset-0 bg-gradient-to-t from-mec-ink via-mec-ink/55 to-mec-ink/15"
+                  />
+                  {/* Red accent overlay on hover */}
                   <motion.div
+                    aria-hidden
                     initial={false}
-                    animate={{
-                      backgroundColor: isActive ? "#E10600" : "#FFFFFF",
-                      color: isActive ? "#FFFFFF" : "#0D0D0D",
-                    }}
+                    animate={{ opacity: isActive ? 0.55 : 0 }}
                     transition={{ duration: 0.25 }}
-                    className="absolute inset-0 mix-blend-multiply"
-                    style={{ opacity: isActive ? 0.92 : 0 }}
+                    className="absolute inset-0 bg-mec-red mix-blend-multiply"
                   />
-                  <div className="relative flex h-full flex-col justify-between p-5 md:p-7">
+                  <div className="relative flex h-full flex-col justify-between p-5 text-mec-pure md:p-6">
                     <div className="flex items-start justify-between">
-                      <Icon
-                        className={`h-6 w-6 transition-colors ${isActive ? "text-mec-pure" : "text-mec-ink"}`}
-                        aria-hidden
-                      />
+                      <Icon className="h-6 w-6 text-mec-pure" aria-hidden />
                       <motion.div
                         initial={false}
                         animate={{ x: isActive ? 0 : 8, opacity: isActive ? 1 : 0 }}
@@ -114,11 +164,12 @@ export function IndustriesGrid() {
                         <ArrowRight className="h-5 w-5 text-mec-pure" aria-hidden />
                       </motion.div>
                     </div>
-                    <h3
-                      className={`font-display text-3xl md:text-4xl ${isActive ? "text-mec-pure" : "text-mec-ink"}`}
-                    >
-                      {name}
-                    </h3>
+                    <div>
+                      <h3 className="font-display text-3xl md:text-4xl">{name}</h3>
+                      <p className="mt-2 max-w-[34ch] text-sm leading-snug text-mec-pure/85">
+                        {blurb}
+                      </p>
+                    </div>
                   </div>
                 </motion.div>
               </motion.li>
