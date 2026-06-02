@@ -10,6 +10,12 @@ import { PageLoadCurtain } from "@/components/layout/PageTransition";
 import { QuoteCartProvider } from "@/components/quote/QuoteCartProvider";
 import { getCategories } from "@/lib/products";
 
+// The site is DB-backed and edited live via /admin, so render on demand
+// (rather than prerendering at build time) — this keeps the nav category
+// dropdown and all catalog pages in sync with admin changes. Applies to every
+// route as a root-layout segment config.
+export const dynamic = "force-dynamic";
+
 const bebas = Bebas_Neue({
   weight: "400",
   variable: "--font-bebas",
