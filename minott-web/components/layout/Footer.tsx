@@ -3,19 +3,19 @@ import Link from "next/link";
 import { Container } from "@/components/primitives/Container";
 
 const QUICK = [
-  { href: "#top", label: "Home" },
-  { href: "#products", label: "Products" },
-  { href: "#industries", label: "Industries" },
-  { href: "#trust", label: "Brands" },
-  { href: "#founder", label: "About" },
-  { href: "#contact", label: "Contact" },
+  { href: "/", label: "Home" },
+  { href: "/products", label: "Products" },
+  { href: "/solutions", label: "Solutions" },
+  { href: "/about", label: "About Us" },
+  { href: "/social-responsibility", label: "Social Responsibility" },
+  { href: "/contact", label: "Contact" },
 ];
 
 const PRODUCTS = [
-  "Industrial & Household Chemicals",
-  "Janitorial Equipment & Supplies",
-  "Personal Protection Equipment",
-  "Paper Products",
+  { href: "/products/industrial-and-household-chemicals", label: "Industrial & Household Chemicals" },
+  { href: "/products/janitorial-equipment-and-supplies", label: "Janitorial Equipment & Supplies" },
+  { href: "/products/personal-protection-equipment-ppe", label: "Personal Protection Equipment" },
+  { href: "/products/paper-products", label: "Paper Products" },
 ];
 
 export function Footer() {
@@ -24,7 +24,7 @@ export function Footer() {
       <Container className="grid grid-cols-1 gap-12 py-24 md:grid-cols-12">
         <div className="md:col-span-4">
           <Link
-            href="#top"
+            href="/"
             className="group inline-flex items-baseline gap-2"
             data-cursor="Top"
           >
@@ -71,7 +71,11 @@ export function Footer() {
           <h3 className="eyebrow text-mec-pure">Our Products</h3>
           <ul className="mt-4 space-y-3 text-sm">
             {PRODUCTS.map((p) => (
-              <li key={p}>{p}</li>
+              <li key={p.href}>
+                <Link href={p.href} className="hover:text-mec-red">
+                  {p.label}
+                </Link>
+              </li>
             ))}
           </ul>
         </div>
