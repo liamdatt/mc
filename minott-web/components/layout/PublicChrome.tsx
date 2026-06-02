@@ -15,11 +15,13 @@ export function PublicChrome({
   const pathname = usePathname();
   const isAdmin = pathname.startsWith("/admin");
   if (isAdmin) return <>{children}</>;
+  // The home route is a single non-scrollable screen — no footer below the fold.
+  const isLanding = pathname === "/";
   return (
     <>
       <Nav categories={categories} />
       <main id="main">{children}</main>
-      <Footer />
+      {!isLanding && <Footer />}
     </>
   );
 }

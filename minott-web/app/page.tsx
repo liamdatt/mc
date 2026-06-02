@@ -1,20 +1,13 @@
 import { Hero } from "@/components/sections/Hero";
 import { TrustBar } from "@/components/sections/TrustBar";
-import { DualPlay } from "@/components/sections/DualPlay";
-import { ProductCategories } from "@/components/sections/ProductCategories";
-import { NumbersBar } from "@/components/sections/NumbersBar";
-import { QuoteCTA } from "@/components/sections/QuoteCTA";
 
+// Single-screen, non-scrollable landing: Hero + distributor carousel only.
 export default function HomePage() {
   return (
-    <>
+    <div className="flex h-[100svh] flex-col overflow-hidden">
       <span id="top" className="sr-only" />
       <Hero />
       <TrustBar />
-      <DualPlay />
-      <ProductCategories />
-      <NumbersBar />
-      <QuoteCTA />
-    </>
+    </div>
   );
 }

@@ -58,9 +58,9 @@ export function TrustBar() {
     <section
       ref={sectionRef}
       id="trust"
-      className="relative overflow-hidden bg-mec-mist py-12"
+      className="relative shrink-0 overflow-hidden bg-mec-mist py-6"
     >
-      <div className="mx-auto mb-6 w-full max-w-[1280px] px-6 md:px-10">
+      <div className="mx-auto mb-4 w-full max-w-[1280px] px-6 md:px-10">
         <p className="text-center">
           <Eyebrow tone="ink">Proud Elite Distributor For</Eyebrow>
         </p>
@@ -74,7 +74,7 @@ export function TrustBar() {
             return (
               <div
                 key={`${b.name}-${i}`}
-                className="group relative flex h-20 w-56 shrink-0 items-center justify-center"
+                className="group relative flex h-16 w-48 shrink-0 items-center justify-center"
                 onMouseEnter={() => onEnter(b.name)}
                 onMouseLeave={onLeave}
                 data-cursor={b.name}

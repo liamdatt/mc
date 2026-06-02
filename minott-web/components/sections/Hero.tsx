@@ -99,7 +99,7 @@ export function Hero() {
   return (
     <section
       ref={ref}
-      className="relative min-h-[100svh] overflow-hidden bg-mec-pure"
+      className="relative flex flex-1 flex-col overflow-hidden bg-mec-pure"
     >
       {/* Background grid */}
       <div aria-hidden className="absolute inset-0 bg-grid opacity-60" />
@@ -119,7 +119,7 @@ export function Hero() {
         />
       </svg>
 
-      <div className="relative mx-auto grid min-h-[100svh] w-full max-w-[1440px] grid-cols-1 items-center gap-12 px-6 pt-32 pb-24 md:px-10 lg:grid-cols-[1.25fr_0.85fr] lg:gap-12">
+      <div className="relative mx-auto grid w-full max-w-[1440px] flex-1 grid-cols-1 items-center gap-8 px-6 pt-28 pb-8 md:px-10 lg:grid-cols-[1.25fr_0.85fr] lg:gap-12">
         <motion.div style={{ opacity: fadeText }} className="relative z-[2]">
           <p className="hero-eyebrow">
             <Eyebrow tone="red">
@@ -170,7 +170,7 @@ export function Hero() {
           </ul>
         </motion.div>
 
-        <div className="hero-image-wrapper relative h-[480px] w-full overflow-hidden rounded-md md:h-[600px] lg:h-[680px]">
+        <div className="hero-image-wrapper relative h-[38svh] min-h-[300px] w-full overflow-hidden rounded-md md:h-[46svh] lg:h-[52svh] lg:max-h-[580px]">
           <div className="hero-image-clip absolute inset-0 overflow-hidden">
             <motion.div
               style={{ y: yImg, scale: scaleImg }}
@@ -203,16 +203,6 @@ export function Hero() {
           </div>
         </div>
       </div>
-
-      {/* Scroll indicator */}
-      <div
-        aria-hidden
-        className="absolute bottom-6 left-1/2 z-[2] flex -translate-x-1/2 flex-col items-center gap-2 text-mec-ink/50"
-      >
-        <span className="font-display text-xs tracking-[0.3em]">SCROLL</span>
-        <span className="block h-10 w-px animate-[scrollLine_2s_ease-in-out_infinite] bg-mec-ink/40" />
-      </div>
-
     </section>
   );
 }
