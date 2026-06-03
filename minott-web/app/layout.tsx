@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Bebas_Neue, Montserrat, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { LenisProvider } from "@/components/motion/LenisProvider";
@@ -125,6 +126,12 @@ export default async function RootLayout({
             </LenisProvider>
           </MotionRoot>
         </QuoteCartProvider>
+        {/* OneChat AI assistant widget — loaded during idle time so it doesn't
+            compete with the animation-heavy initial paint. */}
+        <Script
+          src="https://onechat.floproltd.com/widget/loader?key=wgt_d892bfd563a4158cdf8d6d79642f6813"
+          strategy="lazyOnload"
+        />
       </body>
     </html>
   );
