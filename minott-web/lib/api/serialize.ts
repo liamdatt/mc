@@ -1,0 +1,75 @@
+import type { NextRequest } from "next/server";
+import type { Prisma } from "@prisma/client";
+
+/** A product joined with its category, as returned by the API read helpers. */
+type ProductWithCategory = Prisma.ProductGetPayload<{ include: { category: true } }>;
+
+/** The shape returned by `getCategoriesForApi()`. */
+type CategoryForApi = {
+  slug: string;
+  name: string;
+  description: string | null;
+  productCount: number;
+};
+
+/** Resolve the public origin from proxy headers; null if it can't be determined. */
+export function getOrigin(req: NextRequest): string | null {
+  const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host");
+  if (!host) return null;
+  const proto = req.headers.get("x-forwarded-proto") ?? "https";
+  return `${proto}://${host}`;
+}
+
+export function categoryPath(slug: string): string {
+  return `/products/${slug}`;
+}
+
+export function productPath(categorySlug: string, slug: string): string {
+  return `/products/${categorySlug}/${slug}`;
+}
+
+/** Absolute URL when origin is known, otherwise the relative path. */
+function absoluteUrl(origin: string | null, path: string): string {
+  return origin ? `${origin}${path}` : path;
+}
+
+export function serializeCategory(c: CategoryForApi, origin: string | null) {
+  const path = categoryPath(c.slug);
+  return {
+    slug: c.slug,
+    name: c.name,
+    description: c.description,
+    productCount: c.productCount,
+    path,
+    url: absoluteUrl(origin, path),
+  };
+}
+
+export function serializeProductCard(p: ProductWithCategory, origin: string | null) {
+  const path = productPath(p.category.slug, p.slug);
+  return {
+    slug: p.slug,
+    name: p.name,
+    categorySlug: p.category.slug,
+    categoryName: p.category.name,
+    shortDescription: p.shortDescription,
+    isChemical: p.isChemical,
+    sampleAvailable: p.sampleAvailable,
+    packSize: p.packSize,
+    sku: p.sku,
+    featured: p.featured,
+    imagePath: p.imagePath,
+    path,
+    url: absoluteUrl(origin, path),
+  };
+}
+
+export function serializeProductDetail(p: ProductWithCategory, origin: string | null) {
+  return {
+    ...serializeProductCard(p, origin),
+    description: p.description,
+    sdsUrl: p.sdsUrl,
+    specLabel: p.specLabel,
+    specValue: p.specValue,
+  };
+}
