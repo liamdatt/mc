@@ -14,9 +14,13 @@ type CategoryForApi = {
 
 /** Resolve the public origin from proxy headers; null if it can't be determined. */
 export function getOrigin(req: NextRequest): string | null {
-  const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host");
+  const forwardedHost = req.headers.get("x-forwarded-host");
+  const host = forwardedHost ?? req.headers.get("host");
   if (!host) return null;
-  const proto = req.headers.get("x-forwarded-proto") ?? "https";
+  // Trust an explicit forwarded proto; otherwise assume https behind a proxy
+  // (x-forwarded-host present) and http for a direct host header (local/dev).
+  const proto =
+    req.headers.get("x-forwarded-proto") ?? (forwardedHost ? "https" : "http");
   return `${proto}://${host}`;
 }
 
