@@ -97,3 +97,62 @@ export async function getProductBySlugInCategory(
   }
   return product;
 }
+
+/** All categories with active-product counts, for the public API. */
+export async function getCategoriesForApi() {
+  const cats = await db.category.findMany({
+    orderBy: { sortOrder: "asc" },
+    include: { products: { where: { active: true }, select: { id: true } } },
+  });
+  return cats.map((c) => ({
+    slug: c.slug,
+    name: c.name,
+    description: c.description,
+    productCount: c.products.length,
+  }));
+}
+
+/** Filtered active-product list for the public API. */
+export function getProductsForApi(opts: {
+  q?: string;
+  categorySlug?: string;
+  form?: string;
+  isChemical?: boolean;
+  sampleAvailable?: boolean;
+  featured?: boolean;
+  limit: number;
+}) {
+  const where: Prisma.ProductWhereInput = { active: true };
+  if (opts.categorySlug) where.category = { slug: opts.categorySlug };
+  if (opts.form) {
+    where.specLabel = "Form";
+    where.specValue = opts.form;
+  }
+  if (opts.isChemical !== undefined) where.isChemical = opts.isChemical;
+  if (opts.sampleAvailable !== undefined) where.sampleAvailable = opts.sampleAvailable;
+  if (opts.featured !== undefined) where.featured = opts.featured;
+  if (opts.q) {
+    // SQLite LIKE (Prisma `contains`) is case-insensitive for ASCII.
+    where.OR = [
+      { name: { contains: opts.q } },
+      { shortDescription: { contains: opts.q } },
+      { sku: { contains: opts.q } },
+    ];
+  }
+  return db.product.findMany({
+    where,
+    include: { category: true },
+    orderBy: { name: "asc" },
+    take: opts.limit,
+  });
+}
+
+/** Single active product by slug (with category), or null if missing/inactive. */
+export async function getProductForApi(slug: string) {
+  const product = await db.product.findUnique({
+    where: { slug },
+    include: { category: true },
+  });
+  if (!product || !product.active) return null;
+  return product;
+}
