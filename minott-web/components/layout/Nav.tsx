@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, ChevronDown, FileText } from "lucide-react";
 import { Button } from "@/components/primitives/Button";
+import { Logo } from "@/components/layout/Logo";
 import { useQuoteCart } from "@/components/quote/QuoteCartProvider";
 import { cn } from "@/lib/cn";
 
@@ -70,18 +71,8 @@ export function Nav({ categories }: { categories: CategoryLink[] }) {
         )}
       >
         <div className="mx-auto flex w-full max-w-[1440px] items-center justify-between px-6 py-4 md:px-10">
-          <Link
-            href="/"
-            className={cn(
-              "font-display text-2xl tracking-wider transition-colors",
-              linkColor,
-            )}
-            data-cursor="Home"
-          >
-            <span className="text-mec-red">MEC</span>{" "}
-            <span className="text-[11px] font-semibold uppercase tracking-[0.2em] opacity-70 font-[var(--font-body)]">
-              Minott Chemicals
-            </span>
+          <Link href="/" data-cursor="Home" aria-label="Minott Equipment & Chemicals — Home">
+            <Logo className="text-base" />
           </Link>
 
           <nav className="hidden items-center gap-8 lg:flex">
