@@ -3,7 +3,6 @@ import Script from "next/script";
 import { Bebas_Neue, Montserrat, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { LenisProvider } from "@/components/motion/LenisProvider";
-import { CustomCursor } from "@/components/motion/CustomCursor";
 import { ScrollProgress } from "@/components/motion/ScrollProgress";
 import { MotionRoot } from "@/components/motion/MotionRoot";
 import { PublicChrome } from "@/components/layout/PublicChrome";
@@ -110,7 +109,6 @@ export default async function RootLayout({
           Skip to content
         </a>
         <PageLoadCurtain />
-        <CustomCursor />
         <ScrollProgress />
         <QuoteCartProvider>
           <MotionRoot>

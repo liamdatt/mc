@@ -1,9 +1,10 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 export function ProductSort() {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const current = searchParams.get("sort") === "za" ? "za" : "az";
 
@@ -15,7 +16,7 @@ export function ProductSort() {
         onChange={(e) => {
           const params = new URLSearchParams(searchParams.toString());
           params.set("sort", e.target.value);
-          router.push(`/products/all?${params.toString()}`);
+          router.push(`${pathname}?${params.toString()}`, { scroll: false });
         }}
         className="rounded-sm border border-black/15 bg-mec-pure px-3 py-1.5 text-sm font-semibold text-mec-ink outline-none focus:border-mec-red"
       >

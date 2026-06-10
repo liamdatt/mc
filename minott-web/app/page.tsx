@@ -1,13 +1,21 @@
-import { Hero } from "@/components/sections/Hero";
+import { CinematicHero } from "@/components/sections/CinematicHero";
 import { TrustBar } from "@/components/sections/TrustBar";
+import { NumbersBar } from "@/components/sections/NumbersBar";
+import { LegacyBanner } from "@/components/sections/LegacyBanner";
+import { QuoteCTA } from "@/components/sections/QuoteCTA";
 
-// Single-screen, non-scrollable landing: Hero + distributor carousel only.
+// Landing: a cinematic scroll experience — full-screen dark hero, distributor
+// carousel, count-up stats, then the shared legacy + CTA closers. Deliberately
+// no pinned/scroll-hijacking sections (client request).
 export default function HomePage() {
   return (
-    <div className="flex h-[100svh] flex-col overflow-hidden">
+    <>
       <span id="top" className="sr-only" />
-      <Hero />
+      <CinematicHero />
       <TrustBar />
-    </div>
+      <NumbersBar />
+      <LegacyBanner />
+      <QuoteCTA />
+    </>
   );
 }

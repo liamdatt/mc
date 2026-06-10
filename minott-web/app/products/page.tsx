@@ -18,6 +18,9 @@ import { getCatalog } from "@/lib/products";
 import { Section } from "@/components/primitives/Section";
 import { Container } from "@/components/primitives/Container";
 import { Eyebrow } from "@/components/primitives/Eyebrow";
+import { ProductSearchBar } from "@/components/products/ProductSearchBar";
+import { ShowroomBanner } from "@/components/products/ShowroomBanner";
+import { WhatsAppCta } from "@/components/products/WhatsAppCta";
 
 export const metadata: Metadata = {
   title: "Our Products — Minott Equipment & Chemicals",
@@ -44,8 +47,10 @@ export default async function ProductsLandingPage() {
 
   return (
     <>
+      <ShowroomBanner />
+
       {/* Header band */}
-      <Section tone="light" className="pt-40 pb-14" pad={false}>
+      <Section tone="light" className="pt-16 pb-14" pad={false}>
         <Container>
           <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[1fr_0.9fr]">
             <div>
@@ -56,6 +61,14 @@ export default async function ProductsLandingPage() {
               <p className="mt-6 max-w-xl text-lede text-mec-ink/80">
                 High-quality chemicals, equipment, and supplies designed to keep
                 your business running safely, efficiently and profitably.
+              </p>
+              <div className="mt-8 max-w-md">
+                <ProductSearchBar targetPath="/products/all" />
+              </div>
+              <p className="mt-4 text-sm text-mec-ink/60">
+                Add items to your quote as you browse, then submit it from the
+                top-right — we respond within{" "}
+                <span className="font-semibold text-mec-ink/80">48 hours</span>.
               </p>
             </div>
             <div className="relative h-[260px] w-full overflow-hidden rounded-md md:h-[320px]">
@@ -139,18 +152,21 @@ export default async function ProductsLandingPage() {
                   Can&apos;t find what you need?
                 </p>
                 <p className="mt-1 text-sm text-mec-pure/70">
-                  Explore our complete range of products in one place.
+                  Explore our complete range or talk to a sales rep directly.
                 </p>
               </div>
             </div>
-            <Link
-              href="/products/all"
-              className="inline-flex items-center gap-2 whitespace-nowrap bg-mec-red px-8 py-4 text-sm font-semibold uppercase tracking-[0.12em] text-mec-pure transition-colors hover:bg-mec-red-hover"
-              data-cursor="View"
-            >
-              View All Products
-              <ArrowRight className="h-4 w-4" aria-hidden />
-            </Link>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <WhatsAppCta />
+              <Link
+                href="/products/all"
+                className="inline-flex items-center gap-2 whitespace-nowrap bg-mec-red px-8 py-4 text-sm font-semibold uppercase tracking-[0.12em] text-mec-pure transition-colors hover:bg-mec-red-hover"
+                data-cursor="View"
+              >
+                View All Products
+                <ArrowRight className="h-4 w-4" aria-hidden />
+              </Link>
+            </div>
           </div>
 
           {/* Feature strip */}

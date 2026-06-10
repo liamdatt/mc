@@ -23,3 +23,8 @@ export const INQUIRY_TYPE_LABELS: Record<string, string> = {
   SAMPLE: "Sample request",
   CONTACT: "Contact message",
 };
+
+// TODO: replace with MEC's real WhatsApp business number (pending from client).
+export const WHATSAPP_URL = "https://wa.me/18760000000";
+
+export const SHOWROOM_ADDRESS = "14½ Retirement Rd";

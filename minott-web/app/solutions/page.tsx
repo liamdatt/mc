@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { IndustriesGrid } from "@/components/sections/IndustriesGrid";
+import { TailoredSolutions } from "@/components/sections/TailoredSolutions";
 import { Section } from "@/components/primitives/Section";
 import { Container } from "@/components/primitives/Container";
 import { Eyebrow } from "@/components/primitives/Eyebrow";
@@ -13,6 +14,7 @@ export const metadata: Metadata = {
 export default function SolutionsPage() {
   return (
     <>
+      {/* Page hero */}
       <Section tone="light" className="pt-40" pad={false}>
         <Container>
           <Eyebrow tone="red">Solutions</Eyebrow>
@@ -26,6 +28,11 @@ export default function SolutionsPage() {
           </p>
         </Container>
       </Section>
+
+      {/* Tailored Solutions — three-card offering segment */}
+      <TailoredSolutions />
+
+      {/* Industries grid */}
       <IndustriesGrid />
     </>
   );

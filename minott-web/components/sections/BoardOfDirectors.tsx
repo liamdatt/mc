@@ -4,6 +4,9 @@ import { Section } from "@/components/primitives/Section";
 import { Container } from "@/components/primitives/Container";
 import { motion } from "framer-motion";
 
+// TODO: replace name/title placeholders with real board member data from client.
+// TODO: replace /images/person-placeholder.png with individual headshots
+//       once professional photos are received from client.
 const BOARD = Array.from({ length: 6 }, (_, i) => ({
   id: i,
   name: "Name Here",

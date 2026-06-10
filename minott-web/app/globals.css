@@ -73,12 +73,6 @@ body {
   color: var(--color-mec-pure);
 }
 
-/* Custom cursor — hide native on fine pointer when active */
-html.has-custom-cursor,
-html.has-custom-cursor * {
-  cursor: none !important;
-}
-
 /* Utility: industrial grid backdrop (subtle dot grid on light bg) */
 .bg-grid {
   background-image:
@@ -144,6 +138,12 @@ html.has-custom-cursor * {
   letter-spacing: 0.16em;
   text-transform: uppercase;
   font-family: var(--font-body), system-ui, sans-serif;
+}
+
+/* Outlined display type (hero watermark) */
+.text-outline-pure {
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.6);
 }
 
 /* Loader bar (initial page load) */

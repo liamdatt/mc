@@ -7,15 +7,18 @@ datasource db {
 }
 
 model Category {
-  id          Int       @id @default(autoincrement())
-  slug        String    @unique
+  id          Int        @id @default(autoincrement())
+  slug        String     @unique
   name        String
   description String?
   imagePath   String?
-  sortOrder   Int       @default(0)
+  sortOrder   Int        @default(0)
+  parentId    Int?
+  parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children    Category[] @relation("CategoryHierarchy")
   products    Product[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 }
 
 model Product {
@@ -34,6 +37,9 @@ model Product {
   packSize         String?
   specLabel        String?
   specValue        String?
+  industry         String?
+  volume           String?
+  color            String?
   featured         Boolean       @default(false)
   active           Boolean       @default(true)
   sortOrder        Int           @default(0)
@@ -54,6 +60,8 @@ model Inquiry {
   message   String?
   product   Product?      @relation("SampleInquiryProduct", fields: [productId], references: [id], onDelete: SetNull)
   productId Int?
+  user      User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId    String?
   items     InquiryItem[]
   createdAt DateTime      @default(now())
 }
@@ -66,4 +74,82 @@ model InquiryItem {
   productId   Int?
   productName String
   quantity    Int      @default(1)
+}
+
+// ---------------------------------------------------------------------------
+// BetterAuth (customer / B2B portal) — see lib/auth/portal.ts
+// Core models (User, Session, Account, Verification) follow the official
+// BetterAuth Prisma shape. User is extended with portal/B2B profile fields.
+// ---------------------------------------------------------------------------
+
+model User {
+  id            String    @id
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  // admin-plugin fields
+  role          String    @default("customer")
+  banned        Boolean?  @default(false)
+  banReason     String?
+  banExpires    DateTime?
+  // portal / B2B profile fields
+  companyName   String?
+  phone         String?
+  whatsapp      String?
+  sessions      Session[]
+  accounts      Account[]
+  inquiries     Inquiry[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("user")
+}
+
+model Session {
+  id             String   @id
+  expiresAt      DateTime
+  token          String   @unique
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  ipAddress      String?
+  userAgent      String?
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  impersonatedBy String?
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
 }

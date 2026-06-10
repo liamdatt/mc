@@ -5,9 +5,10 @@ import { Container } from "@/components/primitives/Container";
 const QUICK = [
   { href: "/", label: "Home" },
   { href: "/products", label: "Products" },
-  { href: "/solutions", label: "Solutions" },
-  { href: "/about", label: "About Us" },
+  { href: "/solutions", label: "Tailored Solutions" },
   { href: "/social-responsibility", label: "Social Responsibility" },
+  { href: "/about", label: "About Us" },
+  { href: "/portal", label: "Customer Portal" },
   { href: "/contact", label: "Contact" },
 ];
 

@@ -1,22 +1,10 @@
 "use client";
 import { useRef, useState } from "react";
-import Image from "next/image";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { Eyebrow } from "@/components/primitives/Eyebrow";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
-
-const BRANDS = [
-  { name: "3M", file: "3m.svg", desc: "Safety, PPE, Adhesives" },
-  { name: "NSS", file: "nss.svg", desc: "Industrial Floor Care" },
-  { name: "San Jamar", file: "san-jamar.svg", desc: "Foodservice & Dispensing" },
-  {
-    name: "Rubbermaid Commercial",
-    file: "rubbermaid.svg",
-    desc: "Carts, Bins, Mop Systems",
-  },
-  { name: "Purell", file: "purell.svg", desc: "Hand Sanitization" },
-];
+import { BRAND_SLOTS } from "@/components/sections/BrandWordmarks";
 
 export function TrustBar() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -52,7 +40,7 @@ export function TrustBar() {
     tweenRef.current?.play();
   };
 
-  const items = [...BRANDS, ...BRANDS];
+  const items = [...BRAND_SLOTS, ...BRAND_SLOTS];
 
   return (
     <section
@@ -67,30 +55,35 @@ export function TrustBar() {
       </div>
 
       <div className="relative">
-        <div ref={trackRef} className="flex w-max items-center gap-16 px-8">
+        <div ref={trackRef} className="flex w-max items-center gap-8 px-8">
           {items.map((b, i) => {
+            const { Wordmark } = b;
             const isOther = hovered && hovered !== b.name;
             const isActive = hovered === b.name;
             return (
               <div
                 key={`${b.name}-${i}`}
-                className="group relative flex h-16 w-48 shrink-0 items-center justify-center"
+                className="group relative flex shrink-0 items-center justify-center"
                 onMouseEnter={() => onEnter(b.name)}
                 onMouseLeave={onLeave}
                 data-cursor={b.name}
               >
-                <Image
-                  src={`/brand-logos/${b.file}`}
-                  alt={b.name}
-                  width={224}
-                  height={80}
-                  className="h-full w-full text-mec-ink transition-all duration-300"
+                {/* Consistent chip; real SVGs drop into each Wordmark later. */}
+                <div
+                  className="flex h-20 w-52 items-center justify-center rounded-lg border border-mec-ink/10 bg-mec-pure px-6 shadow-[0_1px_0_rgba(13,13,13,0.04)] transition-all duration-300"
                   style={{
-                    opacity: isOther ? 0.3 : isActive ? 1 : 0.55,
-                    transform: isActive ? "scale(1.06)" : "scale(1)",
-                    filter: isActive ? "none" : "grayscale(1)",
+                    opacity: isOther ? 0.4 : 1,
+                    transform: isActive ? "scale(1.05)" : "scale(1)",
+                    borderColor: isActive
+                      ? "rgba(225,6,0,0.4)"
+                      : "rgba(13,13,13,0.1)",
+                    boxShadow: isActive
+                      ? "0 18px 40px -16px rgba(13,13,13,0.25)"
+                      : "0 1px 0 rgba(13,13,13,0.04)",
                   }}
-                />
+                >
+                  <Wordmark />
+                </div>
                 <div
                   aria-hidden="true"
                   className="pointer-events-none absolute -bottom-2 left-1/2 -translate-x-1/2 translate-y-3 whitespace-nowrap rounded-md bg-mec-ink px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-mec-pure transition-all duration-200"

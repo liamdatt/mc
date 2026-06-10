@@ -5,6 +5,7 @@ import { Section } from "@/components/primitives/Section";
 import { Container } from "@/components/primitives/Container";
 import { Eyebrow } from "@/components/primitives/Eyebrow";
 import { MessageCircle } from "lucide-react";
+import { WHATSAPP_URL } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "Contact — Minott Chemicals | Kingston 5, Jamaica",
@@ -23,7 +24,16 @@ export default function ContactPage() {
           </h1>
           <p className="mt-8 max-w-2xl text-lede text-mec-ink/80">
             Send us a message and a sales consultant will follow up within one
-            business day — or reach us instantly on WhatsApp.
+            business day — or connect with us on{" "}
+            <a
+              href={WHATSAPP_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold underline underline-offset-4 hover:text-mec-red"
+            >
+              WhatsApp
+            </a>{" "}
+            as your preferred method of communication.
           </p>
 
           <div className="mt-10">

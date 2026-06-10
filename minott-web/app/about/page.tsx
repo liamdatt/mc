@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AboutHero } from "@/components/sections/AboutHero";
+import { MissionStatement } from "@/components/sections/MissionStatement";
 import { OurStory } from "@/components/sections/OurStory";
 import { CompanyValues } from "@/components/sections/CompanyValues";
 import { LeadershipTeam } from "@/components/sections/LeadershipTeam";
@@ -16,6 +17,7 @@ export default function AboutPage() {
   return (
     <>
       <AboutHero />
+      <MissionStatement />
       <OurStory />
       <CompanyValues />
       <LeadershipTeam />

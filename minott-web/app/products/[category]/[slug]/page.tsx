@@ -7,6 +7,8 @@ import { Section } from "@/components/primitives/Section";
 import { Container } from "@/components/primitives/Container";
 import { Eyebrow } from "@/components/primitives/Eyebrow";
 import { ProductDetailActions } from "@/components/products/ProductDetailActions";
+import { ShowroomBanner } from "@/components/products/ShowroomBanner";
+import { WhatsAppCta } from "@/components/products/WhatsAppCta";
 
 export async function generateMetadata({
   params,
@@ -32,7 +34,9 @@ export default async function ProductDetailPage({
   if (!product) notFound();
 
   return (
-    <Section tone="light" className="pt-40">
+    <>
+      <ShowroomBanner />
+      <Section tone="light" className="pt-16">
       <Container>
         <nav className="text-sm text-mec-ink/60">
           <Link href="/products" className="hover:text-mec-red">
@@ -95,5 +99,21 @@ export default async function ProductDetailPage({
         </div>
       </Container>
     </Section>
+
+      {/* Can't find what you need — WhatsApp CTA */}
+      <div className="border-t border-black/10 bg-mec-mist/60 py-10">
+        <div className="mx-auto flex max-w-7xl flex-col items-center gap-4 px-6 text-center sm:flex-row sm:justify-between sm:text-left">
+          <div>
+            <p className="font-display-tight text-xl text-mec-ink">
+              Can&apos;t find what you need?
+            </p>
+            <p className="mt-1 text-sm text-mec-ink/70">
+              Our sales team is happy to help you find the right product.
+            </p>
+          </div>
+          <WhatsAppCta />
+        </div>
+      </div>
+    </>
   );
 }

@@ -15,9 +15,13 @@ const LINKS = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About Us" },
   { href: "/products", label: "Products", hasDropdown: true },
-  { href: "/solutions", label: "Solutions" },
+  { href: "/solutions", label: "Tailored Solutions" },
   { href: "/social-responsibility", label: "Social Responsibility" },
   { href: "/contact", label: "Contact" },
+];
+
+const CTA_LINKS = [
+  { href: "/portal", label: "Customer Portal" },
 ];
 
 export function Nav({ categories }: { categories: CategoryLink[] }) {
@@ -57,7 +61,11 @@ export function Nav({ categories }: { categories: CategoryLink[] }) {
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
 
-  const linkColor = scrolled ? "text-mec-pure" : "text-mec-ink";
+  // The landing page opens on a full-screen dark cinematic hero, so the
+  // transparent (un-scrolled) nav needs light text there.
+  const onDarkHero = pathname === "/";
+  const linkColor =
+    scrolled || onDarkHero ? "text-mec-pure" : "text-mec-ink";
 
   return (
     <>
@@ -70,18 +78,21 @@ export function Nav({ categories }: { categories: CategoryLink[] }) {
           scrolled ? "bg-mec-ink/90 backdrop-blur-md" : "bg-transparent",
         )}
       >
-        <div className="mx-auto flex w-full max-w-[1440px] items-center justify-between px-6 py-4 md:px-10">
+        <div className="mx-auto flex w-full max-w-[1440px] items-center justify-between gap-6 px-6 py-4 md:px-10">
           <Link href="/" data-cursor="Home" aria-label="Minott Equipment & Chemicals — Home">
-            <Logo className="text-base" />
+            <Logo className="text-lg" />
           </Link>
 
-          <nav className="hidden items-center gap-8 lg:flex">
-            {LINKS.map((l) => (
+          {/* The full row only fits from xl up; below that the hamburger
+              takes over. "Home" is omitted on desktop (the logo covers it)
+              to keep the row inside 1280px viewports. */}
+          <nav className="hidden items-center gap-3 xl:flex 2xl:gap-7">
+            {LINKS.filter((l) => l.href !== "/").map((l) => (
               <div key={l.href} className="group relative">
                 <Link
                   href={l.href}
                   className={cn(
-                    "relative flex items-center gap-1 text-sm font-semibold uppercase tracking-[0.12em] transition-colors hover:text-mec-red",
+                    "relative flex items-center gap-1 whitespace-nowrap text-[13px] font-semibold uppercase tracking-[0.1em] transition-colors hover:text-mec-red 2xl:text-sm 2xl:tracking-[0.12em]",
                     linkColor,
                     isActive(l.href) && "text-mec-red",
                   )}
@@ -118,16 +129,30 @@ export function Nav({ categories }: { categories: CategoryLink[] }) {
             ))}
           </nav>
 
-          <div className="hidden items-center gap-4 lg:flex">
+          <div className="hidden items-center gap-2.5 xl:flex 2xl:gap-5">
+            {CTA_LINKS.map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                className={cn(
+                  "relative whitespace-nowrap text-[13px] font-semibold uppercase tracking-[0.1em] transition-colors hover:text-mec-red 2xl:text-sm 2xl:tracking-[0.12em]",
+                  linkColor,
+                  isActive(l.href) && "text-mec-red",
+                )}
+                data-cursor="View"
+              >
+                {l.label}
+              </Link>
+            ))}
             <Link
               href="/quote"
               className={cn(
-                "relative inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.12em] transition-colors hover:text-mec-red",
+                "relative inline-flex items-center gap-2 whitespace-nowrap text-[13px] font-semibold uppercase tracking-[0.1em] transition-colors hover:text-mec-red 2xl:text-sm 2xl:tracking-[0.12em]",
                 linkColor,
               )}
               data-cursor="View"
             >
-              <FileText className="h-4 w-4" aria-hidden />
+              <FileText className="hidden h-4 w-4 2xl:block" aria-hidden />
               Quote
               {count > 0 && (
                 <span className="grid h-5 min-w-5 place-items-center rounded-full bg-mec-red px-1 text-[11px] font-bold text-mec-pure">
@@ -143,8 +168,8 @@ export function Nav({ categories }: { categories: CategoryLink[] }) {
           <button
             type="button"
             className={cn(
-              "lg:hidden transition-colors",
-              scrolled || open ? "text-mec-pure" : "text-mec-ink",
+              "xl:hidden transition-colors",
+              scrolled || open || onDarkHero ? "text-mec-pure" : "text-mec-ink",
             )}
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
@@ -162,7 +187,7 @@ export function Nav({ categories }: { categories: CategoryLink[] }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-[110] grid place-items-center overflow-y-auto bg-mec-ink lg:hidden"
+            className="fixed inset-0 z-[110] grid place-items-center overflow-y-auto bg-mec-ink xl:hidden"
           >
             <nav className="flex flex-col items-center gap-6 py-24 text-center">
               {LINKS.map((l, i) => (
@@ -188,10 +213,33 @@ export function Nav({ categories }: { categories: CategoryLink[] }) {
                   </Link>
                 </motion.div>
               ))}
+              {CTA_LINKS.map((l, i) => (
+                <motion.div
+                  key={l.href}
+                  initial={{ y: 24, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{
+                    delay: 0.08 + (LINKS.length + i) * 0.05,
+                    duration: 0.5,
+                    ease: [0.16, 1, 0.3, 1],
+                  }}
+                >
+                  <Link
+                    href={l.href}
+                    onClick={() => setOpen(false)}
+                    className={cn(
+                      "font-display text-3xl tracking-wider text-mec-pure/80",
+                      isActive(l.href) && "text-mec-red",
+                    )}
+                  >
+                    {l.label}
+                  </Link>
+                </motion.div>
+              ))}
               <motion.div
                 initial={{ y: 24, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.4, duration: 0.5 }}
+                transition={{ delay: 0.08 + (LINKS.length + CTA_LINKS.length) * 0.05, duration: 0.5 }}
               >
                 <Link
                   href="/quote"

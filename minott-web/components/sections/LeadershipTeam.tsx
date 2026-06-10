@@ -6,6 +6,9 @@ import { Container } from "@/components/primitives/Container";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 
+// TODO: replace name/bio/role placeholders with real executive data from client.
+// TODO: replace /images/person-placeholder.png with individual headshots
+//       once professional photos are received from client.
 const TEAM = [
   { role: "CEO", name: "Name Here", bio: "Leads the company with vision, passion, and a commitment to excellence." },
   { role: "CFO", name: "Name Here", bio: "Drives financial strategy and ensures long-term sustainability and growth." },

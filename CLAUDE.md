@@ -35,7 +35,7 @@ This is **Next.js 16 / React 19**, which has breaking changes vs. older training
 
 ## Architecture
 
-Multi-page App Router site backed by **SQLite via Prisma**. Public pages: Home (`app/page.tsx`), About, Solutions, Social Responsibility, Contact, plus a DB-driven Products catalog (`/products`, `/products/[category]`, `/products/[category]/[slug]`) and a quote builder (`/quote`). A password-protected admin (`/admin/*`) manages products/categories and an inquiry inbox. Reads run in Server Components via `lib/products.ts`; mutations run through Server Actions in `lib/actions/`. The marketing **sections** in `components/sections/` are reused and redistributed across the public pages.
+Multi-page App Router site backed by **SQLite via Prisma**. Public pages: Home (`app/page.tsx`), About, Solutions, Contact, plus a DB-driven Products catalog (`/products`, `/products/[category]`, `/products/[category]/[slug]`) and a quote builder (`/quote`). A password-protected admin (`/admin/*`) manages products/categories and an inquiry inbox. Reads run in Server Components via `lib/products.ts`; mutations run through Server Actions in `lib/actions/`. The marketing **sections** in `components/sections/` are reused and redistributed across the public pages.
 
 The root layout sets `export const dynamic = "force-dynamic"` so every route renders on demand — this keeps the nav category dropdown and catalog in sync with admin edits (Prisma reads are not auto-dynamic, so without this they would be prerendered stale).
 
@@ -85,4 +85,4 @@ Brand palette: `mec-red #E10600`, `mec-ink #0D0D0D`, `mec-graphite`, `mec-mist`,
 
 ## Known open items
 
-Placeholders awaiting real client assets: founder photo, official brand-logo SVGs, `public/og.jpg`, and a single product placeholder image (`public/images/product-placeholder.png`, used for all seeded products). Inquiries persist to the DB but there is **no email/notification delivery** yet (admin must check `/admin/requests`). Out of scope for now: customer accounts, admin image uploads (image is a text path), analytics, sitemap. The Social Responsibility page content draws on third-party knowledge-base claims — confirm with the client before launch.
+Placeholders awaiting real client assets: founder photo, official brand-logo SVGs, `public/og.jpg`, and a single product placeholder image (`public/images/product-placeholder.png`, used for all seeded products). Inquiries persist to the DB but there is **no email/notification delivery** yet (admin must check `/admin/requests`). Out of scope for now: customer accounts, admin image uploads (image is a text path), analytics, sitemap.
