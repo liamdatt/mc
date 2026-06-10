@@ -18,9 +18,18 @@ export default async function EditCustomerPage({
       companyName: true,
       phone: true,
       whatsapp: true,
+      salesRepId: true,
     },
   });
   if (!customer) notFound();
+
+  const salesReps = await db.salesRep.findMany({
+    where: {
+      OR: [{ active: true }, { id: customer.salesRepId ?? -1 }],
+    },
+    orderBy: { name: "asc" },
+    select: { id: true, name: true },
+  });
 
   return (
     <div>
@@ -36,7 +45,7 @@ export default async function EditCustomerPage({
         to keep their current one.
       </p>
       <div className="mt-8">
-        <CustomerForm customer={customer} />
+        <CustomerForm customer={customer} salesReps={salesReps} />
       </div>
     </div>
   );

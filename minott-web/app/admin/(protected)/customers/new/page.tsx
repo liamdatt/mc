@@ -1,7 +1,14 @@
 import Link from "next/link";
 import { CustomerForm } from "@/components/admin/CustomerForm";
+import { db } from "@/lib/db";
 
-export default function NewCustomerPage() {
+export default async function NewCustomerPage() {
+  const salesReps = await db.salesRep.findMany({
+    where: { active: true },
+    orderBy: { name: "asc" },
+    select: { id: true, name: true },
+  });
+
   return (
     <div>
       <Link
@@ -16,7 +23,7 @@ export default function NewCustomerPage() {
         password you set below.
       </p>
       <div className="mt-8">
-        <CustomerForm />
+        <CustomerForm salesReps={salesReps} />
       </div>
     </div>
   );

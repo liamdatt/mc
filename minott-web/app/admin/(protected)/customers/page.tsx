@@ -37,6 +37,7 @@ export default async function AdminCustomersPage() {
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">Company</th>
               <th className="px-4 py-3">Email</th>
+              <th className="px-4 py-3">Sales rep</th>
               <th className="px-4 py-3">Requests</th>
               <th className="px-4 py-3">Added</th>
               <th className="px-4 py-3">
@@ -47,7 +48,7 @@ export default async function AdminCustomersPage() {
           <tbody>
             {customers.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-mec-ink/60">
+                <td colSpan={7} className="px-4 py-6 text-mec-ink/60">
                   No portal customers yet.
                 </td>
               </tr>
@@ -69,6 +70,9 @@ export default async function AdminCustomersPage() {
                   <a href={`mailto:${c.email}`} className="hover:text-mec-red">
                     {c.email}
                   </a>
+                </td>
+                <td className="px-4 py-3 text-mec-ink/70">
+                  {c.salesRep?.name ?? "—"}
                 </td>
                 <td className="px-4 py-3 text-mec-ink/70">
                   {c._count.inquiries}

@@ -14,6 +14,14 @@ function str(formData: FormData, key: string): string {
   return String(formData.get(key) ?? "").trim();
 }
 
+/** "" → null (Unassigned); otherwise a positive int or an error sentinel. */
+function parseSalesRepId(formData: FormData): number | null | "invalid" {
+  const raw = str(formData, "salesRepId");
+  if (!raw) return null;
+  const n = Number(raw);
+  return Number.isInteger(n) && n > 0 ? n : "invalid";
+}
+
 /**
  * Provision a portal customer account from the (password-gated) MEC admin.
  *
@@ -36,6 +44,8 @@ export async function createCustomer(
   const companyName = str(formData, "companyName");
   const phone = str(formData, "phone");
   const whatsapp = str(formData, "whatsapp");
+  const salesRepId = parseSalesRepId(formData);
+  if (salesRepId === "invalid") return { error: "Invalid sales rep." };
 
   if (!email) return { error: "Email is required." };
   if (!name) return { error: "Contact name is required." };
@@ -66,6 +76,13 @@ export async function createCustomer(
       return { error: msg || "Could not create the customer account." };
     }
     throw e;
+  }
+
+  // BetterAuth's createUser only handles its declared additional fields, so
+  // the relational FK is set directly. Email is unique, so it identifies the
+  // user we just created.
+  if (salesRepId !== null) {
+    await db.user.update({ where: { email }, data: { salesRepId } });
   }
 
   revalidatePath("/admin/customers");
@@ -101,6 +118,8 @@ export async function updateCustomer(
   const companyName = str(formData, "companyName");
   const phone = str(formData, "phone");
   const whatsapp = str(formData, "whatsapp");
+  const salesRepId = parseSalesRepId(formData);
+  if (salesRepId === "invalid") return { error: "Invalid sales rep." };
 
   if (!id) return { error: "Missing customer id." };
   if (!email) return { error: "Email is required." };
@@ -117,6 +136,7 @@ export async function updateCustomer(
         companyName: companyName || null,
         phone: phone || null,
         whatsapp: whatsapp || null,
+        salesRepId,
       },
     });
   } catch (e) {

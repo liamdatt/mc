@@ -20,7 +20,10 @@ export type CustomerFormData = {
   companyName: string | null;
   phone: string | null;
   whatsapp: string | null;
+  salesRepId: number | null;
 };
+
+export type SalesRepOption = { id: number; name: string };
 
 /**
  * Admin form to provision or edit a portal customer. Posts the
@@ -30,7 +33,13 @@ export type CustomerFormData = {
  * current password, or set a new one to reset it (which also signs the
  * customer out everywhere).
  */
-export function CustomerForm({ customer }: { customer?: CustomerFormData }) {
+export function CustomerForm({
+  customer,
+  salesReps,
+}: {
+  customer?: CustomerFormData;
+  salesReps: SalesRepOption[];
+}) {
   const editing = Boolean(customer);
   const [state, formAction, pending] = useActionState<
     CreateCustomerState,
@@ -100,6 +109,21 @@ export function CustomerForm({ customer }: { customer?: CustomerFormData }) {
           defaultValue={customer?.whatsapp ?? ""}
           className={field}
         />
+      </label>
+      <label className={label}>
+        Sales rep
+        <select
+          name="salesRepId"
+          defaultValue={customer?.salesRepId ?? ""}
+          className={field}
+        >
+          <option value="">Unassigned</option>
+          {salesReps.map((r) => (
+            <option key={r.id} value={r.id}>
+              {r.name}
+            </option>
+          ))}
+        </select>
       </label>
 
       {state.error && <p className="text-sm text-mec-red">{state.error}</p>}

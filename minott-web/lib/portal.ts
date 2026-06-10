@@ -154,6 +154,7 @@ export function getPortalUsers() {
       companyName: true,
       phone: true,
       whatsapp: true,
+      salesRep: { select: { name: true } },
       role: true,
       banned: true,
       createdAt: true,
