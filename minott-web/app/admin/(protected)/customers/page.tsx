@@ -39,12 +39,15 @@ export default async function AdminCustomersPage() {
               <th className="px-4 py-3">Email</th>
               <th className="px-4 py-3">Requests</th>
               <th className="px-4 py-3">Added</th>
+              <th className="px-4 py-3">
+                <span className="sr-only">Actions</span>
+              </th>
             </tr>
           </thead>
           <tbody>
             {customers.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-mec-ink/60">
+                <td colSpan={6} className="px-4 py-6 text-mec-ink/60">
                   No portal customers yet.
                 </td>
               </tr>
@@ -72,6 +75,14 @@ export default async function AdminCustomersPage() {
                 </td>
                 <td className="px-4 py-3 text-mec-ink/60">
                   {formatDate(c.createdAt)}
+                </td>
+                <td className="px-4 py-3 text-right">
+                  <Link
+                    href={`/admin/customers/${c.id}`}
+                    className="font-semibold text-mec-red hover:underline"
+                  >
+                    Edit
+                  </Link>
                 </td>
               </tr>
             ))}
