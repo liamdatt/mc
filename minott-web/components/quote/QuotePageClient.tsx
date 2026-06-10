@@ -11,7 +11,18 @@ const initial: InquiryResult = { ok: false };
 const inputCls =
   "mt-1 w-full rounded-sm border border-black/15 bg-mec-pure px-4 py-3 text-mec-ink outline-none focus:border-mec-red";
 
-export function QuotePageClient() {
+export type QuotePortalUser = {
+  name: string;
+  email: string;
+  companyName: string | null;
+  phone: string | null;
+};
+
+export function QuotePageClient({
+  portalUser,
+}: {
+  portalUser: QuotePortalUser | null;
+}) {
   const { items, setQuantity, removeItem, clear } = useQuoteCart();
   const [state, formAction, pending] = useActionState(submitQuote, initial);
   const clearedRef = useRef(false);
@@ -40,6 +51,14 @@ export function QuotePageClient() {
         >
           Back to Products
         </Link>
+        {portalUser && (
+          <Link
+            href="/portal/history"
+            className="ml-4 mt-6 inline-block border border-mec-ink/20 px-6 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-mec-ink hover:border-mec-red hover:text-mec-red"
+          >
+            View Quote History
+          </Link>
+        )}
       </div>
     );
   }
@@ -59,7 +78,25 @@ export function QuotePageClient() {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1.4fr_1fr]">
+    <div>
+      {portalUser ? (
+        <p className="mb-8 rounded-md border border-mec-red/20 bg-mec-red/5 px-5 py-4 text-sm text-mec-ink/80">
+          Signed in as <strong className="text-mec-ink">{portalUser.name}</strong>{" "}
+          — this quote will be saved to your account history.
+        </p>
+      ) : (
+        <p className="mb-8 rounded-md border border-black/10 bg-mec-pure px-5 py-4 text-sm text-mec-ink/70">
+          Have a portal account?{" "}
+          <Link
+            href="/portal/sign-in?next=/quote"
+            className="font-semibold text-mec-red hover:underline"
+          >
+            Sign in
+          </Link>{" "}
+          to attach this quote to your history.
+        </p>
+      )}
+      <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1.4fr_1fr]">
       {/* Line items */}
       <div className="space-y-4">
         {items.map((it) => (
@@ -125,19 +162,19 @@ export function QuotePageClient() {
         <h2 className="font-display-tight text-h3 text-mec-ink">Your details</h2>
         <label className="mt-4 block text-xs font-semibold uppercase tracking-[0.12em] text-mec-ink/70">
           Name *
-          <input name="name" required className={inputCls} />
+          <input name="name" required defaultValue={portalUser?.name} className={inputCls} />
         </label>
         <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.12em] text-mec-ink/70">
           Company
-          <input name="company" className={inputCls} />
+          <input name="company" defaultValue={portalUser?.companyName ?? undefined} className={inputCls} />
         </label>
         <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.12em] text-mec-ink/70">
           Email *
-          <input name="email" type="email" required className={inputCls} />
+          <input name="email" type="email" required defaultValue={portalUser?.email} className={inputCls} />
         </label>
         <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.12em] text-mec-ink/70">
           Phone
-          <input name="phone" className={inputCls} />
+          <input name="phone" defaultValue={portalUser?.phone ?? undefined} className={inputCls} />
         </label>
         <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.12em] text-mec-ink/70">
           Notes
@@ -152,6 +189,7 @@ export function QuotePageClient() {
           {pending ? "Sending…" : "Submit Quote Request"}
         </button>
       </form>
+    </div>
     </div>
   );
 }
