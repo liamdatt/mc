@@ -85,9 +85,10 @@ export function Nav({ categories }: { categories: CategoryLink[] }) {
 
           {/* The full row only fits from xl up; below that the hamburger
               takes over. "Home" is omitted on desktop (the logo covers it)
-              to keep the row inside 1280px viewports. */}
+              and "Contact" is omitted because the red CTA button on the
+              right already links there. */}
           <nav className="hidden items-center gap-3 xl:flex 2xl:gap-7">
-            {LINKS.filter((l) => l.href !== "/").map((l) => (
+            {LINKS.filter((l) => l.href !== "/" && l.href !== "/contact").map((l) => (
               <div key={l.href} className="group relative">
                 <Link
                   href={l.href}
