@@ -82,7 +82,17 @@ export async function createCustomer(
   // the relational FK is set directly. Email is unique, so it identifies the
   // user we just created.
   if (salesRepId !== null) {
-    await db.user.update({ where: { email }, data: { salesRepId } });
+    try {
+      await db.user.update({ where: { email }, data: { salesRepId } });
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientKnownRequestError &&
+        e.code === "P2003"
+      )
+        // Account was created; only the assignment failed.
+        return { error: "Customer created, but the selected sales rep no longer exists. Assign a rep from the customer's edit page." };
+      throw e;
+    }
   }
 
   revalidatePath("/admin/customers");
@@ -147,6 +157,11 @@ export async function updateCustomer(
       e.code === "P2025"
     )
       return { error: "Customer not found." };
+    if (
+      e instanceof Prisma.PrismaClientKnownRequestError &&
+      e.code === "P2003"
+    )
+      return { error: "Selected sales rep no longer exists." };
     throw e;
   }
 
