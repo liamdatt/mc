@@ -76,6 +76,17 @@ model InquiryItem {
   quantity    Int      @default(1)
 }
 
+model SalesRep {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String?
+  phone     String?
+  active    Boolean  @default(true)
+  clients   User[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 // ---------------------------------------------------------------------------
 // BetterAuth (customer / B2B portal) — see lib/auth/portal.ts
 // Core models (User, Session, Account, Verification) follow the official
@@ -97,6 +108,8 @@ model User {
   companyName   String?
   phone         String?
   whatsapp      String?
+  salesRep   SalesRep? @relation(fields: [salesRepId], references: [id], onDelete: SetNull)
+  salesRepId Int?
   sessions      Session[]
   accounts      Account[]
   inquiries     Inquiry[]
