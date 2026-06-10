@@ -8,9 +8,11 @@ import { portalAuthClient } from "@/lib/auth/portal-client";
  * Customer-portal sign-in form. Authenticates via the BetterAuth client
  * (`signIn.email`) with "remember me" on by default (30-day session per the
  * portal auth config). On success it navigates to the dashboard and refreshes
- * so the protected server layout re-reads the freshly-set session cookie.
+ * so the protected server layout re-reads the freshly-set session cookie. An
+ * optional `next` path (validated by the sign-in page) overrides the dashboard
+ * destination.
  */
-export function SignInForm() {
+export function SignInForm({ next }: { next?: string }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -43,7 +45,7 @@ export function SignInForm() {
       return;
     }
 
-    router.push("/portal");
+    router.push(next ?? "/portal");
     router.refresh();
   }
 

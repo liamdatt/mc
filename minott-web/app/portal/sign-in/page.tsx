@@ -14,10 +14,28 @@ export const metadata: Metadata = {
     "Sign in to the Minott Equipment & Chemicals customer portal to track your quote requests and order history.",
 };
 
-export default async function PortalSignInPage() {
+/**
+ * `next` lets flows like the quote page round-trip through sign-in and land
+ * back where they started. Only same-site relative paths are honored
+ * (must start with a single "/"; "//host" would be an open redirect).
+ */
+function safeNextPath(next: string | undefined): string | undefined {
+  return next && next.startsWith("/") && !next.startsWith("//")
+    ? next
+    : undefined;
+}
+
+export default async function PortalSignInPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string }>;
+}) {
+  const { next } = await searchParams;
+  const safeNext = safeNextPath(next);
+
   // Already signed in? Skip the form.
   const session = await getPortalSession();
-  if (session) redirect("/portal");
+  if (session) redirect(safeNext ?? "/portal");
 
   return (
     <section className="grid min-h-[80vh] place-items-center bg-mec-mist px-6 py-[var(--spacing-section-y)] text-mec-ink">
@@ -32,7 +50,7 @@ export default async function PortalSignInPage() {
             Equipment &amp; Chemicals.
           </p>
 
-          <SignInForm />
+          <SignInForm next={safeNext} />
 
           <p className="mt-8 border-t border-mec-ink/10 pt-6 text-sm text-mec-ink/65">
             Need access? Portal accounts are set up by our team.{" "}
