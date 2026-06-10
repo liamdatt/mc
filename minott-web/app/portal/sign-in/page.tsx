@@ -16,17 +16,22 @@ export const metadata: Metadata = {
 
 /**
  * `next` lets flows like the quote page round-trip through sign-in and land
- * back where they started. Only same-site relative paths are honored
- * (must start with a single "/"; "//host" and "/\\host" would be open
- * redirects — URL parsers normalize the backslash to "/").
+ * back where they started. Only same-site relative paths are honored: must
+ * start with a single "/", and must not contain backslashes or control
+ * characters ("//host" and a backslash-path are open redirects, and browsers
+ * strip control characters from URLs, which would turn a tab-separated
+ * "/<TAB>/host" into "//host").
  */
 function safeNextPath(next: string | undefined): string | undefined {
-  return next &&
-    next.startsWith("/") &&
-    !next.startsWith("//") &&
-    !next.startsWith("/\\")
-    ? next
-    : undefined;
+  if (!next || !next.startsWith("/") || next.startsWith("//")) {
+    return undefined;
+  }
+  for (let i = 0; i < next.length; i++) {
+    const code = next.charCodeAt(i);
+    // control chars (< 0x20), DEL (0x7f), and backslash (0x5c)
+    if (code < 0x20 || code === 0x7f || code === 0x5c) return undefined;
+  }
+  return next;
 }
 
 export default async function PortalSignInPage({
