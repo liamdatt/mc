@@ -2,6 +2,7 @@
 
 import { db } from "@/lib/db";
 import { INQUIRY_TYPE } from "@/lib/constants";
+import { getPortalSession } from "@/lib/portal";
 
 export type InquiryResult = { ok: boolean; error?: string };
 
@@ -75,9 +76,14 @@ export async function submitQuote(
     return { ok: false, error: "Your quote list is empty." };
   }
 
+  // Attach the quote to the signed-in portal account, if any. The user id is
+  // derived from the session cookie server-side — never from form data.
+  const session = await getPortalSession();
+
   await db.inquiry.create({
     data: {
       type: INQUIRY_TYPE.QUOTE,
+      userId: session?.user.id ?? null,
       name: field(formData, "name"),
       email: field(formData, "email"),
       company: field(formData, "company") || null,
