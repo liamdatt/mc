@@ -17,10 +17,14 @@ export const metadata: Metadata = {
 /**
  * `next` lets flows like the quote page round-trip through sign-in and land
  * back where they started. Only same-site relative paths are honored
- * (must start with a single "/"; "//host" would be an open redirect).
+ * (must start with a single "/"; "//host" and "/\\host" would be open
+ * redirects — URL parsers normalize the backslash to "/").
  */
 function safeNextPath(next: string | undefined): string | undefined {
-  return next && next.startsWith("/") && !next.startsWith("//")
+  return next &&
+    next.startsWith("/") &&
+    !next.startsWith("//") &&
+    !next.startsWith("/\\")
     ? next
     : undefined;
 }
