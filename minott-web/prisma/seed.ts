@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import path from "path";
+import { CHEMICALS_2026 } from "./data/chemicals-2026";
 
 const dbUrl =
   process.env.DATABASE_URL?.replace("file:", "") ??
@@ -16,9 +17,10 @@ const db = new PrismaClient({ adapter, log: ["error"] });
 
 const PLACEHOLDER = "/images/product-placeholder.png";
 
-type SeedProduct = {
+export type SeedProduct = {
   name: string;
   shortDescription: string;
+  description?: string;
   sku: string;
   packSize: string;
   specLabel: string;
@@ -28,6 +30,7 @@ type SeedProduct = {
   industry?: string;
   volume?: string;
   color?: string;
+  imagePath?: string;
 };
 
 type SeedCategory = {
@@ -65,316 +68,8 @@ const CATEGORIES: SeedCategory[] = [
     description:
       "Manufactured on our Kingston floor — our own extensive line of cleaning and maintenance chemicals.",
     imagePath: "/images/product-chemicals.jpg",
-    // Parent category carries a representative selection of flagship products;
-    // subsections below hold the full detail.
-    products: [
-      {
-        name: "Time Saver All-Purpose Cleaner",
-        shortDescription:
-          "Versatile cleaner for kitchens, surfaces and equipment. Cuts grease and leaves a fresh fragrance.",
-        sku: "CHM-001",
-        packSize: "1 L, 4 L, 20 L",
-        specLabel: "Form",
-        specValue: "Liquid",
-        isChemical: true,
-        featured: true,
-        industry: "Hospitality",
-        volume: "1L",
-        color: "Yellow",
-      },
-      {
-        name: "Chlorine Bleach (Sodium Hypochlorite 5%)",
-        shortDescription:
-          "Commercial-strength bleach for whitening, cleaning and sanitising applications.",
-        sku: "CHM-004",
-        packSize: "1 L, 4 L, 20 L, 210 L",
-        specLabel: "Form",
-        specValue: "Liquid",
-        isChemical: true,
-        industry: "Healthcare",
-        volume: "4L",
-        color: "Clear",
-      },
-      {
-        name: "Hand Soap",
-        shortDescription:
-          "Gentle, economical hand soap for high-traffic washrooms.",
-        sku: "CHM-005",
-        packSize: "500 mL, 4 L",
-        specLabel: "Form",
-        specValue: "Liquid",
-        isChemical: true,
-        featured: true,
-        industry: "Office",
-        volume: "500ml",
-        color: "Pink",
-      },
-    ],
-    children: [
-      // ----------- Child: Disinfectants & Sanitizers
-      {
-        name: "Disinfectants & Sanitizers",
-        description:
-          "Hospital-grade and food-safe disinfectants that destroy bacteria, viruses and fungi on contact.",
-        imagePath: PLACEHOLDER,
-        products: [
-          {
-            name: "Disinfectant Concentrate",
-            shortDescription:
-              "Broad-spectrum disinfectant; meets government sanitation specs for destroying bacteria and viruses.",
-            sku: "DIS-001",
-            packSize: "1 L, 4 L, 20 L",
-            specLabel: "Form",
-            specValue: "Liquid",
-            isChemical: true,
-            featured: true,
-            industry: "Healthcare",
-            volume: "4L",
-            color: "Blue",
-          },
-          {
-            name: "Alcohol Hand Sanitiser (70%)",
-            shortDescription:
-              "Quick-dry ethanol gel for hands; WHO-formula compliant.",
-            sku: "DIS-002",
-            packSize: "500 mL, 5 L",
-            specLabel: "Active",
-            specValue: "70% Ethanol",
-            isChemical: true,
-            industry: "Healthcare",
-            volume: "500ml",
-            color: "Clear",
-          },
-          {
-            name: "Surface Sanitiser Spray",
-            shortDescription:
-              "Ready-to-use quaternary ammonium spray for food-contact surfaces.",
-            sku: "DIS-003",
-            packSize: "750 mL, 5 L",
-            specLabel: "Form",
-            specValue: "Spray",
-            isChemical: true,
-            industry: "Food Service",
-            volume: "1L",
-            color: "Clear",
-          },
-        ],
-      },
-      // ----------- Child: Degreasers
-      {
-        name: "Degreasers",
-        description:
-          "Industrial-strength degreasers that lift oil, grease and carbon build-up from hard surfaces.",
-        imagePath: PLACEHOLDER,
-        products: [
-          {
-            name: "Industrial Degreaser",
-            shortDescription:
-              "Heavy-duty degreaser that lifts oil and grime from floors and machinery.",
-            sku: "DEG-001",
-            packSize: "4 L, 20 L",
-            specLabel: "Form",
-            specValue: "Liquid",
-            isChemical: true,
-            industry: "Manufacturing",
-            volume: "5gal",
-            color: "Orange",
-          },
-          {
-            name: "Kitchen Degreaser Concentrate",
-            shortDescription:
-              "Powerful concentrate for hoods, grills and fryers in commercial kitchens.",
-            sku: "DEG-002",
-            packSize: "4 L, 20 L",
-            specLabel: "Dilution",
-            specValue: "1:10 – 1:50",
-            isChemical: true,
-            industry: "Food Service",
-            volume: "4L",
-            color: "Green",
-          },
-        ],
-      },
-      // ----------- Child: Laundry Care
-      {
-        name: "Laundry Care",
-        description:
-          "Commercial laundry detergents, softeners and stain treatments formulated for high-volume use.",
-        imagePath: PLACEHOLDER,
-        products: [
-          {
-            name: "Commercial Laundry Detergent",
-            shortDescription:
-              "High-performance liquid detergent for commercial washers; low-foam formula.",
-            sku: "LAU-001",
-            packSize: "4 L, 20 L",
-            specLabel: "Form",
-            specValue: "Liquid",
-            isChemical: true,
-            industry: "Hospitality",
-            volume: "4L",
-            color: "Blue",
-          },
-          {
-            name: "Fabric Softener & Conditioner",
-            shortDescription:
-              "Anti-static softener that leaves linens soft and fresh-smelling.",
-            sku: "LAU-002",
-            packSize: "4 L, 20 L",
-            specLabel: "Form",
-            specValue: "Liquid",
-            isChemical: true,
-            industry: "Hospitality",
-            volume: "4L",
-            color: "Light Blue",
-          },
-          {
-            name: "Stain Remover Pre-treat",
-            shortDescription:
-              "Enzyme-based pre-treatment spray for protein and oil stains.",
-            sku: "LAU-003",
-            packSize: "1 L, 5 L",
-            specLabel: "Type",
-            specValue: "Enzyme",
-            isChemical: true,
-            industry: "Healthcare",
-            volume: "1L",
-            color: "Clear",
-          },
-        ],
-      },
-      // ----------- Child: Dishwashing & Kitchen
-      {
-        name: "Dishwashing & Kitchen",
-        description:
-          "Warewashing liquids and kitchen degreasers for restaurants, hotels and food processors.",
-        imagePath: PLACEHOLDER,
-        products: [
-          {
-            name: "Commercial Dish Detergent",
-            shortDescription:
-              "Concentrated warewashing liquid; cuts grease with minimal residue.",
-            sku: "KIT-001",
-            packSize: "4 L, 20 L",
-            specLabel: "Form",
-            specValue: "Liquid",
-            isChemical: true,
-            industry: "Food Service",
-            volume: "4L",
-            color: "Green",
-          },
-          {
-            name: "Rinse Aid",
-            shortDescription:
-              "Machine rinse-aid for spot-free drying in commercial dishwashers.",
-            sku: "KIT-002",
-            packSize: "4 L",
-            specLabel: "Form",
-            specValue: "Liquid",
-            isChemical: true,
-            industry: "Food Service",
-            volume: "4L",
-            color: "Clear",
-          },
-          {
-            name: "Food-Safe Sanitiser Dip",
-            shortDescription:
-              "Iodine-based three-compartment sink sanitiser approved for food contact.",
-            sku: "KIT-003",
-            packSize: "1 L, 5 L",
-            specLabel: "Active",
-            specValue: "Iodine",
-            isChemical: true,
-            industry: "Food Service",
-            volume: "1L",
-            color: "Amber",
-          },
-        ],
-      },
-      // ----------- Child: Air Care
-      {
-        name: "Air Care",
-        description:
-          "Deodorisers, odour counteractants and air fresheners for restrooms, lobbies and industrial spaces.",
-        imagePath: PLACEHOLDER,
-        products: [
-          {
-            name: "Deodoriser Concentrate",
-            shortDescription:
-              "Long-lasting odour control for restrooms, bins and common areas.",
-            sku: "AIR-001",
-            packSize: "1 L, 4 L",
-            specLabel: "Form",
-            specValue: "Liquid",
-            isChemical: true,
-            industry: "Hospitality",
-            volume: "1L",
-            color: "Purple",
-          },
-          {
-            name: "Odour Counteractant Spray",
-            shortDescription:
-              "Eliminates malodours on contact rather than masking them.",
-            sku: "AIR-002",
-            packSize: "750 mL",
-            specLabel: "Form",
-            specValue: "Spray",
-            isChemical: true,
-            industry: "Office",
-            volume: "1L",
-            color: "Clear",
-          },
-        ],
-      },
-      // ----------- Child: Specialty Chemicals
-      {
-        name: "Specialty Chemicals",
-        description:
-          "Specialty formulations including carpet cleaners, floor strippers, pool chemicals and more.",
-        imagePath: PLACEHOLDER,
-        products: [
-          {
-            name: "Carpet & Upholstery Cleaner",
-            shortDescription:
-              "Extraction-ready formula for carpets and soft furnishings.",
-            sku: "SPC-001",
-            packSize: "4 L, 20 L",
-            specLabel: "Form",
-            specValue: "Liquid",
-            isChemical: true,
-            industry: "Hospitality",
-            volume: "4L",
-            color: "Blue",
-          },
-          {
-            name: "Floor Stripper",
-            shortDescription:
-              "Aggressive alkaline stripper that removes old wax and finish coatings.",
-            sku: "SPC-002",
-            packSize: "4 L, 20 L",
-            specLabel: "pH",
-            specValue: "13",
-            isChemical: true,
-            industry: "Manufacturing",
-            volume: "4L",
-            color: "Clear",
-          },
-          {
-            name: "Neutral Floor Cleaner",
-            shortDescription:
-              "Neutral-pH daily floor cleaner safe for polished and sealed surfaces.",
-            sku: "SPC-003",
-            packSize: "4 L, 20 L",
-            specLabel: "pH",
-            specValue: "7",
-            isChemical: true,
-            industry: "Education",
-            volume: "4L",
-            color: "Green",
-          },
-        ],
-      },
-    ],
+    // Real 2026 catalog (209 products) extracted from the client spreadsheet.
+    products: CHEMICALS_2026,
   },
 
   // 2. Garbage Bins
@@ -1064,6 +759,8 @@ async function main() {
         name: p.name,
         categoryId: category.id,
         shortDescription: p.shortDescription,
+        description: p.description ?? null,
+        imagePath: p.imagePath ?? PLACEHOLDER,
         sku: p.sku,
         packSize: p.packSize,
         specLabel: p.specLabel,
@@ -1119,6 +816,8 @@ async function main() {
             name: p.name,
             categoryId: childCategory.id,
             shortDescription: p.shortDescription,
+            description: p.description ?? null,
+            imagePath: p.imagePath ?? PLACEHOLDER,
             sku: p.sku,
             packSize: p.packSize,
             specLabel: p.specLabel,
