@@ -43,10 +43,12 @@ export async function submitSample(
   const bad = requireContact(formData);
   if (bad) return bad;
   const productId = Number(formData.get("productId"));
+  const variantId = Number(formData.get("variantId")) || null;
   await db.inquiry.create({
     data: {
       type: INQUIRY_TYPE.SAMPLE,
       productId: Number.isFinite(productId) ? productId : null,
+      variantId,
       name: field(formData, "name"),
       email: field(formData, "email"),
       company: field(formData, "company") || null,
@@ -57,7 +59,12 @@ export async function submitSample(
   return { ok: true };
 }
 
-type CartLine = { productId?: number; productName: string; quantity: number };
+type CartLine = {
+  productId?: number;
+  variantId?: number;
+  productName: string;
+  quantity: number;
+};
 
 export async function submitQuote(
   _prev: InquiryResult,
@@ -93,6 +100,8 @@ export async function submitQuote(
         create: items.map((i) => ({
           productId:
             typeof i.productId === "number" ? i.productId : null,
+          variantId:
+            typeof i.variantId === "number" ? i.variantId : null,
           productName: String(i.productName).slice(0, 200),
           quantity:
             Number.isFinite(i.quantity) && i.quantity > 0

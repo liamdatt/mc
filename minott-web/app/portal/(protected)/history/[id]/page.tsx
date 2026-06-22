@@ -44,17 +44,32 @@ export default async function PortalHistoryDetailPage({
   const inquiry = await getUserInquiryById(session.user.id, numId);
   if (!inquiry) notFound();
 
-  // Only line items whose product still exists are reorderable.
-  const reorderItems: QuoteItem[] = inquiry.items
-    .filter((it) => it.product && it.product.active)
-    .map((it) => ({
-      productId: it.product!.id,
-      slug: it.product!.slug,
-      name: it.product!.name,
-      imagePath: it.product!.imagePath,
-      categorySlug: it.product!.category.slug,
+  // A line item is reorderable only when its product still exists and is active,
+  // and (if it was placed against a specific variant) that variant is still
+  // active. Without a live variant we can't build a valid cart entry.
+  type LineItem = NonNullable<
+    Awaited<ReturnType<typeof getUserInquiryById>>
+  >["items"][number];
+  function toQuoteItem(it: LineItem): QuoteItem | null {
+    if (!it.product || !it.product.active) return null;
+    if (it.variantId != null && !it.variant?.active) return null;
+    return {
+      productId: it.product.id,
+      variantId: it.variant?.id ?? it.variantId ?? 0,
+      slug: it.product.slug,
+      name: it.product.name,
+      sku: it.variant?.sku ?? "",
+      variantLabel: it.variant?.label ?? "",
+      imagePath: it.variant?.imagePath ?? it.product.imagePath,
+      categorySlug: it.product.category.slug,
       quantity: it.quantity,
-    }));
+    };
+  }
+
+  // Only line items whose product (and variant, if any) is still live are reorderable.
+  const reorderItems: QuoteItem[] = inquiry.items
+    .map(toQuoteItem)
+    .filter((q): q is QuoteItem => q !== null);
 
   const isQuote = inquiry.type === INQUIRY_TYPE.QUOTE;
 
@@ -124,7 +139,9 @@ export default async function PortalHistoryDetailPage({
           ) : (
             <ul className="mt-5 divide-y divide-mec-ink/10 overflow-hidden rounded-md border border-mec-ink/10 bg-mec-pure">
               {inquiry.items.map((it) => {
-                const available = it.product && it.product.active;
+                const productLive = Boolean(it.product && it.product.active);
+                const reorderItem = toQuoteItem(it);
+                const variantLabel = it.variant?.label ?? it.variant?.size;
                 return (
                   <li
                     key={it.id}
@@ -132,7 +149,7 @@ export default async function PortalHistoryDetailPage({
                   >
                     <div className="min-w-0">
                       <p className="font-semibold">
-                        {available ? (
+                        {productLive ? (
                           <Link
                             href={`/products/${it.product!.category.slug}/${it.product!.slug}`}
                             className="hover:text-mec-red"
@@ -145,7 +162,12 @@ export default async function PortalHistoryDetailPage({
                           </span>
                         )}
                       </p>
-                      {!available && (
+                      {productLive && variantLabel && (
+                        <p className="mt-0.5 text-xs text-mec-ink/55">
+                          {variantLabel}
+                        </p>
+                      )}
+                      {!reorderItem && (
                         <p className="mt-0.5 text-xs text-mec-ink/50">
                           No longer available
                         </p>
@@ -155,18 +177,7 @@ export default async function PortalHistoryDetailPage({
                       <span className="font-mono text-sm text-mec-ink/70">
                         Qty {it.quantity}
                       </span>
-                      {available && (
-                        <ReorderItemButton
-                          item={{
-                            productId: it.product!.id,
-                            slug: it.product!.slug,
-                            name: it.product!.name,
-                            imagePath: it.product!.imagePath,
-                            categorySlug: it.product!.category.slug,
-                            quantity: it.quantity,
-                          }}
-                        />
-                      )}
+                      {reorderItem && <ReorderItemButton item={reorderItem} />}
                     </div>
                   </li>
                 );

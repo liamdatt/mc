@@ -79,7 +79,17 @@ export function ProductDetailActions({
           <p className="mt-1 mb-4 text-sm text-mec-ink/70">
             Tell us where to send it and we&apos;ll arrange a sample.
           </p>
-          <SampleRequestForm productId={product.id} productName={product.name} />
+          <SampleRequestForm
+            productId={product.id}
+            productName={product.name}
+            variants={variants.map((v) => ({
+              id: v.id,
+              sku: v.sku,
+              label: v.label,
+              size: v.size,
+              packType: v.packType,
+            }))}
+          />
         </div>
       )}
     </div>

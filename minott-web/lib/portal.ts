@@ -32,7 +32,7 @@ export function getUserInquiries(userId: string, take = 5) {
   return db.inquiry.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },
-    include: { items: true, product: true },
+    include: { items: { include: { variant: true } }, product: true, variant: true },
     take,
   });
 }
@@ -102,8 +102,11 @@ export function getUserHistory(userId: string, filters: HistoryFilters = {}) {
     where: buildHistoryWhere(userId, filters),
     orderBy: { createdAt: "desc" },
     include: {
-      items: { include: { product: { include: { category: true } } } },
+      items: {
+        include: { product: { include: { category: true } }, variant: true },
+      },
       product: { include: { category: true } },
+      variant: true,
     },
   });
 }
@@ -116,8 +119,11 @@ export async function getUserInquiryById(userId: string, id: number) {
   const inquiry = await db.inquiry.findUnique({
     where: { id },
     include: {
-      items: { include: { product: { include: { category: true } } } },
+      items: {
+        include: { product: { include: { category: true } }, variant: true },
+      },
       product: { include: { category: true } },
+      variant: true,
     },
   });
   if (!inquiry || inquiry.userId !== userId) return null;

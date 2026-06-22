@@ -1,8 +1,10 @@
 import type { NextRequest } from "next/server";
 import type { Prisma } from "@prisma/client";
 
-/** A product joined with its category, as returned by the API read helpers. */
-type ProductWithCategory = Prisma.ProductGetPayload<{ include: { category: true } }>;
+/** A product joined with its category and variants, as returned by the API read helpers. */
+type ProductWithCategory = Prisma.ProductGetPayload<{
+  include: { category: true; variants: true };
+}>;
 
 /** The shape returned by `getCategoriesForApi()`. */
 type CategoryForApi = {
@@ -59,8 +61,7 @@ export function serializeProductCard(p: ProductWithCategory, origin: string | nu
     shortDescription: p.shortDescription,
     isChemical: p.isChemical,
     sampleAvailable: p.sampleAvailable,
-    packSize: p.packSize,
-    sku: p.sku,
+    variantCount: p.variants.length,
     featured: p.featured,
     imagePath: p.imagePath,
     path,
@@ -73,7 +74,11 @@ export function serializeProductDetail(p: ProductWithCategory, origin: string | 
     ...serializeProductCard(p, origin),
     description: p.description,
     sdsUrl: p.sdsUrl,
-    specLabel: p.specLabel,
-    specValue: p.specValue,
+    variants: p.variants.map((v) => ({
+      sku: v.sku,
+      size: v.size,
+      packType: v.packType,
+      label: v.label,
+    })),
   };
 }
