@@ -16,6 +16,15 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Catalog setup (first deploy & after a new product spreadsheet)
+
+```bash
+npm run db:seed         # categories
+npm run import:catalog  # builds listings + variants from prisma/data/chemicals-2026.ts (idempotent; new SKUs land in the hidden "Unsorted Imports" listing for admin sorting)
+```
+
+`start:prod` only runs `prisma migrate deploy && next start` — it does NOT auto-seed or import the catalog. Run the two commands above manually on first deploy and whenever a new product spreadsheet arrives.
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
