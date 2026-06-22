@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { updateProduct } from "@/lib/actions/admin-products";
 import { ProductForm } from "@/components/admin/ProductForm";
+import { VariantManager } from "@/components/admin/VariantManager";
 
 export default async function EditProductPage({
   params,
@@ -9,9 +10,18 @@ export default async function EditProductPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [product, categories] = await Promise.all([
-    db.product.findUnique({ where: { id: Number(id) } }),
+  const productId = Number(id);
+  const [product, categories, variants, allListings] = await Promise.all([
+    db.product.findUnique({ where: { id: productId } }),
     db.category.findMany({ orderBy: { sortOrder: "asc" } }),
+    db.productVariant.findMany({
+      where: { productId },
+      orderBy: { sortOrder: "asc" },
+    }),
+    db.product.findMany({
+      orderBy: { name: "asc" },
+      select: { id: true, name: true },
+    }),
   ]);
   if (!product) notFound();
 
@@ -25,6 +35,11 @@ export default async function EditProductPage({
           product={product}
         />
       </div>
+      <VariantManager
+        listing={{ id: product.id, name: product.name }}
+        variants={variants}
+        allListings={allListings}
+      />
     </div>
   );
 }

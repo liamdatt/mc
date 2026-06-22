@@ -69,11 +69,6 @@ export default async function ProductDetailPage({
             <h1 className="mt-4 font-display-tight text-h2 leading-[1]">
               {product.name}
             </h1>
-            {product.sku && (
-              <p className="mt-3 font-mono text-sm text-mec-ink/50">
-                SKU: {product.sku}
-              </p>
-            )}
             {product.shortDescription && (
               <p className="mt-6 text-lede text-mec-ink/80">
                 {product.shortDescription}
@@ -94,6 +89,14 @@ export default async function ProductDetailPage({
                 sampleAvailable: product.sampleAvailable,
                 sdsUrl: product.sdsUrl,
               }}
+              variants={product.variants.map((v) => ({
+                id: v.id,
+                sku: v.sku,
+                size: v.size,
+                packType: v.packType,
+                label: v.label,
+                imagePath: v.imagePath,
+              }))}
             />
           </div>
         </div>

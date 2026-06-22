@@ -17,24 +17,34 @@ export async function getCategoriesWithCounts() {
   }));
 }
 
-/** Distinct "Form" spec values present on active products (e.g. Liquid). */
-export async function getFormOptions(): Promise<string[]> {
-  const rows = await db.product.findMany({
-    where: { active: true, specLabel: "Form", specValue: { not: null } },
+/** Distinct "Form" spec values present on active variants (e.g. Liquid). */
+export async function getFormOptions(categorySlug?: string): Promise<string[]> {
+  const rows = await db.productVariant.findMany({
+    where: {
+      active: true,
+      specLabel: "Form",
+      specValue: { not: null },
+      product: {
+        active: true,
+        ...(categorySlug ? { category: { slug: categorySlug } } : {}),
+      },
+    },
     select: { specValue: true },
     distinct: ["specValue"],
     orderBy: { specValue: "asc" },
   });
-  return rows.map((r) => r.specValue as string);
+  return rows
+    .map((r) => r.specValue)
+    .filter((v): v is string => !!v && v.trim().length > 0);
 }
 
 /**
- * Distinct non-null values of a scalar product attribute (industry / volume /
- * color), optionally scoped to a category. Returns [] when no data exists so
- * filter UI can hide itself. Empty/whitespace strings are dropped.
+ * Distinct non-null values of a scalar product attribute (industry / color),
+ * optionally scoped to a category. Returns [] when no data exists so filter UI
+ * can hide itself. Empty/whitespace strings are dropped.
  */
 async function getDistinctAttr(
-  field: "industry" | "volume" | "color",
+  field: "industry" | "color",
   categorySlug?: string,
 ): Promise<string[]> {
   const where: Prisma.ProductWhereInput = {
@@ -58,9 +68,24 @@ export function getIndustryOptions(categorySlug?: string): Promise<string[]> {
   return getDistinctAttr("industry", categorySlug);
 }
 
-/** Distinct volumes present on active products (optionally per category). */
-export function getVolumeOptions(categorySlug?: string): Promise<string[]> {
-  return getDistinctAttr("volume", categorySlug);
+/** Distinct volumes present on active variants (optionally per category). */
+export async function getVolumeOptions(categorySlug?: string): Promise<string[]> {
+  const rows = await db.productVariant.findMany({
+    where: {
+      active: true,
+      volume: { not: null },
+      product: {
+        active: true,
+        ...(categorySlug ? { category: { slug: categorySlug } } : {}),
+      },
+    },
+    distinct: ["volume"],
+    select: { volume: true },
+    orderBy: { volume: "asc" },
+  });
+  return rows
+    .map((r) => r.volume)
+    .filter((v): v is string => !!v && v.trim().length > 0);
 }
 
 /** Distinct colors present on active products (optionally per category). */
@@ -80,29 +105,37 @@ export function getProductsForListing(opts: {
 }) {
   const where: Prisma.ProductWhereInput = { active: true };
   if (opts.categorySlug) where.category = { slug: opts.categorySlug };
+  // Accumulate variant-level filters into a single `some` so form + volume AND
+  // together on one matching variant (separate assignments would clobber). The
+  // `active: true` floor also excludes listings with zero active variants.
+  const variantWhere: Prisma.ProductVariantWhereInput = { active: true };
   if (opts.form) {
-    where.specLabel = "Form";
-    where.specValue = opts.form;
+    variantWhere.specLabel = "Form";
+    variantWhere.specValue = opts.form;
   }
+  if (opts.volume) variantWhere.volume = opts.volume;
+  where.variants = { some: variantWhere };
   if (opts.industry) where.industry = opts.industry;
-  if (opts.volume) where.volume = opts.volume;
   if (opts.color) where.color = opts.color;
   if (opts.q) {
     // SQLite LIKE (Prisma `contains`) is case-insensitive for ASCII, which
-    // covers our catalog. Match across name + descriptions + sku.
+    // covers our catalog. Match across name + descriptions + variant skus.
     const q = opts.q.trim();
     if (q) {
       where.OR = [
         { name: { contains: q } },
         { shortDescription: { contains: q } },
         { description: { contains: q } },
-        { sku: { contains: q } },
+        { variants: { some: { sku: { contains: q } } } },
       ];
     }
   }
   return db.product.findMany({
     where,
-    include: { category: true },
+    include: {
+      category: true,
+      variants: { where: { active: true }, orderBy: { sortOrder: "asc" } },
+    },
     orderBy: { name: opts.sort === "za" ? "desc" : "asc" },
   });
 }
@@ -171,7 +204,11 @@ export async function getCategoryWithChildren(
     categoryId: { in: categoryIds },
   };
   if (opts.industry) where.industry = opts.industry;
-  if (opts.volume) where.volume = opts.volume;
+  // Require ≥1 active variant (excludes emptied listings); fold the volume
+  // filter into the same `some` so we never clobber the active floor.
+  const variantWhere: Prisma.ProductVariantWhereInput = { active: true };
+  if (opts.volume) variantWhere.volume = opts.volume;
+  where.variants = { some: variantWhere };
   if (opts.color) where.color = opts.color;
   if (opts.q) {
     const q = opts.q.trim();
@@ -180,13 +217,16 @@ export async function getCategoryWithChildren(
         { name: { contains: q } },
         { shortDescription: { contains: q } },
         { description: { contains: q } },
-        { sku: { contains: q } },
+        { variants: { some: { sku: { contains: q } } } },
       ];
     }
   }
   const products = await db.product.findMany({
     where,
-    include: { category: true },
+    include: {
+      category: true,
+      variants: { where: { active: true }, orderBy: { sortOrder: "asc" } },
+    },
     orderBy: { name: opts.sort === "za" ? "desc" : "asc" },
   });
 
@@ -195,9 +235,12 @@ export async function getCategoryWithChildren(
 
 export function getFeaturedProducts() {
   return db.product.findMany({
-    where: { active: true, featured: true },
+    where: { active: true, featured: true, variants: { some: { active: true } } },
     orderBy: { sortOrder: "asc" },
-    include: { category: true },
+    include: {
+      category: true,
+      variants: { where: { active: true }, orderBy: { sortOrder: "asc" } },
+    },
     take: 8,
   });
 }
@@ -208,9 +251,20 @@ export async function getProductBySlugInCategory(
 ) {
   const product = await db.product.findUnique({
     where: { slug: productSlug },
-    include: { category: true },
+    include: {
+      category: true,
+      variants: { where: { active: true }, orderBy: { sortOrder: "asc" } },
+    },
   });
-  if (!product || !product.active || product.category.slug !== categorySlug) {
+  if (
+    !product ||
+    !product.active ||
+    product.category.slug !== categorySlug ||
+    // A listing whose variants were all deleted/deactivated is an un-quotable
+    // dead-end; treat it as not found so a direct URL 404s. The include above
+    // already filters `variants` to active, so an empty array means none.
+    product.variants.length === 0
+  ) {
     return null;
   }
   return product;
@@ -242,10 +296,14 @@ export function getProductsForApi(opts: {
 }) {
   const where: Prisma.ProductWhereInput = { active: true };
   if (opts.categorySlug) where.category = { slug: opts.categorySlug };
+  // Require ≥1 active variant (excludes emptied listings); fold the form filter
+  // into the same `some` so we never clobber the active floor.
+  const variantWhere: Prisma.ProductVariantWhereInput = { active: true };
   if (opts.form) {
-    where.specLabel = "Form";
-    where.specValue = opts.form;
+    variantWhere.specLabel = "Form";
+    variantWhere.specValue = opts.form;
   }
+  where.variants = { some: variantWhere };
   if (opts.isChemical !== undefined) where.isChemical = opts.isChemical;
   if (opts.sampleAvailable !== undefined) where.sampleAvailable = opts.sampleAvailable;
   if (opts.featured !== undefined) where.featured = opts.featured;
@@ -254,23 +312,34 @@ export function getProductsForApi(opts: {
     where.OR = [
       { name: { contains: opts.q } },
       { shortDescription: { contains: opts.q } },
-      { sku: { contains: opts.q } },
+      { variants: { some: { sku: { contains: opts.q } } } },
     ];
   }
   return db.product.findMany({
     where,
-    include: { category: true },
+    include: {
+      category: true,
+      variants: { where: { active: true }, orderBy: { sortOrder: "asc" } },
+    },
     orderBy: { name: "asc" },
     take: opts.limit,
   });
 }
 
-/** Single active product by slug (with category), or null if missing/inactive. */
+/**
+ * Single active product by slug (with category + variants), or null if
+ * missing/inactive or if it has no active variant (an un-quotable dead-end —
+ * matches {@link getProductBySlugInCategory}).
+ */
 export async function getProductForApi(slug: string) {
   const product = await db.product.findUnique({
     where: { slug },
-    include: { category: true },
+    include: {
+      category: true,
+      variants: { where: { active: true }, orderBy: { sortOrder: "asc" } },
+    },
   });
-  if (!product || !product.active) return null;
+  // The include filters `variants` to active-only, so an empty array means none.
+  if (!product || !product.active || product.variants.length === 0) return null;
   return product;
 }

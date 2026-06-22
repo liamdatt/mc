@@ -33,21 +33,33 @@ type ProductWithCategory = Awaited<
 
 /** Map a Prisma product (with category) to the shape ProductRow expects. */
 function toRow(p: ProductWithCategory): ProductRowData {
+  const variantCount = p.variants.length;
+  const first = p.variants[0] ?? null;
+  const onlyVariant =
+    variantCount === 1 && first
+      ? { id: first.id, sku: first.sku, label: first.label ?? "" }
+      : null;
+
+  // Listings no longer carry their own SKU / pack / spec — those live on the
+  // variants. Surface the first variant's SKU + pack as a representative value,
+  // and only show the spec pair when a single variant makes it unambiguous.
   return {
     id: p.id,
     slug: p.slug,
     name: p.name,
     shortDescription: p.shortDescription,
     imagePath: p.imagePath,
-    sku: p.sku,
-    packSize: p.packSize,
-    specLabel: p.specLabel,
-    specValue: p.specValue,
+    sku: first?.sku ?? null,
+    packSize: variantCount === 1 ? first?.packSize ?? null : null,
+    specLabel: variantCount === 1 ? first?.specLabel ?? null : null,
+    specValue: variantCount === 1 ? first?.specValue ?? null : null,
     isChemical: p.isChemical,
     sampleAvailable: p.sampleAvailable,
     sdsUrl: p.sdsUrl,
     categorySlug: p.category.slug,
     categoryName: p.category.name,
+    variantCount,
+    onlyVariant,
   };
 }
 

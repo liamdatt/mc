@@ -13,8 +13,9 @@ type ProductValues = {
   shortDescription?: string | null;
   description?: string | null;
   imagePath?: string;
-  sku?: string | null;
   sdsUrl?: string | null;
+  color?: string | null;
+  industry?: string | null;
   isChemical?: boolean;
   sampleAvailable?: boolean;
   featured?: boolean;
@@ -100,8 +101,23 @@ export function ProductForm({
 
       <div className="grid grid-cols-2 gap-4">
         <label className={label}>
-          SKU
-          <input name="sku" defaultValue={p.sku ?? ""} className={field} />
+          Color
+          <input name="color" defaultValue={p.color ?? ""} className={field} />
+        </label>
+        <label className={label}>
+          Industry
+          <input
+            name="industry"
+            defaultValue={p.industry ?? ""}
+            className={field}
+          />
+        </label>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <label className={label}>
+          SDS URL (chemicals)
+          <input name="sdsUrl" defaultValue={p.sdsUrl ?? ""} className={field} />
         </label>
         <label className={label}>
           Sort order
@@ -113,11 +129,6 @@ export function ProductForm({
           />
         </label>
       </div>
-
-      <label className={label}>
-        SDS URL (chemicals)
-        <input name="sdsUrl" defaultValue={p.sdsUrl ?? ""} className={field} />
-      </label>
 
       <fieldset className="grid grid-cols-2 gap-3 rounded-sm border border-black/10 p-4">
         <label className="flex items-center gap-2 text-sm">

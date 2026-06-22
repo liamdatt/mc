@@ -2,11 +2,15 @@
 
 import { useState } from "react";
 import { FileText } from "lucide-react";
-import { AddToQuoteButton } from "@/components/quote/AddToQuoteButton";
+import {
+  VariantSelector,
+  type SelectableVariant,
+} from "./VariantSelector";
 import { SampleRequestForm } from "./SampleRequestForm";
 
 export function ProductDetailActions({
   product,
+  variants,
 }: {
   product: {
     id: number;
@@ -18,22 +22,24 @@ export function ProductDetailActions({
     sampleAvailable: boolean;
     sdsUrl: string | null;
   };
+  variants: SelectableVariant[];
 }) {
   const [showSample, setShowSample] = useState(false);
 
   return (
     <div className="mt-8">
-      <div className="flex flex-wrap gap-3">
-        <AddToQuoteButton
-          product={{
-            productId: product.id,
-            slug: product.slug,
-            name: product.name,
-            imagePath: product.imagePath,
-            categorySlug: product.categorySlug,
-          }}
-        />
+      <VariantSelector
+        listing={{
+          id: product.id,
+          slug: product.slug,
+          name: product.name,
+          imagePath: product.imagePath,
+          categorySlug: product.categorySlug,
+        }}
+        variants={variants}
+      />
 
+      <div className="mt-5 flex flex-wrap gap-3">
         {product.isChemical &&
           (product.sdsUrl ? (
             <a
@@ -73,7 +79,17 @@ export function ProductDetailActions({
           <p className="mt-1 mb-4 text-sm text-mec-ink/70">
             Tell us where to send it and we&apos;ll arrange a sample.
           </p>
-          <SampleRequestForm productId={product.id} productName={product.name} />
+          <SampleRequestForm
+            productId={product.id}
+            productName={product.name}
+            variants={variants.map((v) => ({
+              id: v.id,
+              sku: v.sku,
+              label: v.label,
+              size: v.size,
+              packType: v.packType,
+            }))}
+          />
         </div>
       )}
     </div>
