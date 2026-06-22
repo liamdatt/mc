@@ -9,6 +9,10 @@ export type ProductRowData = {
   name: string;
   shortDescription: string | null;
   imagePath: string;
+  // Display values derived from the listing's variants (see toRow in
+  // app/products/all/page.tsx). When there are multiple variants these reflect
+  // the first variant / an aggregate; the spec pair is only meaningful for a
+  // single variant.
   sku: string | null;
   packSize: string | null;
   specLabel: string | null;
@@ -18,6 +22,8 @@ export type ProductRowData = {
   sdsUrl: string | null;
   categorySlug: string;
   categoryName: string;
+  variantCount: number;
+  onlyVariant: { id: number; sku: string; label: string } | null;
 };
 
 const pill =
@@ -120,17 +126,30 @@ export function ProductRow({ product }: { product: ProductRowData }) {
           </Link>
         )}
 
-        <AddToQuoteButton
-          size="sm"
-          className="w-full rounded-sm"
-          product={{
-            productId: product.id,
-            slug: product.slug,
-            name: product.name,
-            imagePath: product.imagePath,
-            categorySlug: product.categorySlug,
-          }}
-        />
+        {product.variantCount > 1 || !product.onlyVariant ? (
+          <Link
+            href={href}
+            className={`${pill} w-full border-mec-red bg-mec-red text-mec-pure hover:bg-mec-red-hover`}
+            data-cursor="View"
+          >
+            Select options
+          </Link>
+        ) : (
+          <AddToQuoteButton
+            size="sm"
+            className="w-full rounded-sm"
+            product={{
+              productId: product.id,
+              variantId: product.onlyVariant.id,
+              slug: product.slug,
+              name: product.name,
+              sku: product.onlyVariant.sku,
+              variantLabel: product.onlyVariant.label,
+              imagePath: product.imagePath,
+              categorySlug: product.categorySlug,
+            }}
+          />
+        )}
       </div>
     </div>
   );

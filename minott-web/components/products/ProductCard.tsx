@@ -11,6 +11,8 @@ export type ProductCardData = {
   imagePath: string;
   isChemical: boolean;
   categorySlug: string;
+  variantCount: number;
+  onlyVariant: { id: number; sku: string; label: string } | null;
 };
 
 export function ProductCard({ product }: { product: ProductCardData }) {
@@ -44,16 +46,29 @@ export function ProductCard({ product }: { product: ProductCardData }) {
           </p>
         )}
         <div className="mt-4 pt-2">
-          <AddToQuoteButton
-            product={{
-              productId: product.id,
-              slug: product.slug,
-              name: product.name,
-              imagePath: product.imagePath,
-              categorySlug: product.categorySlug,
-            }}
-            className="w-full"
-          />
+          {product.variantCount > 1 || !product.onlyVariant ? (
+            <Link
+              href={href}
+              data-cursor="View"
+              className="group inline-flex w-full items-center justify-center gap-2 bg-mec-red px-6 py-3 text-[13px] font-semibold uppercase tracking-[0.12em] text-mec-pure transition-all duration-200 hover:bg-mec-red-hover active:scale-[0.97]"
+            >
+              Select options
+            </Link>
+          ) : (
+            <AddToQuoteButton
+              product={{
+                productId: product.id,
+                variantId: product.onlyVariant.id,
+                slug: product.slug,
+                name: product.name,
+                sku: product.onlyVariant.sku,
+                variantLabel: product.onlyVariant.label,
+                imagePath: product.imagePath,
+                categorySlug: product.categorySlug,
+              }}
+              className="w-full"
+            />
+          )}
         </div>
       </div>
     </div>
