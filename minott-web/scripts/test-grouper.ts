@@ -47,4 +47,12 @@ const bin = byName("Rubbermaid Brute");
 assert.equal(bin.variants.length, 1);
 assert.equal(bin.categorySlug, "garbage-bins");
 
+// Slug collision: same canonical name in two categories must yield distinct slugs.
+const collide = groupProducts([
+  raw({ name: "Power Cleaner (4L)", sku: "CHM-0004 POWER", volume: "4L", packSize: "EACH" }),
+  raw({ name: "Power Cleaner (4L)", sku: "BIN-POWER", categorySlug: "garbage-bins", isChemical: false }),
+]);
+assert.equal(collide.length, 2, "same name in two categories = two listings");
+assert.equal(new Set(collide.map((l) => l.slug)).size, 2, "colliding listings must get distinct slugs");
+
 console.log(`OK — ${listings.length} listings from 7 rows`);
