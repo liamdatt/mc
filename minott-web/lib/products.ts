@@ -326,7 +326,11 @@ export function getProductsForApi(opts: {
   });
 }
 
-/** Single active product by slug (with category + variants), or null if missing/inactive. */
+/**
+ * Single active product by slug (with category + variants), or null if
+ * missing/inactive or if it has no active variant (an un-quotable dead-end —
+ * matches {@link getProductBySlugInCategory}).
+ */
 export async function getProductForApi(slug: string) {
   const product = await db.product.findUnique({
     where: { slug },
@@ -335,6 +339,7 @@ export async function getProductForApi(slug: string) {
       variants: { where: { active: true }, orderBy: { sortOrder: "asc" } },
     },
   });
-  if (!product || !product.active) return null;
+  // The include filters `variants` to active-only, so an empty array means none.
+  if (!product || !product.active || product.variants.length === 0) return null;
   return product;
 }
