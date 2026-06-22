@@ -60,15 +60,23 @@ export const slugify = (s: string): string =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 
-/** Listing key = SKU suffix with the leading "XXX-#### " code token dropped and
- *  any trailing pack-type token (EA/CS/CASE/EACH) stripped. Strength/scent stay. */
+const PACK_TOKENS = new Set(["EA", "CS", "CASE", "EACH"]);
+
+/** Listing key = SKU suffix with the leading "XXX-#### " code token dropped,
+ *  pack-type tokens (EA/CS/CASE/EACH) removed, and the remaining tokens SORTED
+ *  so word-order typos in the client's data don't split a product. Strength and
+ *  scent tokens (e.g. "2", "FLR") survive sorting, so those stay separate
+ *  listings; only reordered duplicates collapse — e.g. "BLEACH 2 SP" and
+ *  "BLEACH SP 2" both key to "2 BLEACH SP". */
 export function listingKey(sku: string): string {
   const space = sku.indexOf(" ");
   const suffix = space === -1 ? sku : sku.slice(space + 1);
   return suffix
-    .replace(/\s+(EA|CS|CASE|EACH)$/i, "")
-    .trim()
-    .toUpperCase();
+    .toUpperCase()
+    .split(/\s+/)
+    .filter((t) => t && !PACK_TOKENS.has(t))
+    .sort()
+    .join(" ");
 }
 
 /** "4L" -> "4 L", "208.5L" -> "208.5 L", "11.5kg" -> "11.5 kg". */
