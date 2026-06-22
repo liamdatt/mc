@@ -105,11 +105,16 @@ export function getProductsForListing(opts: {
 }) {
   const where: Prisma.ProductWhereInput = { active: true };
   if (opts.categorySlug) where.category = { slug: opts.categorySlug };
+  // Accumulate variant-level filters into a single `some` so form + volume AND
+  // together on one matching variant (separate assignments would clobber).
+  const variantWhere: Prisma.ProductVariantWhereInput = { active: true };
   if (opts.form) {
-    where.variants = { some: { active: true, specLabel: "Form", specValue: opts.form } };
+    variantWhere.specLabel = "Form";
+    variantWhere.specValue = opts.form;
   }
+  if (opts.volume) variantWhere.volume = opts.volume;
+  if (opts.form || opts.volume) where.variants = { some: variantWhere };
   if (opts.industry) where.industry = opts.industry;
-  if (opts.volume) where.variants = { some: { active: true, volume: opts.volume } };
   if (opts.color) where.color = opts.color;
   if (opts.q) {
     // SQLite LIKE (Prisma `contains`) is case-insensitive for ASCII, which
