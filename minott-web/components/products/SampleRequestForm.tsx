@@ -12,19 +12,21 @@ type SampleVariant = {
   sku: string;
   label: string | null;
   size: string | null;
-  packType: string;
 };
 
 export function SampleRequestForm({
   productId,
   productName,
-  variants,
+  selectedVariant,
 }: {
   productId: number;
   productName: string;
-  variants: SampleVariant[];
+  /** The variant currently chosen via the size/pack pills — the sample is for this one. */
+  selectedVariant: SampleVariant;
 }) {
   const [state, formAction, pending] = useActionState(submitSample, initial);
+  const variantLabel =
+    selectedVariant.label || selectedVariant.size || selectedVariant.sku;
 
   if (state.ok) {
     return (
@@ -38,21 +40,11 @@ export function SampleRequestForm({
   return (
     <form action={formAction} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <input type="hidden" name="productId" value={productId} />
-      {variants.length === 1 && (
-        <input type="hidden" name="variantId" value={variants[0].id} />
-      )}
-      {variants.length > 1 && (
-        <label className="text-xs font-semibold uppercase tracking-[0.12em] text-mec-ink/70 sm:col-span-2">
-          Variant
-          <select name="variantId" defaultValue={variants[0].id} className={inputCls}>
-            {variants.map((v) => (
-              <option key={v.id} value={v.id}>
-                {v.label || v.size || v.sku}
-              </option>
-            ))}
-          </select>
-        </label>
-      )}
+      <input type="hidden" name="variantId" value={selectedVariant.id} />
+      <p className="text-sm text-mec-ink/70 sm:col-span-2">
+        Sample for: <strong className="text-mec-ink">{variantLabel}</strong>{" "}
+        <span className="font-mono text-xs text-mec-ink/50">({selectedVariant.sku})</span>
+      </p>
       <label className="text-xs font-semibold uppercase tracking-[0.12em] text-mec-ink/70">
         Name *
         <input name="name" required className={inputCls} />

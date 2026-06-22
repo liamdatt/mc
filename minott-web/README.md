@@ -23,7 +23,11 @@ npm run db:seed         # categories
 npm run import:catalog  # builds listings + variants from prisma/data/chemicals-2026.ts (idempotent; new SKUs land in the hidden "Unsorted Imports" listing for admin sorting)
 ```
 
-`start:prod` only runs `prisma migrate deploy && next start` — it does NOT auto-seed or import the catalog. Run the two commands above manually on first deploy and whenever a new product spreadsheet arrives.
+**Production (`start:prod`) runs this automatically** via `setup:catalog`:
+`prisma migrate deploy && prisma db seed && tsx scripts/import-catalog.ts && next start`.
+Both steps are idempotent and curation-preserving — `db:seed` only upserts categories, and the importer refreshes existing variants by SKU (never touching admin groupings/renames) while routing brand-new SKUs to the hidden "Unsorted Imports" listing. So a fresh/ephemeral deploy DB bootstraps the full catalog on boot, and a persistent DB keeps admin edits across deploys. Run the two commands above manually only for local setup or an out-of-band re-import.
+
+> Deploy host (Coolify/Nixpacks): the start command must be `npm run start:prod` (not the default `npm start`) so migrations + catalog population run. If an existing deployed DB still has pre-variants flat rows, reset its volume so the next boot bootstraps cleanly.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 

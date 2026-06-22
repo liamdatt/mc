@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { AddToQuoteButton } from "@/components/quote/AddToQuoteButton";
 
 export type SelectableVariant = {
@@ -21,6 +21,10 @@ type Props = {
     categorySlug: string;
   };
   variants: SelectableVariant[];
+  /** Controlled: the currently-selected variant (owned by the parent so the
+   *  hero image and other UI can react to the same selection). */
+  selected: SelectableVariant;
+  onSelect: (variant: SelectableVariant) => void;
 };
 
 const pill =
@@ -30,7 +34,7 @@ const pillOff = "border-mec-mist text-mec-ink hover:border-mec-ink";
 const groupLabel =
   "mb-2 font-mono text-xs uppercase tracking-[0.12em] text-mec-graphite";
 
-export function VariantSelector({ listing, variants }: Props) {
+export function VariantSelector({ listing, variants, selected, onSelect }: Props) {
   const sizes = useMemo(
     () => [...new Set(variants.map((v) => v.size).filter((s): s is string => !!s))],
     [variants],
@@ -40,23 +44,26 @@ export function VariantSelector({ listing, variants }: Props) {
     [variants],
   );
 
-  const [size, setSize] = useState<string | null>(variants[0]?.size ?? null);
-  const [packType, setPackType] = useState<string>(variants[0]?.packType ?? "Each");
+  const size = selected.size;
+  const packType = selected.packType;
 
-  const selected =
-    variants.find((v) => (v.size ?? null) === size && v.packType === packType) ??
-    variants.find((v) => (v.size ?? null) === size) ??
-    variants[0];
-
-  const comboExists = (s: string | null, p: string) =>
-    variants.some((v) => (v.size ?? null) === s && v.packType === p);
+  const variantFor = (s: string | null, p: string) =>
+    variants.find((v) => (v.size ?? null) === s && v.packType === p);
+  const comboExists = (s: string | null, p: string) => !!variantFor(s, p);
 
   function pickSize(s: string) {
-    setSize(s);
-    if (!comboExists(s, packType)) {
-      const next = packTypes.find((p) => comboExists(s, p));
-      if (next) setPackType(next);
-    }
+    // Keep the current pack type if this size offers it, else snap to the first
+    // available pack for that size — so the selection never lands on a missing combo.
+    const next =
+      variantFor(s, packType) ??
+      packTypes.map((p) => variantFor(s, p)).find(Boolean) ??
+      variants.find((v) => (v.size ?? null) === s);
+    if (next) onSelect(next);
+  }
+
+  function pickPack(p: string) {
+    const next = variantFor(size, p);
+    if (next) onSelect(next);
   }
 
   return (
@@ -91,7 +98,7 @@ export function VariantSelector({ listing, variants }: Props) {
                   key={p}
                   type="button"
                   disabled={disabled}
-                  onClick={() => setPackType(p)}
+                  onClick={() => pickPack(p)}
                   aria-pressed={packType === p}
                   className={`${pill} ${packType === p ? pillOn : pillOff}`}
                 >
@@ -103,27 +110,23 @@ export function VariantSelector({ listing, variants }: Props) {
         </div>
       )}
 
-      {selected && (
-        <p className="font-mono text-sm text-mec-ink/50">
-          SKU: {selected.sku}
-          {selected.label ? ` · ${selected.label}` : ""}
-        </p>
-      )}
+      <p className="font-mono text-sm text-mec-ink/50">
+        SKU: {selected.sku}
+        {selected.label ? ` · ${selected.label}` : ""}
+      </p>
 
-      {selected && (
-        <AddToQuoteButton
-          product={{
-            productId: listing.id,
-            variantId: selected.id,
-            slug: listing.slug,
-            name: listing.name,
-            sku: selected.sku,
-            variantLabel: selected.label ?? "",
-            imagePath: selected.imagePath ?? listing.imagePath,
-            categorySlug: listing.categorySlug,
-          }}
-        />
-      )}
+      <AddToQuoteButton
+        product={{
+          productId: listing.id,
+          variantId: selected.id,
+          slug: listing.slug,
+          name: listing.name,
+          sku: selected.sku,
+          variantLabel: selected.label ?? "",
+          imagePath: selected.imagePath ?? listing.imagePath,
+          categorySlug: listing.categorySlug,
+        }}
+      />
     </div>
   );
 }
