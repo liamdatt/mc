@@ -40,8 +40,8 @@ export function VariantSelector({ listing, variants }: Props) {
     [variants],
   );
 
-  const [size, setSize] = useState<string | null>(sizes[0] ?? null);
-  const [packType, setPackType] = useState<string>(packTypes[0] ?? "Each");
+  const [size, setSize] = useState<string | null>(variants[0]?.size ?? null);
+  const [packType, setPackType] = useState<string>(variants[0]?.packType ?? "Each");
 
   const selected =
     variants.find((v) => (v.size ?? null) === size && v.packType === packType) ??
@@ -51,17 +51,25 @@ export function VariantSelector({ listing, variants }: Props) {
   const comboExists = (s: string | null, p: string) =>
     variants.some((v) => (v.size ?? null) === s && v.packType === p);
 
+  function pickSize(s: string) {
+    setSize(s);
+    if (!comboExists(s, packType)) {
+      const next = packTypes.find((p) => comboExists(s, p));
+      if (next) setPackType(next);
+    }
+  }
+
   return (
     <div className="flex flex-col gap-5">
       {sizes.length > 1 && (
-        <div>
+        <div role="group" aria-label="Size">
           <p className={groupLabel}>Size</p>
           <div className="flex flex-wrap gap-2">
             {sizes.map((s) => (
               <button
                 key={s}
                 type="button"
-                onClick={() => setSize(s)}
+                onClick={() => pickSize(s)}
                 aria-pressed={size === s}
                 className={`${pill} ${size === s ? pillOn : pillOff}`}
               >
@@ -73,7 +81,7 @@ export function VariantSelector({ listing, variants }: Props) {
       )}
 
       {packTypes.length > 1 && (
-        <div>
+        <div role="group" aria-label="Pack">
           <p className={groupLabel}>Pack</p>
           <div className="flex flex-wrap gap-2">
             {packTypes.map((p) => {
