@@ -17,24 +17,34 @@ export async function getCategoriesWithCounts() {
   }));
 }
 
-/** Distinct "Form" spec values present on active products (e.g. Liquid). */
-export async function getFormOptions(): Promise<string[]> {
-  const rows = await db.product.findMany({
-    where: { active: true, specLabel: "Form", specValue: { not: null } },
+/** Distinct "Form" spec values present on active variants (e.g. Liquid). */
+export async function getFormOptions(categorySlug?: string): Promise<string[]> {
+  const rows = await db.productVariant.findMany({
+    where: {
+      active: true,
+      specLabel: "Form",
+      specValue: { not: null },
+      product: {
+        active: true,
+        ...(categorySlug ? { category: { slug: categorySlug } } : {}),
+      },
+    },
     select: { specValue: true },
     distinct: ["specValue"],
     orderBy: { specValue: "asc" },
   });
-  return rows.map((r) => r.specValue as string);
+  return rows
+    .map((r) => r.specValue)
+    .filter((v): v is string => !!v && v.trim().length > 0);
 }
 
 /**
- * Distinct non-null values of a scalar product attribute (industry / volume /
- * color), optionally scoped to a category. Returns [] when no data exists so
- * filter UI can hide itself. Empty/whitespace strings are dropped.
+ * Distinct non-null values of a scalar product attribute (industry / color),
+ * optionally scoped to a category. Returns [] when no data exists so filter UI
+ * can hide itself. Empty/whitespace strings are dropped.
  */
 async function getDistinctAttr(
-  field: "industry" | "volume" | "color",
+  field: "industry" | "color",
   categorySlug?: string,
 ): Promise<string[]> {
   const where: Prisma.ProductWhereInput = {
@@ -58,9 +68,24 @@ export function getIndustryOptions(categorySlug?: string): Promise<string[]> {
   return getDistinctAttr("industry", categorySlug);
 }
 
-/** Distinct volumes present on active products (optionally per category). */
-export function getVolumeOptions(categorySlug?: string): Promise<string[]> {
-  return getDistinctAttr("volume", categorySlug);
+/** Distinct volumes present on active variants (optionally per category). */
+export async function getVolumeOptions(categorySlug?: string): Promise<string[]> {
+  const rows = await db.productVariant.findMany({
+    where: {
+      active: true,
+      volume: { not: null },
+      product: {
+        active: true,
+        ...(categorySlug ? { category: { slug: categorySlug } } : {}),
+      },
+    },
+    distinct: ["volume"],
+    select: { volume: true },
+    orderBy: { volume: "asc" },
+  });
+  return rows
+    .map((r) => r.volume)
+    .filter((v): v is string => !!v && v.trim().length > 0);
 }
 
 /** Distinct colors present on active products (optionally per category). */
@@ -81,28 +106,30 @@ export function getProductsForListing(opts: {
   const where: Prisma.ProductWhereInput = { active: true };
   if (opts.categorySlug) where.category = { slug: opts.categorySlug };
   if (opts.form) {
-    where.specLabel = "Form";
-    where.specValue = opts.form;
+    where.variants = { some: { active: true, specLabel: "Form", specValue: opts.form } };
   }
   if (opts.industry) where.industry = opts.industry;
-  if (opts.volume) where.volume = opts.volume;
+  if (opts.volume) where.variants = { some: { active: true, volume: opts.volume } };
   if (opts.color) where.color = opts.color;
   if (opts.q) {
     // SQLite LIKE (Prisma `contains`) is case-insensitive for ASCII, which
-    // covers our catalog. Match across name + descriptions + sku.
+    // covers our catalog. Match across name + descriptions + variant skus.
     const q = opts.q.trim();
     if (q) {
       where.OR = [
         { name: { contains: q } },
         { shortDescription: { contains: q } },
         { description: { contains: q } },
-        { sku: { contains: q } },
+        { variants: { some: { sku: { contains: q } } } },
       ];
     }
   }
   return db.product.findMany({
     where,
-    include: { category: true },
+    include: {
+      category: true,
+      variants: { where: { active: true }, orderBy: { sortOrder: "asc" } },
+    },
     orderBy: { name: opts.sort === "za" ? "desc" : "asc" },
   });
 }
@@ -171,7 +198,7 @@ export async function getCategoryWithChildren(
     categoryId: { in: categoryIds },
   };
   if (opts.industry) where.industry = opts.industry;
-  if (opts.volume) where.volume = opts.volume;
+  if (opts.volume) where.variants = { some: { active: true, volume: opts.volume } };
   if (opts.color) where.color = opts.color;
   if (opts.q) {
     const q = opts.q.trim();
@@ -180,13 +207,16 @@ export async function getCategoryWithChildren(
         { name: { contains: q } },
         { shortDescription: { contains: q } },
         { description: { contains: q } },
-        { sku: { contains: q } },
+        { variants: { some: { sku: { contains: q } } } },
       ];
     }
   }
   const products = await db.product.findMany({
     where,
-    include: { category: true },
+    include: {
+      category: true,
+      variants: { where: { active: true }, orderBy: { sortOrder: "asc" } },
+    },
     orderBy: { name: opts.sort === "za" ? "desc" : "asc" },
   });
 
@@ -197,7 +227,10 @@ export function getFeaturedProducts() {
   return db.product.findMany({
     where: { active: true, featured: true },
     orderBy: { sortOrder: "asc" },
-    include: { category: true },
+    include: {
+      category: true,
+      variants: { where: { active: true }, orderBy: { sortOrder: "asc" } },
+    },
     take: 8,
   });
 }
@@ -208,7 +241,10 @@ export async function getProductBySlugInCategory(
 ) {
   const product = await db.product.findUnique({
     where: { slug: productSlug },
-    include: { category: true },
+    include: {
+      category: true,
+      variants: { where: { active: true }, orderBy: { sortOrder: "asc" } },
+    },
   });
   if (!product || !product.active || product.category.slug !== categorySlug) {
     return null;
@@ -243,8 +279,7 @@ export function getProductsForApi(opts: {
   const where: Prisma.ProductWhereInput = { active: true };
   if (opts.categorySlug) where.category = { slug: opts.categorySlug };
   if (opts.form) {
-    where.specLabel = "Form";
-    where.specValue = opts.form;
+    where.variants = { some: { active: true, specLabel: "Form", specValue: opts.form } };
   }
   if (opts.isChemical !== undefined) where.isChemical = opts.isChemical;
   if (opts.sampleAvailable !== undefined) where.sampleAvailable = opts.sampleAvailable;
@@ -254,22 +289,28 @@ export function getProductsForApi(opts: {
     where.OR = [
       { name: { contains: opts.q } },
       { shortDescription: { contains: opts.q } },
-      { sku: { contains: opts.q } },
+      { variants: { some: { sku: { contains: opts.q } } } },
     ];
   }
   return db.product.findMany({
     where,
-    include: { category: true },
+    include: {
+      category: true,
+      variants: { where: { active: true }, orderBy: { sortOrder: "asc" } },
+    },
     orderBy: { name: "asc" },
     take: opts.limit,
   });
 }
 
-/** Single active product by slug (with category), or null if missing/inactive. */
+/** Single active product by slug (with category + variants), or null if missing/inactive. */
 export async function getProductForApi(slug: string) {
   const product = await db.product.findUnique({
     where: { slug },
-    include: { category: true },
+    include: {
+      category: true,
+      variants: { where: { active: true }, orderBy: { sortOrder: "asc" } },
+    },
   });
   if (!product || !product.active) return null;
   return product;
