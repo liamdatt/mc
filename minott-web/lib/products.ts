@@ -106,14 +106,15 @@ export function getProductsForListing(opts: {
   const where: Prisma.ProductWhereInput = { active: true };
   if (opts.categorySlug) where.category = { slug: opts.categorySlug };
   // Accumulate variant-level filters into a single `some` so form + volume AND
-  // together on one matching variant (separate assignments would clobber).
+  // together on one matching variant (separate assignments would clobber). The
+  // `active: true` floor also excludes listings with zero active variants.
   const variantWhere: Prisma.ProductVariantWhereInput = { active: true };
   if (opts.form) {
     variantWhere.specLabel = "Form";
     variantWhere.specValue = opts.form;
   }
   if (opts.volume) variantWhere.volume = opts.volume;
-  if (opts.form || opts.volume) where.variants = { some: variantWhere };
+  where.variants = { some: variantWhere };
   if (opts.industry) where.industry = opts.industry;
   if (opts.color) where.color = opts.color;
   if (opts.q) {
@@ -203,7 +204,11 @@ export async function getCategoryWithChildren(
     categoryId: { in: categoryIds },
   };
   if (opts.industry) where.industry = opts.industry;
-  if (opts.volume) where.variants = { some: { active: true, volume: opts.volume } };
+  // Require ≥1 active variant (excludes emptied listings); fold the volume
+  // filter into the same `some` so we never clobber the active floor.
+  const variantWhere: Prisma.ProductVariantWhereInput = { active: true };
+  if (opts.volume) variantWhere.volume = opts.volume;
+  where.variants = { some: variantWhere };
   if (opts.color) where.color = opts.color;
   if (opts.q) {
     const q = opts.q.trim();
@@ -230,7 +235,7 @@ export async function getCategoryWithChildren(
 
 export function getFeaturedProducts() {
   return db.product.findMany({
-    where: { active: true, featured: true },
+    where: { active: true, featured: true, variants: { some: { active: true } } },
     orderBy: { sortOrder: "asc" },
     include: {
       category: true,
@@ -251,7 +256,15 @@ export async function getProductBySlugInCategory(
       variants: { where: { active: true }, orderBy: { sortOrder: "asc" } },
     },
   });
-  if (!product || !product.active || product.category.slug !== categorySlug) {
+  if (
+    !product ||
+    !product.active ||
+    product.category.slug !== categorySlug ||
+    // A listing whose variants were all deleted/deactivated is an un-quotable
+    // dead-end; treat it as not found so a direct URL 404s. The include above
+    // already filters `variants` to active, so an empty array means none.
+    product.variants.length === 0
+  ) {
     return null;
   }
   return product;
@@ -283,9 +296,14 @@ export function getProductsForApi(opts: {
 }) {
   const where: Prisma.ProductWhereInput = { active: true };
   if (opts.categorySlug) where.category = { slug: opts.categorySlug };
+  // Require ≥1 active variant (excludes emptied listings); fold the form filter
+  // into the same `some` so we never clobber the active floor.
+  const variantWhere: Prisma.ProductVariantWhereInput = { active: true };
   if (opts.form) {
-    where.variants = { some: { active: true, specLabel: "Form", specValue: opts.form } };
+    variantWhere.specLabel = "Form";
+    variantWhere.specValue = opts.form;
   }
+  where.variants = { some: variantWhere };
   if (opts.isChemical !== undefined) where.isChemical = opts.isChemical;
   if (opts.sampleAvailable !== undefined) where.sampleAvailable = opts.sampleAvailable;
   if (opts.featured !== undefined) where.featured = opts.featured;
