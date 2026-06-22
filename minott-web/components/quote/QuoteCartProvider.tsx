@@ -10,9 +10,12 @@ import {
 } from "react";
 
 export type QuoteItem = {
-  productId: number;
-  slug: string;
-  name: string;
+  productId: number; // listing id (for the detail link)
+  variantId: number; // dedup key
+  slug: string; // listing slug
+  name: string; // listing name
+  sku: string; // variant sku
+  variantLabel: string; // e.g. "4 L · Each"; "" when a single unlabeled variant
   imagePath: string;
   categorySlug: string;
   quantity: number;
@@ -22,12 +25,12 @@ type QuoteCartValue = {
   items: QuoteItem[];
   count: number;
   addItem: (item: Omit<QuoteItem, "quantity">, quantity?: number) => void;
-  removeItem: (productId: number) => void;
-  setQuantity: (productId: number, quantity: number) => void;
+  removeItem: (variantId: number) => void;
+  setQuantity: (variantId: number, quantity: number) => void;
   clear: () => void;
 };
 
-const STORAGE_KEY = "mec_quote_cart";
+const STORAGE_KEY = "mec_quote_cart_v2";
 const QuoteCartContext = createContext<QuoteCartValue | null>(null);
 
 export function QuoteCartProvider({ children }: { children: React.ReactNode }) {
@@ -56,10 +59,10 @@ export function QuoteCartProvider({ children }: { children: React.ReactNode }) {
   const addItem = useCallback(
     (item: Omit<QuoteItem, "quantity">, quantity = 1) => {
       setItems((prev) => {
-        const existing = prev.find((p) => p.productId === item.productId);
+        const existing = prev.find((p) => p.variantId === item.variantId);
         if (existing) {
           return prev.map((p) =>
-            p.productId === item.productId
+            p.variantId === item.variantId
               ? { ...p, quantity: p.quantity + quantity }
               : p,
           );
@@ -70,15 +73,15 @@ export function QuoteCartProvider({ children }: { children: React.ReactNode }) {
     [],
   );
 
-  const removeItem = useCallback((productId: number) => {
-    setItems((prev) => prev.filter((p) => p.productId !== productId));
+  const removeItem = useCallback((variantId: number) => {
+    setItems((prev) => prev.filter((p) => p.variantId !== variantId));
   }, []);
 
-  const setQuantity = useCallback((productId: number, quantity: number) => {
+  const setQuantity = useCallback((variantId: number, quantity: number) => {
     setItems((prev) =>
       prev
         .map((p) =>
-          p.productId === productId
+          p.variantId === variantId
             ? { ...p, quantity: Math.max(1, Math.floor(quantity)) }
             : p,
         )

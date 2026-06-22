@@ -101,7 +101,7 @@ export function QuotePageClient({
         <div className="space-y-4">
           {items.map((it) => (
             <div
-              key={it.productId}
+              key={it.variantId}
               className="flex items-center gap-4 rounded-md border border-black/10 bg-mec-pure p-4"
             >
               <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-sm bg-mec-mist">
@@ -120,20 +120,25 @@ export function QuotePageClient({
                 >
                   {it.name}
                 </Link>
+                {it.variantLabel && (
+                  <p className="mt-0.5 text-sm text-mec-ink/60">
+                    {it.variantLabel}
+                  </p>
+                )}
               </div>
               <input
                 type="number"
                 min={1}
                 value={it.quantity}
                 onChange={(e) =>
-                  setQuantity(it.productId, Number(e.target.value) || 1)
+                  setQuantity(it.variantId, Number(e.target.value) || 1)
                 }
                 className="w-20 rounded-sm border border-black/15 px-3 py-2 text-mec-ink outline-none focus:border-mec-red"
                 aria-label={`Quantity for ${it.name}`}
               />
               <button
                 type="button"
-                onClick={() => removeItem(it.productId)}
+                onClick={() => removeItem(it.variantId)}
                 className="text-mec-ink/50 hover:text-mec-red"
                 aria-label={`Remove ${it.name}`}
               >
@@ -152,10 +157,13 @@ export function QuotePageClient({
             type="hidden"
             name="items"
             value={JSON.stringify(
-              items.map((i) => ({
-                productId: i.productId,
-                productName: i.name,
-                quantity: i.quantity,
+              items.map((it) => ({
+                productId: it.productId,
+                variantId: it.variantId,
+                productName: it.variantLabel
+                  ? `${it.name} — ${it.variantLabel} (${it.sku})`
+                  : `${it.name} (${it.sku})`,
+                quantity: it.quantity,
               })),
             )}
           />
