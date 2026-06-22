@@ -1,7 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import path from "path";
-import { CHEMICALS_2026 } from "./data/chemicals-2026";
 
 const dbUrl =
   process.env.DATABASE_URL?.replace("file:", "") ??
@@ -48,7 +47,7 @@ type SeedChildCategory = {
   products: SeedProduct[];
 };
 
-const slugify = (s: string) =>
+export const slugify = (s: string) =>
   s
     .toLowerCase()
     .trim()
@@ -61,15 +60,15 @@ const slugify = (s: string) =>
 // The 12 official MEC product categories + chemical child categories
 // ---------------------------------------------------------------------------
 
-const CATEGORIES: SeedCategory[] = [
+export const CATEGORIES: SeedCategory[] = [
   // 1. Industrial & Household Chemicals
   {
     name: "Industrial & Household Chemicals",
     description:
       "Manufactured on our Kingston floor — our own extensive line of cleaning and maintenance chemicals.",
     imagePath: "/images/product-chemicals.jpg",
-    // Real 2026 catalog (209 products) extracted from the client spreadsheet.
-    products: CHEMICALS_2026,
+    // Products (listings + variants) are built by scripts/import-catalog.ts.
+    products: [],
   },
 
   // 2. Garbage Bins
@@ -721,7 +720,6 @@ const CATEGORIES: SeedCategory[] = [
 // ---------------------------------------------------------------------------
 
 async function main() {
-  const keepSlugs: string[] = [];
   const keepCategorySlugs: string[] = [];
   let categorySort = 0;
 
@@ -750,37 +748,6 @@ async function main() {
     });
     categorySort += 1;
 
-    // Seed products that belong directly to the parent category
-    let productSort = 0;
-    for (const p of cat.products) {
-      const productSlug = slugify(p.name);
-      keepSlugs.push(productSlug);
-      const data = {
-        name: p.name,
-        categoryId: category.id,
-        shortDescription: p.shortDescription,
-        description: p.description ?? null,
-        imagePath: p.imagePath ?? PLACEHOLDER,
-        sku: p.sku,
-        packSize: p.packSize,
-        specLabel: p.specLabel,
-        specValue: p.specValue,
-        isChemical: p.isChemical ?? false,
-        sampleAvailable: p.isChemical ?? false,
-        featured: p.featured ?? false,
-        industry: p.industry ?? null,
-        volume: p.volume ?? null,
-        color: p.color ?? null,
-        sortOrder: productSort,
-      };
-      await db.product.upsert({
-        where: { slug: productSlug },
-        update: data,
-        create: { slug: productSlug, ...data },
-      });
-      productSort += 1;
-    }
-
     // Seed child categories (chemicals subsections)
     if (cat.children) {
       let childSort = 0;
@@ -788,7 +755,7 @@ async function main() {
         const childSlug = slugify(child.name);
         keepCategorySlugs.push(childSlug);
 
-        const childCategory = await db.category.upsert({
+        await db.category.upsert({
           where: { slug: childSlug },
           update: {
             name: child.name,
@@ -807,44 +774,9 @@ async function main() {
           },
         });
         childSort += 1;
-
-        let childProductSort = 0;
-        for (const p of child.products) {
-          const productSlug = slugify(p.name);
-          keepSlugs.push(productSlug);
-          const data = {
-            name: p.name,
-            categoryId: childCategory.id,
-            shortDescription: p.shortDescription,
-            description: p.description ?? null,
-            imagePath: p.imagePath ?? PLACEHOLDER,
-            sku: p.sku,
-            packSize: p.packSize,
-            specLabel: p.specLabel,
-            specValue: p.specValue,
-            isChemical: p.isChemical ?? false,
-            sampleAvailable: p.isChemical ?? false,
-            featured: p.featured ?? false,
-            industry: p.industry ?? null,
-            volume: p.volume ?? null,
-            color: p.color ?? null,
-            sortOrder: childProductSort,
-          };
-          await db.product.upsert({
-            where: { slug: productSlug },
-            update: data,
-            create: { slug: productSlug, ...data },
-          });
-          childProductSort += 1;
-        }
       }
     }
   }
-
-  // Prune products that are no longer part of the seed set (e.g. renamed slugs).
-  const removed = await db.product.deleteMany({
-    where: { slug: { notIn: keepSlugs } },
-  });
 
   // Prune stale categories (e.g. the old "Janitorial Equipment & Supplies"
   // that was split into "Janitorial Supplies" + "Dispensers"). Only delete
@@ -863,7 +795,7 @@ async function main() {
     : { count: 0 };
 
   console.log(
-    `Seed complete. ${keepSlugs.length} products seeded, ${removed.count} stale products removed, ${removedCategories.count} stale categories removed.`,
+    `Category seed complete. ${keepCategorySlugs.length} categories seeded, ${removedCategories.count} stale categories removed.`,
   );
 }
 
