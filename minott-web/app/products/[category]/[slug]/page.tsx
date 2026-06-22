@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getProductBySlugInCategory } from "@/lib/products";
 import { Section } from "@/components/primitives/Section";
 import { Container } from "@/components/primitives/Container";
-import { Eyebrow } from "@/components/primitives/Eyebrow";
-import { ProductDetailActions } from "@/components/products/ProductDetailActions";
+import { ProductDetailView } from "@/components/products/ProductDetailView";
 import { ShowroomBanner } from "@/components/products/ShowroomBanner";
 import { WhatsAppCta } from "@/components/products/WhatsAppCta";
 
@@ -52,54 +50,29 @@ export default async function ProductDetailPage({
           / <span className="text-mec-ink">{product.name}</span>
         </nav>
 
-        <div className="mt-8 grid grid-cols-1 gap-12 lg:grid-cols-2">
-          <div className="relative aspect-square overflow-hidden rounded-md bg-mec-mist">
-            <Image
-              src={product.imagePath}
-              alt={product.name}
-              fill
-              sizes="(min-width:1024px) 50vw, 100vw"
-              className="object-cover"
-              priority
-            />
-          </div>
-
-          <div className="flex flex-col justify-center">
-            <Eyebrow tone="red">{product.category.name}</Eyebrow>
-            <h1 className="mt-4 font-display-tight text-h2 leading-[1]">
-              {product.name}
-            </h1>
-            {product.shortDescription && (
-              <p className="mt-6 text-lede text-mec-ink/80">
-                {product.shortDescription}
-              </p>
-            )}
-            {product.description && (
-              <p className="mt-4 text-mec-ink/75">{product.description}</p>
-            )}
-
-            <ProductDetailActions
-              product={{
-                id: product.id,
-                slug: product.slug,
-                name: product.name,
-                imagePath: product.imagePath,
-                categorySlug: product.category.slug,
-                isChemical: product.isChemical,
-                sampleAvailable: product.sampleAvailable,
-                sdsUrl: product.sdsUrl,
-              }}
-              variants={product.variants.map((v) => ({
-                id: v.id,
-                sku: v.sku,
-                size: v.size,
-                packType: v.packType,
-                label: v.label,
-                imagePath: v.imagePath,
-              }))}
-            />
-          </div>
-        </div>
+        <ProductDetailView
+          product={{
+            id: product.id,
+            slug: product.slug,
+            name: product.name,
+            shortDescription: product.shortDescription,
+            description: product.description,
+            imagePath: product.imagePath,
+            categorySlug: product.category.slug,
+            categoryName: product.category.name,
+            isChemical: product.isChemical,
+            sampleAvailable: product.sampleAvailable,
+            sdsUrl: product.sdsUrl,
+          }}
+          variants={product.variants.map((v) => ({
+            id: v.id,
+            sku: v.sku,
+            size: v.size,
+            packType: v.packType,
+            label: v.label,
+            imagePath: v.imagePath,
+          }))}
+        />
       </Container>
     </Section>
 

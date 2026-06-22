@@ -11,6 +11,8 @@ import { SampleRequestForm } from "./SampleRequestForm";
 export function ProductDetailActions({
   product,
   variants,
+  selected,
+  onSelect,
 }: {
   product: {
     id: number;
@@ -23,6 +25,8 @@ export function ProductDetailActions({
     sdsUrl: string | null;
   };
   variants: SelectableVariant[];
+  selected: SelectableVariant;
+  onSelect: (variant: SelectableVariant) => void;
 }) {
   const [showSample, setShowSample] = useState(false);
 
@@ -37,6 +41,8 @@ export function ProductDetailActions({
           categorySlug: product.categorySlug,
         }}
         variants={variants}
+        selected={selected}
+        onSelect={onSelect}
       />
 
       <div className="mt-5 flex flex-wrap gap-3">
@@ -82,13 +88,12 @@ export function ProductDetailActions({
           <SampleRequestForm
             productId={product.id}
             productName={product.name}
-            variants={variants.map((v) => ({
-              id: v.id,
-              sku: v.sku,
-              label: v.label,
-              size: v.size,
-              packType: v.packType,
-            }))}
+            selectedVariant={{
+              id: selected.id,
+              sku: selected.sku,
+              label: selected.label,
+              size: selected.size,
+            }}
           />
         </div>
       )}
