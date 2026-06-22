@@ -44,23 +44,23 @@ export default async function PortalHistoryDetailPage({
   const inquiry = await getUserInquiryById(session.user.id, numId);
   if (!inquiry) notFound();
 
-  // A line item is reorderable only when its product still exists and is active,
-  // and (if it was placed against a specific variant) that variant is still
-  // active. Without a live variant we can't build a valid cart entry.
+  // A line item is reorderable only when its product still exists and is active
+  // AND it has a live, active variant. Without a live variant we can't build a
+  // valid variant-keyed cart entry.
   type LineItem = NonNullable<
     Awaited<ReturnType<typeof getUserInquiryById>>
   >["items"][number];
   function toQuoteItem(it: LineItem): QuoteItem | null {
     if (!it.product || !it.product.active) return null;
-    if (it.variantId != null && !it.variant?.active) return null;
+    if (!it.variant?.active) return null; // no live variant → can't build a valid variant-keyed cart entry
     return {
       productId: it.product.id,
-      variantId: it.variant?.id ?? it.variantId ?? 0,
+      variantId: it.variant.id,
       slug: it.product.slug,
       name: it.product.name,
-      sku: it.variant?.sku ?? "",
-      variantLabel: it.variant?.label ?? "",
-      imagePath: it.variant?.imagePath ?? it.product.imagePath,
+      sku: it.variant.sku,
+      variantLabel: it.variant.label ?? "",
+      imagePath: it.variant.imagePath ?? it.product.imagePath,
       categorySlug: it.product.category.slug,
       quantity: it.quantity,
     };
