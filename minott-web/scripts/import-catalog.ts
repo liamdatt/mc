@@ -1,204 +1,172 @@
-// Idempotent, SKU-keyed catalog importer.
+// Catalog importer — writes the pre-grouped per-category data modules
+// (prisma/data/*.ts) as Product (listing) + ProductVariant rows.
 //
-// Bootstrap mode (DB has zero ProductVariant rows): create ALL listings +
-// variants from the grouper output.
-//
-// Incremental mode (variants already exist): for each grouped variant, if its
-// SKU already exists UPDATE only the sheet-owned facts (size, packType, label,
-// volume, packSize, specLabel, specValue, imagePath) — never touch productId,
-// active, or sortOrder (admin-owned). Brand-new SKUs are attached to the hidden
-// "Unsorted Imports" holding listing for an admin to place; no new listings are
-// created and existing listing names are never rewritten in incremental mode.
-//
-// Re-running is a no-op apart from refreshing facts.
-
+// Authoritative full replace: listings are upserted by slug and variants by sku
+// (IDs stay stable across runs, so inquiry references survive), then anything not
+// present in the modules is pruned. Grouping is decided inside each data module,
+// not here. Run `npm run db:seed` first so the categories exist.
 import { PrismaClient } from "@prisma/client";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import path from "path";
-import { CHEMICALS_2026 } from "../prisma/data/chemicals-2026";
-import { CATEGORIES, slugify, type SeedProduct } from "../prisma/seed";
-import { groupProducts, type RawProduct } from "../lib/variants/group";
+import { slugify } from "../prisma/seed";
+import type { SeedListing } from "../prisma/data/_listing-types";
+import { CHEMICALS } from "../prisma/data/chemicals";
+import { CLEANING_TOOLS } from "../prisma/data/cleaning-tools";
+import { FLOOR_MAINTENANCE } from "../prisma/data/floor-maintenance";
+import { DISPENSERS } from "../prisma/data/dispensers";
+import { PAPER } from "../prisma/data/paper";
+import { FOOD_SERVICE } from "../prisma/data/food-service-supplies";
+import { GLOVES } from "../prisma/data/gloves";
+import { SAFETY } from "../prisma/data/safety";
+import { BINS } from "../prisma/data/bins";
+import { GARBAGE_BAGS } from "../prisma/data/garbage-bags";
+import { MATS } from "../prisma/data/mats";
+import { FACILITY_CARE } from "../prisma/data/facility-care";
+
+// categorySlug must match a seeded category (prisma/seed.ts CATEGORIES).
+const MODULES: { categorySlug: string; listings: SeedListing[] }[] = [
+  { categorySlug: "chemicals", listings: CHEMICALS },
+  { categorySlug: "cleaning-tools", listings: CLEANING_TOOLS },
+  { categorySlug: "floor-maintenance", listings: FLOOR_MAINTENANCE },
+  { categorySlug: "dispensers", listings: DISPENSERS },
+  { categorySlug: "paper", listings: PAPER },
+  { categorySlug: "food-service-supplies", listings: FOOD_SERVICE },
+  { categorySlug: "gloves", listings: GLOVES },
+  { categorySlug: "safety", listings: SAFETY },
+  { categorySlug: "bins", listings: BINS },
+  { categorySlug: "garbage-bags", listings: GARBAGE_BAGS },
+  { categorySlug: "mats", listings: MATS },
+  { categorySlug: "facility-care", listings: FACILITY_CARE },
+];
+
+const PLACEHOLDER = "/images/product-placeholder.png";
 
 const dbUrl =
-  process.env.DATABASE_URL?.replace("file:", "") ?? path.join(process.cwd(), "prisma/app.db");
+  process.env.DATABASE_URL?.replace("file:", "") ??
+  path.join(process.cwd(), "prisma/app.db");
 const adapter = new PrismaBetterSqlite3({ url: dbUrl });
 const db = new PrismaClient({ adapter, log: ["error"] });
 
-const CHEM_SLUG = "industrial-and-household-chemicals";
-const UNSORTED_SLUG = "unsorted-imports";
-
-function collectRaw(): RawProduct[] {
-  const rows: RawProduct[] = [];
-
-  // Source 1: chemical sheet — flat per-size rows.
-  for (const p of CHEMICALS_2026) {
-    rows.push({
-      name: p.name,
-      sku: p.sku,
-      categorySlug: CHEM_SLUG,
-      shortDescription: p.shortDescription,
-      description: p.description ?? null,
-      imagePath: p.imagePath ?? null,
-      volume: p.volume ?? null,
-      packSize: p.packSize ?? null,
-      specLabel: p.specLabel ?? null,
-      specValue: p.specValue ?? null,
-      isChemical: true,
-      sampleAvailable: true,
-    });
-  }
-
-  // Source 2: every seeded category product (parent + children).
-  const pushCat = (slug: string, products: SeedProduct[]) => {
-    for (const p of products) {
-      rows.push({
-        name: p.name,
-        sku: p.sku,
-        categorySlug: slug,
-        shortDescription: p.shortDescription,
-        description: p.description ?? null,
-        imagePath: p.imagePath ?? null,
-        volume: p.volume ?? null,
-        packSize: p.packSize ?? null,
-        specLabel: p.specLabel ?? null,
-        specValue: p.specValue ?? null,
-        color: p.color ?? null,
-        industry: p.industry ?? null,
-        isChemical: p.isChemical ?? false,
-        sampleAvailable: p.isChemical ?? false,
-        featured: p.featured ?? false,
-      });
-    }
-  };
-
-  for (const cat of CATEGORIES) {
-    pushCat(slugify(cat.name), cat.products);
-    for (const child of cat.children ?? []) pushCat(slugify(child.name), child.products);
-  }
-
-  return rows;
-}
-
-async function ensureUnsortedListing(): Promise<number> {
-  const cat = await db.category.findUnique({ where: { slug: CHEM_SLUG } });
-  if (!cat) throw new Error(`Run 'npm run db:seed' first — category ${CHEM_SLUG} missing.`);
-  const listing = await db.product.upsert({
-    where: { slug: UNSORTED_SLUG },
-    update: {},
-    create: {
-      slug: UNSORTED_SLUG,
-      name: "Unsorted Imports",
-      categoryId: cat.id,
-      shortDescription: "Newly imported items awaiting grouping. Hidden from the catalog.",
-      active: false,
-      sortOrder: 9999,
-    },
-  });
-  return listing.id;
+function variantLabel(
+  v: { size: string | null; packType: string; label?: string | null },
+  multiPack: boolean,
+): string | null {
+  if (v.label) return v.label;
+  if (v.size) return multiPack ? `${v.size} · ${v.packType}` : v.size;
+  return multiPack ? v.packType : null;
 }
 
 async function main() {
-  const raw = collectRaw();
-  const listings = groupProducts(raw);
-  const bootstrap = (await db.productVariant.count()) === 0;
-  const unsortedId = await ensureUnsortedListing();
-
-  let createdListings = 0;
-  let createdVariants = 0;
-  let refreshedVariants = 0;
-  let routedToUnsorted = 0;
-
   const cats = await db.category.findMany({ select: { id: true, slug: true } });
   const catId = new Map(cats.map((c) => [c.slug, c.id]));
 
-  const createdListingSlugs = new Set<string>();
+  const usedSlugs = new Set<string>();
+  const keepSlugs: string[] = [];
+  const keepSkus: string[] = [];
+  const categoryHero = new Map<number, string>();
 
-  for (const L of listings) {
-    const categoryId = catId.get(L.categorySlug);
+  let listingCount = 0;
+  let variantCount = 0;
+
+  for (const mod of MODULES) {
+    const categoryId = catId.get(mod.categorySlug);
     if (!categoryId) {
-      console.warn(`Skipping listing ${L.slug}: unknown category ${L.categorySlug}`);
-      continue;
+      throw new Error(
+        `Missing category "${mod.categorySlug}" — run 'npm run db:seed' first.`,
+      );
     }
 
-    for (const V of L.variants) {
-      const existing = await db.productVariant.findUnique({ where: { sku: V.sku } });
-      if (existing) {
-        // Refresh sheet-owned facts only. productId/active/sortOrder are admin-owned.
-        await db.productVariant.update({
-          where: { sku: V.sku },
-          data: {
-            size: V.size,
-            packType: V.packType,
-            label: V.label,
-            volume: V.volume,
-            packSize: V.packSize,
-            specLabel: V.specLabel,
-            specValue: V.specValue,
-            imagePath: V.imagePath,
-          },
-        });
-        refreshedVariants++;
-        continue;
+    let sort = 0;
+    for (const L of mod.listings) {
+      let slug = slugify(L.name);
+      if (usedSlugs.has(slug)) {
+        let n = 2;
+        while (usedSlugs.has(`${slug}-${n}`)) n += 1;
+        slug = `${slug}-${n}`;
+      }
+      usedSlugs.add(slug);
+      keepSlugs.push(slug);
+
+      const listingData = {
+        name: L.name,
+        categoryId,
+        shortDescription: L.shortDescription,
+        description: L.description ?? null,
+        imagePath: L.imagePath || PLACEHOLDER,
+        color: L.color ?? null,
+        industry: L.industry ?? null,
+        isChemical: L.isChemical ?? false,
+        sampleAvailable: L.sampleAvailable ?? false,
+        sdsUrl: L.sdsUrl ?? null,
+        featured: L.featured ?? false,
+        active: true,
+        sortOrder: sort,
+      };
+      const listing = await db.product.upsert({
+        where: { slug },
+        update: listingData,
+        create: { slug, ...listingData },
+      });
+      sort += 1;
+      listingCount += 1;
+      if (
+        !categoryHero.has(categoryId) &&
+        L.imagePath &&
+        !L.imagePath.includes("placeholder")
+      ) {
+        categoryHero.set(categoryId, L.imagePath);
       }
 
-      let productId: number;
-      if (bootstrap) {
-        const listing = await db.product.upsert({
-          where: { slug: L.slug },
-          update: {},
-          create: {
-            slug: L.slug,
-            name: L.name,
-            categoryId,
-            shortDescription: L.shortDescription,
-            description: L.description,
-            imagePath: L.imagePath,
-            color: L.color,
-            industry: L.industry,
-            isChemical: L.isChemical,
-            sampleAvailable: L.sampleAvailable,
-            sdsUrl: L.sdsUrl,
-            featured: L.featured,
-          },
-        });
-        // Count each freshly-created listing once (a fresh upsert leaves
-        // createdAt === updatedAt; the Set dedupes across its variants).
-        if (
-          listing.createdAt.getTime() === listing.updatedAt.getTime() &&
-          !createdListingSlugs.has(L.slug)
-        ) {
-          createdListingSlugs.add(L.slug);
-          createdListings++;
-        }
-        productId = listing.id;
-      } else {
-        // Incremental: never create/rewrite listings — park new SKUs in Unsorted.
-        productId = unsortedId;
-        routedToUnsorted++;
-      }
-
-      await db.productVariant.create({
-        data: {
-          productId,
-          sku: V.sku,
+      const multiPack = new Set(L.variants.map((v) => v.packType)).size > 1;
+      let vsort = 0;
+      for (const V of L.variants) {
+        keepSkus.push(V.sku);
+        const variantData = {
+          productId: listing.id,
           size: V.size,
           packType: V.packType,
-          label: V.label,
-          volume: V.volume,
-          packSize: V.packSize,
-          specLabel: V.specLabel,
-          specValue: V.specValue,
-          imagePath: V.imagePath,
-          sortOrder: V.sortOrder,
-        },
-      });
-      createdVariants++;
+          label: variantLabel(V, multiPack),
+          volume: V.volume ?? null,
+          packSize: V.packSize ?? null,
+          imagePath: V.imagePath ?? null,
+          active: true,
+          sortOrder: vsort,
+        };
+        await db.productVariant.upsert({
+          where: { sku: V.sku },
+          update: variantData,
+          create: { sku: V.sku, ...variantData },
+        });
+        vsort += 1;
+        variantCount += 1;
+      }
     }
   }
 
+  // Authoritative full replace: prune anything not in the new catalog.
+  const delV = await db.productVariant.deleteMany({ where: { sku: { notIn: keepSkus } } });
+  const delP = await db.product.deleteMany({ where: { slug: { notIn: keepSlugs } } });
+
+  // Give each category a representative hero image (its first listing's image).
+  for (const [cid, img] of categoryHero) {
+    await db.category.update({ where: { id: cid }, data: { imagePath: img } });
+  }
+
+  // Prune stale categories left empty by the replace (they are safe to delete
+  // now that their products are gone). Only touch categories not in the modules.
+  const validCatSlugs = new Set(MODULES.map((m) => m.categorySlug));
+  const staleCats = await db.category.findMany({
+    where: { slug: { notIn: [...validCatSlugs] } },
+    select: { id: true, _count: { select: { products: true } } },
+  });
+  const emptyStaleIds = staleCats.filter((c) => c._count.products === 0).map((c) => c.id);
+  const delC = emptyStaleIds.length
+    ? await db.category.deleteMany({ where: { id: { in: emptyStaleIds } } })
+    : { count: 0 };
+
   console.log(
-    `Import (${bootstrap ? "bootstrap" : "incremental"}): +${createdListings} listings, ` +
-      `+${createdVariants} variants (${routedToUnsorted} → Unsorted), ${refreshedVariants} refreshed.`,
+    `Import: ${listingCount} listings, ${variantCount} variants across ${MODULES.length} categories. ` +
+      `Pruned ${delP.count} stale listings, ${delV.count} stale variants, ${delC.count} stale categories.`,
   );
 }
 

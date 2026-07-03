@@ -9,44 +9,6 @@ const dbUrl =
 const adapter = new PrismaBetterSqlite3({ url: dbUrl });
 const db = new PrismaClient({ adapter, log: ["error"] });
 
-// ---------------------------------------------------------------------------
-// NOTE: product images are placeholders pending real assets from the client.
-// All products use /images/product-placeholder.png until image uploads ship.
-// ---------------------------------------------------------------------------
-
-const PLACEHOLDER = "/images/product-placeholder.png";
-
-export type SeedProduct = {
-  name: string;
-  shortDescription: string;
-  description?: string;
-  sku: string;
-  packSize: string;
-  specLabel: string;
-  specValue: string;
-  isChemical?: boolean;
-  featured?: boolean;
-  industry?: string;
-  volume?: string;
-  color?: string;
-  imagePath?: string;
-};
-
-type SeedCategory = {
-  name: string;
-  description: string;
-  imagePath: string;
-  products: SeedProduct[];
-  children?: SeedChildCategory[];
-};
-
-type SeedChildCategory = {
-  name: string;
-  description: string;
-  imagePath: string;
-  products: SeedProduct[];
-};
-
 export const slugify = (s: string) =>
   s
     .toLowerCase()
@@ -56,667 +18,98 @@ export const slugify = (s: string) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 
+type SeedCategory = {
+  name: string;
+  description: string;
+  imagePath: string;
+};
+
+const PLACEHOLDER = "/images/product-placeholder.png";
+
 // ---------------------------------------------------------------------------
-// The 12 official MEC product categories + chemical child categories
+// The MEC product categories — one per sheet of the June 2026 product listing.
+// Products (listings + variants) are populated per-category by
+// scripts/import-catalog.ts from prisma/data/*.ts. Category order = array order.
 // ---------------------------------------------------------------------------
 
 export const CATEGORIES: SeedCategory[] = [
-  // 1. Industrial & Household Chemicals
   {
-    name: "Industrial & Household Chemicals",
+    name: "Chemicals",
     description:
-      "Manufactured on our Kingston floor — our own extensive line of cleaning and maintenance chemicals.",
-    imagePath: "/images/product-chemicals.jpg",
-    // Products (listings + variants) are built by scripts/import-catalog.ts.
-    products: [],
-  },
-
-  // 2. Garbage Bins
-  {
-    name: "Garbage Bins",
-    description:
-      "Commercial waste containers in a range of capacities — indoor, outdoor and recycling configurations.",
+      "Our manufactured line of cleaning, sanitising and maintenance chemicals — bleaches, disinfectants, degreasers, polishes and more.",
     imagePath: PLACEHOLDER,
-    products: [
-      {
-        name: "Rubbermaid Brute Round Container (32 Gal)",
-        shortDescription:
-          "Heavy-duty round waste container for indoor and outdoor use.",
-        sku: "BIN-001",
-        packSize: "1 Unit",
-        specLabel: "Capacity",
-        specValue: "32 Gal",
-        featured: true,
-      },
-      {
-        name: "Slim Jim Waste Container",
-        shortDescription: "Space-saving rectangular bin for tight spaces.",
-        sku: "BIN-002",
-        packSize: "1 Unit",
-        specLabel: "Capacity",
-        specValue: "23 Gal",
-      },
-      {
-        name: "Recycling Station (3-Stream)",
-        shortDescription:
-          "Three-compartment recycling centre for paper, plastic and general waste.",
-        sku: "BIN-003",
-        packSize: "1 Unit",
-        specLabel: "Streams",
-        specValue: "3",
-        featured: true,
-      },
-      {
-        name: "Step-On Waste Container",
-        shortDescription:
-          "Foot-pedal bin for hygienic hands-free waste disposal.",
-        sku: "BIN-004",
-        packSize: "1 Unit",
-        specLabel: "Capacity",
-        specValue: "12 Gal",
-      },
-    ],
   },
-
-  // 3. Garbage Bags
   {
-    name: "Garbage Bags",
+    name: "Cleaning Tools",
     description:
-      "Heavy-duty liners for commercial bins — available in a range of sizes and gauges.",
+      "Scouring pads, scrubbers, brushes, cloths and the everyday hand tools that keep facilities clean.",
     imagePath: PLACEHOLDER,
-    products: [
-      {
-        name: "Heavy-Duty Black Bin Liners (40–45 Gal)",
-        shortDescription:
-          "Tear-resistant black garbage bags for large commercial bins.",
-        sku: "BAG-001",
-        packSize: "100 per box",
-        specLabel: "Gauge",
-        specValue: "2 mil",
-        featured: true,
-      },
-      {
-        name: "Medium Garbage Bags (30 Gal)",
-        shortDescription: "General-purpose liners for office and light waste.",
-        sku: "BAG-002",
-        packSize: "200 per box",
-        specLabel: "Gauge",
-        specValue: "1.5 mil",
-      },
-      {
-        name: "Kitchen Waste Bags (12–16 Gal)",
-        shortDescription:
-          "Compact liners for desk bins and small waste containers.",
-        sku: "BAG-003",
-        packSize: "500 per box",
-        specLabel: "Gauge",
-        specValue: "1 mil",
-      },
-      {
-        name: "Clear Recycling Liners (40 Gal)",
-        shortDescription:
-          "Transparent bags to allow content verification without opening.",
-        sku: "BAG-004",
-        packSize: "100 per box",
-        specLabel: "Gauge",
-        specValue: "1.5 mil",
-      },
-    ],
   },
-
-  // 4. Janitorial Supplies
   {
-    name: "Janitorial Supplies",
+    name: "Floor Maintenance",
     description:
-      "Floor care, carts, mops and the everyday tools that keep facilities running.",
-    imagePath: "/images/product-janitorial.jpg",
-    products: [
-      {
-        name: "Rubbermaid Housekeeping Cart",
-        shortDescription:
-          "Commercial cleaning cart with organised storage and a vinyl bag.",
-        sku: "JAN-001",
-        packSize: "1 Unit",
-        specLabel: "Material",
-        specValue: "Plastic",
-        featured: true,
-      },
-      {
-        name: "Mop Bucket & Wringer (36 QT)",
-        shortDescription:
-          "Durable mop bucket with heavy-duty wringer and smooth-rolling casters.",
-        sku: "JAN-002",
-        packSize: "1 Unit",
-        specLabel: "Material",
-        specValue: "Plastic",
-        featured: true,
-      },
-      {
-        name: "Wet/Dry Vacuum (16 Gal)",
-        shortDescription:
-          "Powerful pickup for liquids and debris in any environment.",
-        sku: "JAN-003",
-        packSize: "1 Unit",
-        specLabel: "Capacity",
-        specValue: "16 Gal",
-        featured: true,
-      },
-      {
-        name: "Microfibre Wipes",
-        shortDescription:
-          "Lint-free cloths for streak-free cleaning and polishing.",
-        sku: "JAN-004",
-        packSize: "12 per pack",
-        specLabel: "Colour",
-        specValue: "Assorted",
-      },
-      {
-        name: "Broom & Dustpan Set",
-        shortDescription: "Durable broom paired with a lobby dustpan.",
-        sku: "JAN-005",
-        packSize: "1 Set",
-        specLabel: "Material",
-        specValue: "PP",
-      },
-      {
-        name: "Floor Cleaning Mop (Replaceable Head)",
-        shortDescription: "Replaceable-head mop for daily floor care.",
-        sku: "JAN-006",
-        packSize: "1 Unit",
-        specLabel: "Type",
-        specValue: "Wet",
-      },
-      {
-        name: "Safety Cones & Wet-Floor Signs",
-        shortDescription:
-          "High-visibility hazard signage for safe work areas.",
-        sku: "JAN-007",
-        packSize: "1 Unit",
-        specLabel: "Height",
-        specValue: "28 in",
-      },
-    ],
+      "Brooms, mops, handles, squeegees and floor-care equipment for daily and deep cleaning.",
+    imagePath: PLACEHOLDER,
   },
-
-  // 5. Dispensers
   {
     name: "Dispensers",
     description:
-      "Wall-mounted dispensers for soap, sanitiser, paper towels, tissue and more.",
+      "Wall-mounted soap, sanitiser, tissue and paper-towel dispensers for washrooms and kitchens.",
     imagePath: PLACEHOLDER,
-    products: [
-      {
-        name: "Manual Soap Dispenser (1 L)",
-        shortDescription:
-          "Durable ABS wall-mount dispenser for liquid soap or sanitiser.",
-        sku: "DSP-001",
-        packSize: "1 Unit",
-        specLabel: "Capacity",
-        specValue: "1 L",
-        featured: true,
-      },
-      {
-        name: "Touchless Hand Sanitiser Dispenser",
-        shortDescription:
-          "Sensor-activated dispenser for hands-free hygiene compliance.",
-        sku: "DSP-002",
-        packSize: "1 Unit",
-        specLabel: "Operation",
-        specValue: "Sensor",
-        featured: true,
-      },
-      {
-        name: "Multifold Towel Dispenser",
-        shortDescription:
-          "Wall-mount dispenser compatible with C-fold and multifold hand towels.",
-        sku: "DSP-003",
-        packSize: "1 Unit",
-        specLabel: "Material",
-        specValue: "ABS",
-      },
-      {
-        name: "Jumbo Roll Tissue Dispenser",
-        shortDescription:
-          "High-capacity dispenser for jumbo-roll bathroom tissue.",
-        sku: "DSP-004",
-        packSize: "1 Unit",
-        specLabel: "Material",
-        specValue: "ABS",
-      },
-      {
-        name: "Foam Soap Dispenser",
-        shortDescription:
-          "Converts liquid soap to foam — reduces consumption by up to 50 %.",
-        sku: "DSP-005",
-        packSize: "1 Unit",
-        specLabel: "Type",
-        specValue: "Foam",
-      },
-    ],
   },
-
-  // 6. Personal Protection Equipment (PPE)
   {
-    name: "Personal Protection Equipment (PPE)",
+    name: "Paper",
     description:
-      "Gloves, masks, and protective wear that keep your people safe.",
-    imagePath: "/images/product-ppe.jpg",
-    products: [
-      {
-        name: "Nitrile Gloves — Black (Powder-Free)",
-        shortDescription:
-          "Premium powder-free nitrile gloves offering excellent protection and chemical resistance.",
-        sku: "PPE-001",
-        packSize: "100 per box",
-        specLabel: "Size",
-        specValue: "S, M, L, XL",
-        featured: true,
-      },
-      {
-        name: "Latex Gloves (Powder-Free)",
-        shortDescription:
-          "Comfortable, flexible disposable gloves for general-purpose use.",
-        sku: "PPE-002",
-        packSize: "100 per box",
-        specLabel: "Size",
-        specValue: "S, M, L, XL",
-      },
-      {
-        name: "Surgical Gloves (Sterile)",
-        shortDescription: "Sterile gloves for medical and clinical settings.",
-        sku: "PPE-003",
-        packSize: "50 pairs / box",
-        specLabel: "Size",
-        specValue: "6.5 – 8.0",
-      },
-      {
-        name: "KN95 Masks",
-        shortDescription:
-          "High-filtration respiratory protection for everyday use.",
-        sku: "PPE-004",
-        packSize: "20 per box",
-        specLabel: "Filtration",
-        specValue: "95%",
-        featured: true,
-      },
-      {
-        name: "Surgical Masks (3-Ply)",
-        shortDescription: "3-ply disposable masks with comfortable ear loops.",
-        sku: "PPE-005",
-        packSize: "50 per box",
-        specLabel: "Ply",
-        specValue: "3 Ply",
-      },
-      {
-        name: "Isolation Gowns",
-        shortDescription:
-          "Fluid-resistant protective gowns for clinical environments.",
-        sku: "PPE-006",
-        packSize: "10 per pack",
-        specLabel: "Level",
-        specValue: "AAMI 2",
-      },
-      {
-        name: "Safety Goggles",
-        shortDescription:
-          "Clear, anti-fog eye protection with a comfortable seal.",
-        sku: "PPE-007",
-        packSize: "1 Unit",
-        specLabel: "Lens",
-        specValue: "Anti-fog",
-      },
-      {
-        name: "Safety & Water Boots",
-        shortDescription:
-          "Slip-resistant protective footwear for wet work areas.",
-        sku: "PPE-008",
-        packSize: "1 Pair",
-        specLabel: "Size",
-        specValue: "6 – 12",
-      },
-    ],
-  },
-
-  // 7. Paper Products
-  {
-    name: "Paper Products",
-    description:
-      "Hand towels, tissue, napkins and paper goods — so you never run out.",
-    imagePath: "/images/product-paper.jpg",
-    products: [
-      {
-        name: "Multifold Hand Towels",
-        shortDescription:
-          "Absorbent folded towels for washroom dispensers.",
-        sku: "PPR-001",
-        packSize: "16 packs / case",
-        specLabel: "Sheets",
-        specValue: "250 / pack",
-        featured: true,
-      },
-      {
-        name: "Jumbo Roll Tissue",
-        shortDescription:
-          "Long-lasting bathroom tissue for high-traffic areas.",
-        sku: "PPR-002",
-        packSize: "12 Rolls / Case",
-        specLabel: "Ply",
-        specValue: "2 Ply",
-      },
-      {
-        name: "Bathroom Tissue (Standard Roll)",
-        shortDescription: "Soft 2-ply tissue in case quantities.",
-        sku: "PPR-003",
-        packSize: "48 Rolls / Case",
-        specLabel: "Ply",
-        specValue: "2 Ply",
-      },
-      {
-        name: "Paper Napkins",
-        shortDescription: "Food-service napkins in bulk.",
-        sku: "PPR-004",
-        packSize: "6000 / Case",
-        specLabel: "Ply",
-        specValue: "1 Ply",
-      },
-      {
-        name: "Paper Towel Roll (Kitchen)",
-        shortDescription: "Absorbent 2-ply kitchen roll for food-service use.",
-        sku: "PPR-005",
-        packSize: "30 Rolls / Case",
-        specLabel: "Ply",
-        specValue: "2 Ply",
-      },
-    ],
-  },
-
-  // 8. Aerosols
-  {
-    name: "Aerosols",
-    description:
-      "Aerosol cleaners, disinfectants, insecticides and maintenance sprays.",
+      "Hand towels, bathroom tissue, kitchen roll and paper products in commercial pack sizes.",
     imagePath: PLACEHOLDER,
-    products: [
-      {
-        name: "Air Freshener Aerosol",
-        shortDescription:
-          "Long-lasting fragrance spray for restrooms and common areas.",
-        sku: "AER-001",
-        packSize: "300 mL, 12 per case",
-        specLabel: "Form",
-        specValue: "Aerosol",
-        featured: true,
-        isChemical: true,
-        industry: "Hospitality",
-        volume: "500ml",
-        color: "N/A",
-      },
-      {
-        name: "Insect Killer Spray",
-        shortDescription:
-          "Fast-acting aerosol for flying and crawling insect control.",
-        sku: "AER-002",
-        packSize: "400 mL, 12 per case",
-        specLabel: "Form",
-        specValue: "Aerosol",
-        isChemical: true,
-        industry: "Hospitality",
-        volume: "500ml",
-        color: "N/A",
-      },
-      {
-        name: "Penetrating Oil & Lubricant Spray",
-        shortDescription:
-          "Multi-use lubricant for hinges, locks and mechanical components.",
-        sku: "AER-003",
-        packSize: "400 mL, 12 per case",
-        specLabel: "Form",
-        specValue: "Aerosol",
-        industry: "Manufacturing",
-        volume: "500ml",
-        color: "N/A",
-      },
-      {
-        name: "Surface Disinfectant Spray (Aerosol)",
-        shortDescription:
-          "Hospital-grade disinfectant in a convenient aerosol can.",
-        sku: "AER-004",
-        packSize: "350 mL, 12 per case",
-        specLabel: "Form",
-        specValue: "Aerosol",
-        featured: true,
-        isChemical: true,
-        industry: "Healthcare",
-        volume: "500ml",
-        color: "N/A",
-      },
-    ],
   },
-
-  // 9. Safety Supplies
   {
-    name: "Safety Supplies",
+    name: "Food Service Supplies",
     description:
-      "First aid, spill control, hazard signage and workplace safety essentials.",
+      "Disposable cups, plates, lunch boxes, cutlery and food-service disposables.",
     imagePath: PLACEHOLDER,
-    products: [
-      {
-        name: "First Aid Kit (Type I — 25 Person)",
-        shortDescription:
-          "ANSI-compliant kit with essentials for a 25-person workplace.",
-        sku: "SAF-001",
-        packSize: "1 Kit",
-        specLabel: "Standard",
-        specValue: "ANSI A",
-        featured: true,
-      },
-      {
-        name: "Spill Kit (Oil & Chemical)",
-        shortDescription:
-          "Absorbent pads, socks and disposal bags for chemical spill response.",
-        sku: "SAF-002",
-        packSize: "1 Kit",
-        specLabel: "Coverage",
-        specValue: "7 Gal",
-        featured: true,
-      },
-      {
-        name: "Safety Data Sheet Binder",
-        shortDescription:
-          "Pre-tabbed binder for organising WHMIS/GHS safety data sheets.",
-        sku: "SAF-003",
-        packSize: "1 Unit",
-        specLabel: "Capacity",
-        specValue: "50 sheets",
-      },
-      {
-        name: "Eyewash Station",
-        shortDescription:
-          "Portable gravity-fed eyewash for immediate eye-flush response.",
-        sku: "SAF-004",
-        packSize: "1 Unit",
-        specLabel: "Capacity",
-        specValue: "16 oz",
-      },
-    ],
   },
-
-  // 10. Floor Maintenance Products
   {
-    name: "Floor Maintenance Products",
+    name: "Gloves",
     description:
-      "Floor waxes, polishes, strippers and pads for all floor types.",
+      "Nitrile, vinyl and work gloves in a full range of colours and sizes.",
     imagePath: PLACEHOLDER,
-    products: [
-      {
-        name: "High-Gloss Floor Finish (Wax)",
-        shortDescription:
-          "Metal cross-link floor wax delivering a durable, high-shine finish.",
-        sku: "FLR-001",
-        packSize: "4 L, 20 L",
-        specLabel: "Gloss",
-        specValue: "High",
-        featured: true,
-        isChemical: true,
-        industry: "Hospitality",
-        volume: "4L",
-        color: "Milky White",
-      },
-      {
-        name: "Floor Sealer",
-        shortDescription:
-          "Penetrating sealer that prepares concrete and VCT before wax application.",
-        sku: "FLR-002",
-        packSize: "4 L, 20 L",
-        specLabel: "Gloss",
-        specValue: "Low",
-        isChemical: true,
-        industry: "Manufacturing",
-        volume: "4L",
-        color: "Clear",
-      },
-      {
-        name: "Spray Buff Polish",
-        shortDescription:
-          "Spray-and-buff restorer that renews shine between stripping cycles.",
-        sku: "FLR-003",
-        packSize: "4 L",
-        specLabel: "Method",
-        specValue: "Spray-buff",
-        isChemical: true,
-        industry: "Hospitality",
-        volume: "4L",
-        color: "Clear",
-      },
-      {
-        name: "Black Stripping Pads (17 in)",
-        shortDescription:
-          "Aggressive floor pads for stripping old wax coatings.",
-        sku: "FLR-004",
-        packSize: "5 per case",
-        specLabel: "Diameter",
-        specValue: "17 in",
-      },
-      {
-        name: "Red Buffing Pads (17 in)",
-        shortDescription:
-          "Medium-duty pads for spray buffing and light scrubbing.",
-        sku: "FLR-005",
-        packSize: "5 per case",
-        specLabel: "Diameter",
-        specValue: "17 in",
-      },
-    ],
   },
-
-  // 11. Consumer Products
   {
-    name: "Consumer Products",
+    name: "Safety",
     description:
-      "Retail-sized household cleaning products available in single units for everyday consumers.",
+      "Personal protective equipment — boots, coats, vests, goggles and protective wear.",
     imagePath: PLACEHOLDER,
-    products: [
-      {
-        name: "All-Purpose Cleaner (Consumer 750 mL)",
-        shortDescription:
-          "Smaller retail pack of our popular all-purpose cleaner, ideal for home use.",
-        sku: "CON-001",
-        packSize: "750 mL",
-        specLabel: "Form",
-        specValue: "Liquid",
-        isChemical: true,
-        featured: true,
-        industry: "Office",
-        volume: "500ml",
-        color: "Yellow",
-      },
-      {
-        name: "Bathroom Cleaner & Descaler",
-        shortDescription:
-          "Removes limescale, soap scum and bathroom stains quickly.",
-        sku: "CON-002",
-        packSize: "750 mL",
-        specLabel: "Form",
-        specValue: "Gel",
-        isChemical: true,
-        industry: "Office",
-        volume: "500ml",
-        color: "Blue",
-      },
-      {
-        name: "Dishwashing Liquid (Consumer)",
-        shortDescription:
-          "Gentle yet effective dish soap for hand-washing in home kitchens.",
-        sku: "CON-003",
-        packSize: "500 mL, 1 L",
-        specLabel: "Form",
-        specValue: "Liquid",
-        isChemical: true,
-        industry: "Office",
-        volume: "500ml",
-        color: "Green",
-      },
-      {
-        name: "Glass & Window Cleaner",
-        shortDescription:
-          "Ammonia-free formula for streak-free glass and mirror surfaces.",
-        sku: "CON-004",
-        packSize: "750 mL",
-        specLabel: "Form",
-        specValue: "Spray",
-        isChemical: true,
-        industry: "Office",
-        volume: "500ml",
-        color: "Blue",
-      },
-    ],
   },
-
-  // 12. Custom Products
   {
-    name: "Custom Products",
+    name: "Bins",
     description:
-      "Custom-formulated chemicals and private-label packaging produced to your specifications.",
+      "Buckets, wringers, waste containers and mop-bucket systems.",
     imagePath: PLACEHOLDER,
-    products: [
-      {
-        name: "Custom Formula Development",
-        shortDescription:
-          "Work with our chemists to develop a proprietary cleaning or maintenance formula.",
-        sku: "CUS-001",
-        packSize: "MOQ 20 L",
-        specLabel: "Lead Time",
-        specValue: "4–6 weeks",
-        featured: true,
-        isChemical: true,
-      },
-      {
-        name: "Private Label Bottling",
-        shortDescription:
-          "Your branding on any of our standard formulations — minimum quantities apply.",
-        sku: "CUS-002",
-        packSize: "MOQ 100 units",
-        specLabel: "Formats",
-        specValue: "500 mL – 20 L",
-        featured: true,
-        isChemical: true,
-      },
-      {
-        name: "Bulk Contract Supply",
-        shortDescription:
-          "Recurring bulk orders with scheduled delivery and priority pricing.",
-        sku: "CUS-003",
-        packSize: "By agreement",
-        specLabel: "Contract",
-        specValue: "12 months",
-        isChemical: true,
-      },
-    ],
+  },
+  {
+    name: "Garbage Bags",
+    description:
+      "Poly bags and bin liners across every dimension, gauge and case count.",
+    imagePath: PLACEHOLDER,
+  },
+  {
+    name: "Mats",
+    description:
+      "Entrance, scraper and anti-fatigue floor mats in a range of sizes and colours.",
+    imagePath: PLACEHOLDER,
+  },
+  {
+    name: "Facility Care",
+    description:
+      "Tarpaulins, covers and general facility-maintenance supplies.",
+    imagePath: PLACEHOLDER,
   },
 ];
 
 // ---------------------------------------------------------------------------
-// Seed runner
+// Seed runner — categories only. Idempotent upsert + prune of stale-empty
+// categories. Products are owned by scripts/import-catalog.ts.
 // ---------------------------------------------------------------------------
 
 async function main() {
@@ -727,13 +120,11 @@ async function main() {
     const categorySlug = slugify(cat.name);
     keepCategorySlugs.push(categorySlug);
 
-    // Upsert the parent category (no parentId)
-    const category = await db.category.upsert({
+    await db.category.upsert({
       where: { slug: categorySlug },
       update: {
         name: cat.name,
         description: cat.description,
-        imagePath: cat.imagePath,
         sortOrder: categorySort,
         parentId: null,
       },
@@ -747,45 +138,12 @@ async function main() {
       },
     });
     categorySort += 1;
-
-    // Seed child categories (chemicals subsections)
-    if (cat.children) {
-      let childSort = 0;
-      for (const child of cat.children) {
-        const childSlug = slugify(child.name);
-        keepCategorySlugs.push(childSlug);
-
-        await db.category.upsert({
-          where: { slug: childSlug },
-          update: {
-            name: child.name,
-            description: child.description,
-            imagePath: child.imagePath,
-            sortOrder: childSort,
-            parentId: category.id,
-          },
-          create: {
-            slug: childSlug,
-            name: child.name,
-            description: child.description,
-            imagePath: child.imagePath,
-            sortOrder: childSort,
-            parentId: category.id,
-          },
-        });
-        childSort += 1;
-      }
-    }
   }
 
-  // Prune stale categories (e.g. the old "Janitorial Equipment & Supplies"
-  // that was split into "Janitorial Supplies" + "Dispensers"). Only delete
-  // categories that are no longer in the seed set AND hold no products —
-  // Product.categoryId is a required FK with no cascade, so a non-empty stale
-  // category is left intact rather than throwing.
+  // Prune stale categories that hold no products (required FK, no cascade).
   const staleCategories = await db.category.findMany({
     where: { slug: { notIn: keepCategorySlugs } },
-    select: { id: true, slug: true, _count: { select: { products: true } } },
+    select: { id: true, _count: { select: { products: true } } },
   });
   const emptyStaleIds = staleCategories
     .filter((c) => c._count.products === 0)
