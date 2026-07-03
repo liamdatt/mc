@@ -1,22 +1,28 @@
 "use client";
+import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { Section } from "@/components/primitives/Section";
 import { Container } from "@/components/primitives/Container";
 import { Eyebrow } from "@/components/primitives/Eyebrow";
 import { RevealOnScroll } from "@/components/motion/RevealOnScroll";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { stagger, fadeUp } from "@/lib/motion";
 
 /**
  * CSR event galleries — the two community events MEC is featuring, each with
- * its own set of client-supplied photos.
+ * its own set of client-supplied photos. Clicking any photo opens a lightbox
+ * that enlarges it, with keyboard + prev/next navigation across all photos.
  */
+
+type Photo = { src: string; alt: string };
 
 type CsrEvent = {
   tag: string;
   title: string;
   blurb: string;
-  photos: { src: string; alt: string }[];
+  photos: Photo[];
 };
 
 const EVENTS: CsrEvent[] = [
@@ -70,7 +76,44 @@ const EVENTS: CsrEvent[] = [
   },
 ];
 
+// One flat list so the lightbox can page across every photo, regardless of
+// which event it came from.
+const ALL_PHOTOS: Photo[] = EVENTS.flatMap((e) => e.photos);
+
 export function CsrGallery() {
+  const reduced = useReducedMotion();
+  // Index into ALL_PHOTOS of the enlarged photo, or null when the lightbox
+  // is closed.
+  const [active, setActive] = useState<number | null>(null);
+
+  const close = useCallback(() => setActive(null), []);
+  const step = useCallback(
+    (dir: number) =>
+      setActive((i) =>
+        i === null ? i : (i + dir + ALL_PHOTOS.length) % ALL_PHOTOS.length,
+      ),
+    [],
+  );
+
+  // Keyboard controls + scroll lock while the lightbox is open.
+  useEffect(() => {
+    if (active === null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") close();
+      else if (e.key === "ArrowRight") step(1);
+      else if (e.key === "ArrowLeft") step(-1);
+    };
+    window.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [active, close, step]);
+
+  const activePhoto = active === null ? null : ALL_PHOTOS[active];
+
   return (
     <Section tone="mist" id="csr-gallery">
       <Container>
@@ -119,9 +162,15 @@ export function CsrGallery() {
                       (i === 0 ? "col-span-2 lg:row-span-2" : "")
                     }
                   >
-                    <div
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setActive(ALL_PHOTOS.findIndex((p) => p.src === photo.src))
+                      }
+                      aria-label={`Enlarge photo: ${photo.alt}`}
+                      data-cursor="View"
                       className={
-                        "relative w-full overflow-hidden " +
+                        "relative block w-full cursor-pointer overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-mec-red focus-visible:ring-offset-2 " +
                         (i === 0 ? "aspect-square lg:h-full" : "aspect-[4/3]")
                       }
                     >
@@ -132,11 +181,11 @@ export function CsrGallery() {
                         sizes="(min-width: 1024px) 25vw, 50vw"
                         className="object-cover transition-transform duration-500 group-hover:scale-105"
                       />
-                    </div>
+                    </button>
                     {/* Red accent bar on hover */}
                     <span
                       aria-hidden
-                      className="absolute bottom-0 left-0 h-[3px] w-0 bg-mec-red transition-all duration-300 group-hover:w-full"
+                      className="pointer-events-none absolute bottom-0 left-0 h-[3px] w-0 bg-mec-red transition-all duration-300 group-hover:w-full"
                     />
                   </motion.li>
                 ))}
@@ -145,6 +194,83 @@ export function CsrGallery() {
           ))}
         </div>
       </Container>
+
+      {/* Lightbox */}
+      <AnimatePresence>
+        {activePhoto && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: reduced ? 0 : 0.25 }}
+            className="fixed inset-0 z-[200] grid place-items-center bg-mec-ink/90 p-4 backdrop-blur-sm sm:p-8"
+            role="dialog"
+            aria-modal="true"
+            aria-label={activePhoto.alt}
+            onClick={close}
+          >
+            {/* Close */}
+            <button
+              type="button"
+              onClick={close}
+              aria-label="Close"
+              className="absolute right-4 top-4 z-10 grid h-11 w-11 place-items-center rounded-full bg-mec-pure/10 text-mec-pure transition-colors hover:bg-mec-red sm:right-6 sm:top-6"
+            >
+              <X size={24} />
+            </button>
+
+            {/* Prev */}
+            {ALL_PHOTOS.length > 1 && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  step(-1);
+                }}
+                aria-label="Previous photo"
+                className="absolute left-4 top-1/2 z-10 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-mec-pure/10 text-mec-pure transition-colors hover:bg-mec-red sm:left-6"
+              >
+                <ChevronLeft size={26} />
+              </button>
+            )}
+
+            {/* Next */}
+            {ALL_PHOTOS.length > 1 && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  step(1);
+                }}
+                aria-label="Next photo"
+                className="absolute right-4 top-1/2 z-10 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-mec-pure/10 text-mec-pure transition-colors hover:bg-mec-red sm:right-6"
+              >
+                <ChevronRight size={26} />
+              </button>
+            )}
+
+            {/* Enlarged image — stopPropagation so a click on the image itself
+                doesn't close the lightbox. */}
+            <motion.div
+              key={activePhoto.src}
+              initial={reduced ? false : { scale: 0.96, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: reduced ? 0 : 0.25, ease: [0.16, 1, 0.3, 1] }}
+              className="relative h-[80vh] w-[90vw] max-w-6xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Image
+                src={activePhoto.src}
+                alt={activePhoto.alt}
+                fill
+                sizes="90vw"
+                className="object-contain"
+                priority
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </Section>
   );
 }
