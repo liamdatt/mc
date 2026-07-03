@@ -182,7 +182,7 @@ export function CinematicHero() {
         <div className="chero-drift absolute -inset-[3%]">
           <div className="chero-bg relative h-full w-full">
             <Image
-              src="/images/hero-cinematic.png"
+              src="/images/hero-promotional.png"
               alt=""
               fill
               priority

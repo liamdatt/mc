@@ -6,15 +6,33 @@ import { Container } from "@/components/primitives/Container";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 
-// TODO: replace name/bio/role placeholders with real executive data from client.
-// TODO: replace /images/person-placeholder.png with individual headshots
-//       once professional photos are received from client.
+// TODO: replace name placeholders with real executive names from client.
+// Headshots are the client-supplied professional photos.
 const TEAM = [
-  { role: "CEO", name: "Name Here", bio: "Leads the company with vision, passion, and a commitment to excellence." },
-  { role: "CFO", name: "Name Here", bio: "Drives financial strategy and ensures long-term sustainability and growth." },
-  { role: "COO", name: "Name Here", bio: "Oversees daily operations and ensures we deliver on our promises." },
-  { role: "GM", name: "Name Here", bio: "Manages performance and builds strong customer and supplier partnerships." },
-  { role: "Director", name: "Name Here", bio: "Supports strategic initiatives and drives business development." },
+  {
+    role: "CEO",
+    name: "Name Here",
+    bio: "Leads the company with vision, passion, and a commitment to excellence.",
+    img: "/images/team/ceo.jpg",
+  },
+  {
+    role: "COO",
+    name: "Name Here",
+    bio: "Oversees daily operations and ensures we deliver on our promises.",
+    img: "/images/team/coo.jpg",
+  },
+  {
+    role: "General Manager",
+    name: "Name Here",
+    bio: "Manages performance and builds strong customer and supplier partnerships.",
+    img: "/images/team/general-manager.jpg",
+  },
+  {
+    role: "Business Development Manager",
+    name: "Name Here",
+    bio: "Drives growth and builds lasting partnerships across new and existing markets.",
+    img: "/images/team/business-development-manager.png",
+  },
 ];
 
 export function LeadershipTeam() {
@@ -34,9 +52,9 @@ export function LeadershipTeam() {
           whileInView="visible"
           viewport={{ once: true, amount: 0.2 }}
           variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
-          className="mt-16 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5"
+          className="mt-16 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4"
         >
-          {TEAM.map(({ role, name, bio }) => (
+          {TEAM.map(({ role, name, bio, img }) => (
             <motion.li
               key={role}
               variants={{
@@ -51,11 +69,11 @@ export function LeadershipTeam() {
             >
               <div className="relative aspect-[4/5] w-full overflow-hidden bg-mec-graphite">
                 <Image
-                  src="/images/person-placeholder.png"
-                  alt=""
+                  src={img}
+                  alt={`${role}, Minott Equipment & Chemicals`}
                   fill
-                  sizes="(min-width: 1024px) 18vw, (min-width: 640px) 45vw, 90vw"
-                  className="object-cover opacity-90 transition-transform duration-500 group-hover:scale-105"
+                  sizes="(min-width: 1024px) 23vw, (min-width: 640px) 45vw, 90vw"
+                  className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
                 />
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-mec-ink to-transparent p-4 pt-10">
                   <p className="font-mono text-xs uppercase tracking-[0.2em] text-mec-red">

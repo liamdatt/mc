@@ -21,11 +21,15 @@ const MILESTONES = [
     years: 40,
     title: "1984 — A Vision Takes Root",
     body: "Forty years ago, our founder, Chester G. Minott, started Minott Equipment & Chemicals with a clear vision — to provide quality products, exceptional service, and honest relationships. With determination and hard work, he built a company grounded in integrity, reliability, and customer trust.",
+    img: "/images/team/previous-ceo.png",
+    imgAlt: "Chester G. Minott, founder and previous CEO of Minott Equipment & Chemicals",
   },
   {
     years: 15,
     title: "A New Chapter of Strength",
     body: "Fifteen years ago, [Successor Name] stepped in with courage and vision, taking the reins and leading the company through new challenges. Continuing the legacy, she transformed Minott Equipment & Chemicals into the strong, respected company it is today.",
+    img: "/images/team/ceo.jpg",
+    imgAlt: "The current CEO of Minott Equipment & Chemicals",
   },
 ];
 
@@ -104,11 +108,11 @@ export function OurStory() {
                 </div>
                 <div className="relative aspect-[4/3] w-full overflow-hidden rounded-md bg-mec-mist">
                   <Image
-                    src="/images/person-placeholder.png"
-                    alt=""
+                    src={m.img}
+                    alt={m.imgAlt}
                     fill
                     sizes="(min-width: 1024px) 40vw, 100vw"
-                    className="object-cover opacity-80"
+                    className="object-cover object-top"
                   />
                 </div>
               </RevealOnScroll>

@@ -80,7 +80,7 @@ export function Nav({ categories }: { categories: CategoryLink[] }) {
       >
         <div className="mx-auto flex w-full max-w-[1440px] items-center justify-between gap-6 px-6 py-4 md:px-10">
           <Link href="/" data-cursor="Home" aria-label="Minott Equipment & Chemicals — Home">
-            <Logo className="text-lg" />
+            <Logo className="h-9 md:h-10" />
           </Link>
 
           {/* The full row only fits from xl up; below that the hamburger
