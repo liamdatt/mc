@@ -19,15 +19,19 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 ## Catalog setup (first deploy & after a new product spreadsheet)
 
 ```bash
-npm run db:seed         # categories
-npm run import:catalog  # builds listings + variants from prisma/data/chemicals-2026.ts (idempotent; new SKUs land in the hidden "Unsorted Imports" listing for admin sorting)
+npm run db:seed         # the 12 product categories
+npm run import:catalog  # listings + variants from the per-category modules in prisma/data/*.ts
 ```
+
+The catalog data lives in one pre-grouped module per category (`prisma/data/<category>.ts`, typed by `_listing-types.ts`), generated from the client spreadsheet. Each module already decides its own variant grouping (size/pack = variants under one listing; strength/scent/colour = separate listings). The importer writes them **authoritatively**: listings are upserted by slug and variants by SKU (IDs stay stable so inquiry references survive), then anything not present in the modules is pruned — so the modules are the single source of truth for the catalog.
 
 **Production (`start:prod`) runs this automatically** via `setup:catalog`:
 `prisma migrate deploy && prisma db seed && tsx scripts/import-catalog.ts && next start`.
-Both steps are idempotent and curation-preserving — `db:seed` only upserts categories, and the importer refreshes existing variants by SKU (never touching admin groupings/renames) while routing brand-new SKUs to the hidden "Unsorted Imports" listing. So a fresh/ephemeral deploy DB bootstraps the full catalog on boot, and a persistent DB keeps admin edits across deploys. Run the two commands above manually only for local setup or an out-of-band re-import.
+A fresh/ephemeral deploy DB is fully populated on boot; a persistent DB is reconciled to match the modules.
 
-> Deploy host (Coolify/Nixpacks): the start command must be `npm run start:prod` (not the default `npm start`) so migrations + catalog population run. If an existing deployed DB still has pre-variants flat rows, reset its volume so the next boot bootstraps cleanly.
+> Deploy host (Coolify/Nixpacks): the start command must be `npm run start:prod` (not the default `npm start`) so migrations + catalog population run.
+>
+> To refresh the catalog from a new spreadsheet, re-run the extraction into `prisma/data/*.ts` + `public/images/products/`, then `npm run import:catalog`.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 

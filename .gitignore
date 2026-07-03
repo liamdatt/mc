@@ -1,3 +1,4 @@
 # Client-supplied source spreadsheets (product listings) — large binaries,
 # extracted into minott-web/prisma/data + public/images via scripts/extract-product-xlsx.py
 *.xlsx
+extracted_jun30/
