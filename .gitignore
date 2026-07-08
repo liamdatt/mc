@@ -2,3 +2,7 @@
 # extracted into minott-web/prisma/data + public/images via scripts/extract-product-xlsx.py
 *.xlsx
 extracted_jun30/
+
+# Client-supplied source image originals — large binaries; the optimized
+# web copies live in minott-web/public/images/
+MEC Website Images/

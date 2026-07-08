@@ -27,7 +27,7 @@ const MILESTONES = [
   {
     years: 15,
     title: "A New Chapter of Strength",
-    body: "Fifteen years ago, [Successor Name] stepped in with courage and vision, taking the reins and leading the company through new challenges. Continuing the legacy, she transformed Minott Equipment & Chemicals into the strong, respected company it is today.",
+    body: "Fifteen years ago, Mileydi Minott stepped in with courage and vision, taking the reins and leading the company through new challenges. Continuing the legacy, she transformed Minott Equipment & Chemicals into the strong, respected company it is today.",
     img: "/images/team/ceo.jpg",
     imgAlt: "The current CEO of Minott Equipment & Chemicals",
   },

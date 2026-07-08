@@ -1,50 +1,59 @@
-// Typographic wordmark treatments for partner brands.
+// Official partner brand logos, rendered inside the TrustBar carousel chips.
 //
-// Official logo SVG files are not available yet. Each brand gets its own
-// distinct treatment (weight / case / color tuned toward the real brand
-// identity) inside a consistent chip, rendered as a self-contained component
-// per brand slot. When real SVGs arrive, swap the inner JSX of the matching
-// component for an <Image src="/brand-logos/<brand>.svg" .../> (or inline SVG)
-// without touching the carousel or callers.
+// Each brand renders only its inner mark; the chip/card chrome lives in the
+// caller (TrustBar) so spacing and hover behaviour stay consistent. Logos are
+// the official client-supplied PNGs in /public/brand-logos, sized per brand so
+// they optically balance against one another within the shared chip.
 
+import Image from "next/image";
 import type { ComponentType } from "react";
 
-// Each wordmark renders only its inner mark; the chip/card chrome lives in the
-// caller (TrustBar) so spacing and hover behaviour stay consistent.
-
 function ThreeMWordmark() {
-  // 3M: heavy, tightly-tracked, brand red.
+  // 3M: bold square mark — keep it compact so it doesn't dwarf the wordmarks.
   return (
-    <span className="font-display text-[2.6rem] leading-none tracking-[-0.02em] text-mec-red">
-      3M
-    </span>
+    <Image
+      src="/brand-logos/3m.png"
+      alt="3M"
+      width={3000}
+      height={2000}
+      className="h-10 w-auto object-contain"
+    />
   );
 }
 
 function SanJamarWordmark() {
-  // San Jamar: clean two-tone body type, deep ink with a red accent dot.
   return (
-    <span className="font-body text-2xl font-bold leading-none tracking-tight text-mec-ink">
-      San<span className="text-mec-red">Jamar</span>
-    </span>
+    <Image
+      src="/brand-logos/san-jamar.png"
+      alt="San Jamar"
+      width={900}
+      height={500}
+      className="h-12 w-auto object-contain"
+    />
   );
 }
 
 function RubbermaidWordmark() {
-  // Rubbermaid: bold lowercase, rounded weight, graphite.
   return (
-    <span className="font-body text-[1.55rem] font-extrabold lowercase leading-none tracking-[-0.01em] text-mec-graphite">
-      rubbermaid
-    </span>
+    <Image
+      src="/brand-logos/rubbermaid.png"
+      alt="Rubbermaid Commercial Products"
+      width={612}
+      height={326}
+      className="h-14 w-auto object-contain"
+    />
   );
 }
 
 function PurellWordmark() {
-  // Purell: brand blue, uppercase display, wide tracking.
   return (
-    <span className="font-display text-[2.1rem] leading-none tracking-[0.04em] text-[#0072CE]">
-      PURELL
-    </span>
+    <Image
+      src="/brand-logos/purell.png"
+      alt="Purell"
+      width={529}
+      height={378}
+      className="h-14 w-auto object-contain"
+    />
   );
 }
 

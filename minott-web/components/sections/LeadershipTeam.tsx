@@ -1,36 +1,33 @@
 "use client";
 import Image from "next/image";
-import Link from "next/link";
 import { Section } from "@/components/primitives/Section";
 import { Container } from "@/components/primitives/Container";
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
 
-// TODO: replace name placeholders with real executive names from client.
 // Headshots are the client-supplied professional photos.
 const TEAM = [
   {
     role: "CEO",
-    name: "Name Here",
+    name: "Mileydi Minott",
     bio: "Leads the company with vision, passion, and a commitment to excellence.",
     img: "/images/team/ceo.jpg",
   },
   {
     role: "COO",
-    name: "Name Here",
+    name: "Tamara Taylor Gordon",
     bio: "Oversees daily operations and ensures we deliver on our promises.",
     img: "/images/team/coo.jpg",
   },
   {
     role: "General Manager",
-    name: "Name Here",
+    name: "Jacqueline Ebanks",
     bio: "Manages performance and builds strong customer and supplier partnerships.",
     img: "/images/team/general-manager.jpg",
   },
   {
-    role: "Business Development Manager",
-    name: "Name Here",
-    bio: "Drives growth and builds lasting partnerships across new and existing markets.",
+    role: "Operations Manager",
+    name: "Mia Minott",
+    bio: "Keeps our operations running smoothly so we deliver reliably, every time.",
     img: "/images/team/business-development-manager.png",
   },
 ];
@@ -82,16 +79,8 @@ export function LeadershipTeam() {
                   <p className="mt-1 font-display text-xl text-mec-pure">{name}</p>
                 </div>
               </div>
-              <div className="flex flex-1 flex-col justify-between p-5">
+              <div className="flex flex-1 flex-col p-5">
                 <p className="text-sm leading-relaxed text-mec-pure/70">{bio}</p>
-                <Link
-                  href="/about#leadership"
-                  data-cursor="View"
-                  className="mt-5 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-mec-red transition-colors hover:text-mec-pure"
-                >
-                  View Profile
-                  <ArrowRight className="h-3.5 w-3.5" aria-hidden />
-                </Link>
               </div>
             </motion.li>
           ))}
