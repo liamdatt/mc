@@ -19,13 +19,13 @@ export function ProductCard({ product }: { product: ProductCardData }) {
   const href = `/products/${product.categorySlug}/${product.slug}`;
   return (
     <div className="flex flex-col overflow-hidden rounded-md border border-black/10 bg-mec-pure">
-      <Link href={href} className="relative block aspect-square" data-cursor="View">
+      <Link href={href} className="relative block aspect-square bg-mec-mist" data-cursor="View">
         <Image
           src={product.imagePath}
           alt={product.name}
           fill
           sizes="(min-width:1024px) 25vw, 50vw"
-          className="object-cover"
+          className="object-contain p-3"
         />
         {product.isChemical && (
           <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-pill bg-mec-ink/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-mec-pure">

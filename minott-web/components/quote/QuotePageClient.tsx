@@ -110,7 +110,7 @@ export function QuotePageClient({
                   alt={it.name}
                   fill
                   sizes="64px"
-                  className="object-cover"
+                  className="object-contain p-1"
                 />
               </div>
               <div className="min-w-0 flex-1">
