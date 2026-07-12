@@ -2,7 +2,6 @@
 import { motion } from "framer-motion";
 import {
   FlaskConical,
-  Sparkles,
   ClipboardList,
 } from "lucide-react";
 import { Section } from "@/components/primitives/Section";
@@ -24,15 +23,6 @@ const CARDS = [
     // TODO: matting content to be added later
     body: "Have a product request you can't find on our website? Contact us to see how we can facilitate product sourcing.",
     cta: "Get in Touch",
-    href: "/contact",
-  },
-  {
-    key: "janitorial-services",
-    icon: Sparkles,
-    title: "Janitorial Services",
-    // TODO: copy pending from client — replace placeholder below
-    body: "Professional-grade janitorial services tailored to your facility's needs.",
-    cta: "Contact Us",
     href: "/contact",
   },
   {
