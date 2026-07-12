@@ -64,7 +64,7 @@ export function TailoredSolutions() {
           whileInView="visible"
           viewport={{ once: true, amount: 0.1 }}
           variants={{ visible: { transition: { staggerChildren: 0.12 } } }}
-          className="mt-16 grid grid-cols-1 gap-6 md:grid-cols-3"
+          className="mt-16 grid grid-cols-1 gap-6 md:grid-cols-2"
         >
           {CARDS.map(({ key, icon: Icon, title, body, cta, href }) => (
             <motion.li
