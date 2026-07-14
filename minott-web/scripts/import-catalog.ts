@@ -95,6 +95,7 @@ async function main() {
         imagePath: L.imagePath || PLACEHOLDER,
         color: L.color ?? null,
         industry: L.industry ?? null,
+        optionLabel: L.optionLabel ?? null,
         isChemical: L.isChemical ?? false,
         sampleAvailable: L.sampleAvailable ?? false,
         sdsUrl: L.sdsUrl ?? null,

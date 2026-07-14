@@ -3711,6 +3711,7 @@ export const CHEMICALS: SeedListing[] = [
     "description": null,
     "imagePath": "/images/products/usc-cbollom-wfrg.png",
     "color": null,
+    "optionLabel": "Scent",
     "industry": null,
     "isChemical": true,
     "sampleAvailable": true,

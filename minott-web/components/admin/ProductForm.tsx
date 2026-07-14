@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import Link from "next/link";
 import type { ProductFormState } from "@/lib/actions/admin-products";
+import { ImageUpload } from "./ImageUpload";
 
 type Category = { id: number; name: string };
 type ProductValues = {
@@ -16,6 +17,7 @@ type ProductValues = {
   sdsUrl?: string | null;
   color?: string | null;
   industry?: string | null;
+  optionLabel?: string | null;
   isChemical?: boolean;
   sampleAvailable?: boolean;
   featured?: boolean;
@@ -41,6 +43,9 @@ export function ProductForm({
 }) {
   const [state, formAction, pending] = useActionState(action, {});
   const p = product ?? {};
+  const [imagePath, setImagePath] = useState(
+    p.imagePath ?? "/images/product-placeholder.png",
+  );
   return (
     <form action={formAction} className="max-w-2xl space-y-5">
       {p.id != null && <input type="hidden" name="id" value={p.id} />}
@@ -90,16 +95,31 @@ export function ProductForm({
         />
       </label>
 
-      <label className={label}>
-        Image path
+      <div>
+        <span className={label}>Listing image</span>
+        {p.id != null && (
+          <div className="mt-2">
+            <ImageUpload
+              current={imagePath}
+              productId={p.id}
+              onUploaded={setImagePath}
+            />
+          </div>
+        )}
         <input
           name="imagePath"
-          defaultValue={p.imagePath ?? "/images/product-placeholder.png"}
-          className={field}
+          value={imagePath}
+          onChange={(e) => setImagePath(e.target.value)}
+          className={`${field} mt-2`}
+          placeholder="/images/products/…"
         />
-      </label>
+        <p className="mt-1 text-xs text-mec-ink/50">
+          Uploading replaces the image immediately. The path field is for manual
+          overrides (e.g. an existing catalog image).
+        </p>
+      </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         <label className={label}>
           Color
           <input name="color" defaultValue={p.color ?? ""} className={field} />
@@ -109,6 +129,15 @@ export function ProductForm({
           <input
             name="industry"
             defaultValue={p.industry ?? ""}
+            className={field}
+          />
+        </label>
+        <label className={label}>
+          Option label
+          <input
+            name="optionLabel"
+            defaultValue={p.optionLabel ?? ""}
+            placeholder="Size"
             className={field}
           />
         </label>

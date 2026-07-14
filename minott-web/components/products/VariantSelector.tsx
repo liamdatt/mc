@@ -21,6 +21,8 @@ type Props = {
     categorySlug: string;
   };
   variants: SelectableVariant[];
+  /** Heading for the option pills — e.g. "Size", "Scent". Defaults to "Size". */
+  optionLabel?: string | null;
   /** Controlled: the currently-selected variant (owned by the parent so the
    *  hero image and other UI can react to the same selection). */
   selected: SelectableVariant;
@@ -34,7 +36,8 @@ const pillOff = "border-mec-mist text-mec-ink hover:border-mec-ink";
 const groupLabel =
   "mb-2 font-mono text-xs uppercase tracking-[0.12em] text-mec-graphite";
 
-export function VariantSelector({ listing, variants, selected, onSelect }: Props) {
+export function VariantSelector({ listing, variants, optionLabel, selected, onSelect }: Props) {
+  const sizeHeading = optionLabel?.trim() || "Size";
   const sizes = useMemo(
     () => [...new Set(variants.map((v) => v.size).filter((s): s is string => !!s))],
     [variants],
@@ -69,8 +72,8 @@ export function VariantSelector({ listing, variants, selected, onSelect }: Props
   return (
     <div className="flex flex-col gap-5">
       {sizes.length > 1 && (
-        <div role="group" aria-label="Size">
-          <p className={groupLabel}>Size</p>
+        <div role="group" aria-label={sizeHeading}>
+          <p className={groupLabel}>{sizeHeading}</p>
           <div className="flex flex-wrap gap-2">
             {sizes.map((s) => (
               <button

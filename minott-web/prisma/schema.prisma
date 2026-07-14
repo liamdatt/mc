@@ -35,6 +35,7 @@ model Product {
   sampleAvailable  Boolean          @default(false)
   industry         String?
   color            String?
+  optionLabel      String? // heading for the variant option pills, e.g. "Size", "Scent", "Length". Null → "Size".
   featured         Boolean          @default(false)
   active           Boolean          @default(true)
   sortOrder        Int              @default(0)
