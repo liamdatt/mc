@@ -19,6 +19,7 @@ type Props = {
     isChemical: boolean;
     sampleAvailable: boolean;
     sdsUrl: string | null;
+    optionLabel: string | null;
   };
   variants: SelectableVariant[];
 };
@@ -67,6 +68,7 @@ export function ProductDetailView({ product, variants }: Props) {
             isChemical: product.isChemical,
             sampleAvailable: product.sampleAvailable,
             sdsUrl: product.sdsUrl,
+            optionLabel: product.optionLabel,
           }}
           variants={variants}
           selected={selected}

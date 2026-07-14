@@ -63,6 +63,7 @@ export default async function ProductDetailPage({
             isChemical: product.isChemical,
             sampleAvailable: product.sampleAvailable,
             sdsUrl: product.sdsUrl,
+            optionLabel: product.optionLabel,
           }}
           variants={product.variants.map((v) => ({
             id: v.id,

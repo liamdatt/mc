@@ -33,6 +33,7 @@ function buildData(formData: FormData) {
     sdsUrl: str(formData, "sdsUrl") || null,
     color: str(formData, "color") || null,
     industry: str(formData, "industry") || null,
+    optionLabel: str(formData, "optionLabel") || null,
     isChemical: bool(formData, "isChemical"),
     sampleAvailable: bool(formData, "sampleAvailable"),
     featured: bool(formData, "featured"),

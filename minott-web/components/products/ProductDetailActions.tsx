@@ -23,6 +23,7 @@ export function ProductDetailActions({
     isChemical: boolean;
     sampleAvailable: boolean;
     sdsUrl: string | null;
+    optionLabel: string | null;
   };
   variants: SelectableVariant[];
   selected: SelectableVariant;
@@ -41,6 +42,7 @@ export function ProductDetailActions({
           categorySlug: product.categorySlug,
         }}
         variants={variants}
+        optionLabel={product.optionLabel}
         selected={selected}
         onSelect={onSelect}
       />

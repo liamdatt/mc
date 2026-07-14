@@ -30,6 +30,8 @@ export type SeedListing = {
   imagePath: string;
   color?: string | null;
   industry?: string | null;
+  /** Heading for the variant option pills on the detail page — e.g. "Size", "Scent", "Length". Null → "Size". */
+  optionLabel?: string | null;
   isChemical?: boolean;
   sampleAvailable?: boolean;
   sdsUrl?: string | null;

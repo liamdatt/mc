@@ -9,6 +9,7 @@ import {
   splitVariantToNewListing,
   type VariantFormState,
 } from "@/lib/actions/admin-variants";
+import { ImageUpload } from "./ImageUpload";
 
 type Variant = {
   id: number;
@@ -16,6 +17,7 @@ type Variant = {
   size: string | null;
   packType: string;
   label: string | null;
+  imagePath: string | null;
   active: boolean;
   sortOrder: number;
 };
@@ -44,6 +46,9 @@ function VariantRow({
   return (
     <>
       <tr className="border-b border-black/5 align-top">
+        <td className="px-2 py-2">
+          <ImageUpload current={variant.imagePath} variantId={variant.id} size={56} />
+        </td>
         <td className="px-2 py-2">
           <form
             id={`edit-${variant.id}`}
@@ -124,7 +129,7 @@ function VariantRow({
         </td>
       </tr>
       <tr className="border-b border-black/10 bg-mec-mist/40">
-        <td colSpan={7} className="px-2 py-2">
+        <td colSpan={8} className="px-2 py-2">
           {editState.error && (
             <span className="mr-4 text-xs text-mec-red">{editState.error}</span>
           )}
@@ -173,6 +178,9 @@ function AddVariantRow({ productId }: { productId: number }) {
   const [state, action, pending] = useActionState(createVariant, initial);
   return (
     <tr className="border-t-2 border-black/10 bg-mec-mist/60 align-top">
+      <td className="px-2 py-2 text-center text-[10px] text-mec-ink/40">
+        add, then upload
+      </td>
       <td className="px-2 py-2">
         <form id="add-variant" action={action} className="contents">
           <input type="hidden" name="productId" value={productId} />
@@ -253,6 +261,7 @@ export function VariantManager({
         <table className="w-full text-left">
           <thead className="border-b border-black/10 bg-mec-mist">
             <tr>
+              <th className={colHead}>Image</th>
               <th className={colHead}>SKU</th>
               <th className={colHead}>Size</th>
               <th className={colHead}>Label</th>
@@ -266,7 +275,7 @@ export function VariantManager({
             {variants.length === 0 && (
               <tr>
                 <td
-                  colSpan={7}
+                  colSpan={8}
                   className="px-4 py-6 text-center text-sm text-mec-ink/50"
                 >
                   No variants yet. Add one below.
