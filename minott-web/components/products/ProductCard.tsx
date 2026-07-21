@@ -3,9 +3,10 @@ import Link from "next/link";
 import { FileText, FlaskConical } from "lucide-react";
 import { AddToQuoteButton } from "@/components/quote/AddToQuoteButton";
 
-// Same shape ProductRowData had (and toRow() in app/products/all/page.tsx
-// produces) so the page's mapper is reused unchanged. specLabel/specValue and
-// packSize are only non-null for single-variant listings.
+// The shape toRow() in app/products/all/page.tsx produces. sdsUrl and
+// categoryName are carried for that mapper but not rendered here.
+// specLabel/specValue and packSize are only non-null for single-variant
+// listings.
 export type ProductCardData = {
   id: number;
   slug: string;
