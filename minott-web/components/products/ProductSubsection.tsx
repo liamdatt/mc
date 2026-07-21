@@ -1,4 +1,4 @@
-import { ProductRow, type ProductRowData } from "@/components/products/ProductRow";
+import { ProductCard, type ProductCardData } from "@/components/products/ProductCard";
 
 /**
  * A subsection heading (a child category) with its products beneath it.
@@ -12,11 +12,11 @@ export function ProductSubsection({
 }: {
   title: string;
   description?: string | null;
-  products: ProductRowData[];
+  products: ProductCardData[];
 }) {
   if (products.length === 0) return null;
   return (
-    <section className="mb-8 last:mb-0">
+    <section className="mb-10 last:mb-0">
       <div className="flex items-baseline gap-4 border-b-2 border-mec-red/30 pb-2">
         <h2 className="font-display-tight text-2xl uppercase leading-tight text-mec-ink">
           {title}
@@ -28,9 +28,9 @@ export function ProductSubsection({
       {description && (
         <p className="mt-2 text-sm text-mec-ink/70">{description}</p>
       )}
-      <div className="mt-2">
+      <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
         {products.map((p) => (
-          <ProductRow key={p.id} product={p} />
+          <ProductCard key={p.id} product={p} />
         ))}
       </div>
     </section>
