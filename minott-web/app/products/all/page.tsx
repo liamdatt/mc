@@ -13,7 +13,7 @@ import {
 import { Section } from "@/components/primitives/Section";
 import { Container } from "@/components/primitives/Container";
 import { Eyebrow } from "@/components/primitives/Eyebrow";
-import { ProductRow, type ProductRowData } from "@/components/products/ProductRow";
+import { ProductCard, type ProductCardData } from "@/components/products/ProductCard";
 import { ProductSubsection } from "@/components/products/ProductSubsection";
 import { ProductFilterSidebar } from "@/components/products/ProductFilterSidebar";
 import { ProductSort } from "@/components/products/ProductSort";
@@ -31,8 +31,8 @@ type ProductWithCategory = Awaited<
   ReturnType<typeof getProductsForListing>
 >[number];
 
-/** Map a Prisma product (with category) to the shape ProductRow expects. */
-function toRow(p: ProductWithCategory): ProductRowData {
+/** Map a Prisma product (with category) to the shape ProductCard expects. */
+function toRow(p: ProductWithCategory): ProductCardData {
   const variantCount = p.variants.length;
   const first = p.variants[0] ?? null;
   const onlyVariant =
@@ -127,9 +127,9 @@ export default async function AllProductsPage({
     slug: string;
     name: string;
     description?: string | null;
-    rows: ProductRowData[];
+    rows: ProductCardData[];
   }[] = [];
-  let ungrouped: ProductRowData[] = [];
+  let ungrouped: ProductCardData[] = [];
   if (useSubsections && grouped) {
     const childSlugs = new Set(grouped.children.map((c) => c.slug));
     subsectionBuckets = grouped.children.map((c) => ({
@@ -191,22 +191,24 @@ export default async function AllProductsPage({
         </p>
 
         <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-[260px_minmax(0,1fr)]">
-          <ProductFilterSidebar
-            categories={categories}
-            forms={forms}
-            industries={industries}
-            volumes={volumes}
-            colors={colors}
-            active={{
-              category: sp.category,
-              form: sp.form,
-              industry: sp.industry,
-              volume: sp.volume,
-              color: sp.color,
-              sort: sp.sort,
-              q,
-            }}
-          />
+          <div className="lg:sticky lg:top-24 lg:self-start">
+            <ProductFilterSidebar
+              categories={categories}
+              forms={forms}
+              industries={industries}
+              volumes={volumes}
+              colors={colors}
+              active={{
+                category: sp.category,
+                form: sp.form,
+                industry: sp.industry,
+                volume: sp.volume,
+                color: sp.color,
+                sort: sp.sort,
+                q,
+              }}
+            />
+          </div>
 
           <div>
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-black/10 pb-4">
@@ -232,7 +234,7 @@ export default async function AllProductsPage({
                 No products match these filters.
               </p>
             ) : useSubsections ? (
-              <div data-lenis-prevent className="h-[46rem] overflow-y-auto pr-2">
+              <div className="mt-6">
                 {subsectionBuckets.map((b) => (
                   <ProductSubsection
                     key={b.slug}
@@ -246,9 +248,9 @@ export default async function AllProductsPage({
                 )}
               </div>
             ) : (
-              <div data-lenis-prevent className="h-[46rem] overflow-y-auto pr-2">
+              <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
                 {products.map((p) => (
-                  <ProductRow key={p.id} product={toRow(p)} />
+                  <ProductCard key={p.id} product={toRow(p)} />
                 ))}
               </div>
             )}
