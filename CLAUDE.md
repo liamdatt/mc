@@ -56,7 +56,7 @@ All components use **named exports** (except Next.js `page`/`layout`/`proxy` whi
 - **DB:** SQLite via **Prisma 7**, which has non-obvious requirements: a driver adapter is mandatory (`@prisma/adapter-better-sqlite3` in `lib/db.ts` + `prisma/seed.ts`), the datasource URL lives in `prisma.config.ts` (not `schema.prisma`), the seed command is configured there too (`migrations.seed`), and `next.config.ts` must externalize the native module (`serverExternalPackages`). Schema in `prisma/schema.prisma`; client singleton in `lib/db.ts`; seed in `prisma/seed.ts`.
 - **Inquiries** (quote / sample / contact) are one unified `Inquiry` model with a `type` discriminator; quote line items live in `InquiryItem`. All inbound messages land in `/admin/requests`.
 - **Admin auth:** single `ADMIN_PASSWORD`; a signed httpOnly cookie (`lib/auth/session.ts`, Web Crypto HMAC with `SESSION_SECRET`) is checked in `proxy.ts` and re-checked in `app/admin/(protected)/layout.tsx`. The login page sits outside the `(protected)` route group so the gate doesn't loop on it.
-- **Env:** copy `.env.example` → `.env`. Required: `DATABASE_URL`, `ADMIN_PASSWORD`, `SESSION_SECRET`.
+- **Env:** copy `.env.example` → `.env`. Required: `DATABASE_URL`, `ADMIN_PASSWORD`, `SESSION_SECRET`. Optional: `RESEND_API_KEY` (email sending is skipped with a console warning when unset).
 - **Deployment:** Node server (`next start`) with the SQLite file persisted on disk — no longer static/Vercel-serverless.
 
 ## Motion system (the defining feature)
@@ -85,4 +85,4 @@ Brand palette: `mec-red #E10600`, `mec-ink #0D0D0D`, `mec-graphite`, `mec-mist`,
 
 ## Known open items
 
-Placeholders awaiting real client assets: founder photo, official brand-logo SVGs, `public/og.jpg`, and a single product placeholder image (`public/images/product-placeholder.png`, used for all seeded products). Inquiries persist to the DB but there is **no email/notification delivery** yet (admin must check `/admin/requests`). Out of scope for now: customer accounts, admin image uploads (image is a text path), analytics, sitemap.
+Placeholders awaiting real client assets: founder photo, official brand-logo SVGs, `public/og.jpg`, and a single product placeholder image (`public/images/product-placeholder.png`, used for all seeded products). Inquiry emails send via Resend (best-effort): internal notifications route to the assigned sales rep (CC general inbox) or the general inbox, and customers get confirmations. Configure addresses in `/admin/settings`; `RESEND_API_KEY` in `.env`. Out of scope for now: customer accounts, admin image uploads (image is a text path), analytics, sitemap.
