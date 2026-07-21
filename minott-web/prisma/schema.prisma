@@ -190,3 +190,11 @@ model Verification {
   @@index([identifier])
   @@map("verification")
 }
+
+// Admin-editable site settings (key-value). Email keys used today:
+// "fromEmail", "fromName", "generalInboxEmail" — see lib/settings.ts.
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
