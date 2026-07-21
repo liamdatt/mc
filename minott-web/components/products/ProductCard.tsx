@@ -72,7 +72,9 @@ export function ProductCard({ product }: { product: ProductCardData }) {
               <span className="text-mec-ink/80">{product.packSize}</span>
             </p>
           )}
-          {product.specLabel && product.specValue && (
+          {product.specLabel &&
+            product.specValue &&
+            !(product.specLabel === "Pack Size" && product.specValue === product.packSize) && (
             <p>
               <span className="text-mec-ink/50">{product.specLabel}: </span>
               <span className="text-mec-ink/90">{product.specValue}</span>
