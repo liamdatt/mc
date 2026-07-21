@@ -3,6 +3,8 @@
 import { db } from "@/lib/db";
 import { INQUIRY_TYPE } from "@/lib/constants";
 import { getPortalSession } from "@/lib/portal";
+import { after } from "next/server";
+import { sendInquiryEmails } from "@/lib/email/send-inquiry-emails";
 
 export type InquiryResult = { ok: boolean; error?: string };
 
@@ -23,7 +25,7 @@ export async function submitContact(
 ): Promise<InquiryResult> {
   const bad = requireContact(formData);
   if (bad) return bad;
-  await db.inquiry.create({
+  const inquiry = await db.inquiry.create({
     data: {
       type: INQUIRY_TYPE.CONTACT,
       name: field(formData, "name"),
@@ -33,6 +35,7 @@ export async function submitContact(
       message: field(formData, "message") || null,
     },
   });
+  after(() => sendInquiryEmails(inquiry.id));
   return { ok: true };
 }
 
@@ -44,7 +47,7 @@ export async function submitSample(
   if (bad) return bad;
   const productId = Number(formData.get("productId"));
   const variantId = Number(formData.get("variantId")) || null;
-  await db.inquiry.create({
+  const inquiry = await db.inquiry.create({
     data: {
       type: INQUIRY_TYPE.SAMPLE,
       productId: Number.isFinite(productId) ? productId : null,
@@ -56,6 +59,7 @@ export async function submitSample(
       message: field(formData, "message") || null,
     },
   });
+  after(() => sendInquiryEmails(inquiry.id));
   return { ok: true };
 }
 
@@ -87,7 +91,7 @@ export async function submitQuote(
   // derived from the session cookie server-side — never from form data.
   const session = await getPortalSession();
 
-  await db.inquiry.create({
+  const inquiry = await db.inquiry.create({
     data: {
       type: INQUIRY_TYPE.QUOTE,
       userId: session?.user.id ?? null,
@@ -111,5 +115,6 @@ export async function submitQuote(
       },
     },
   });
+  after(() => sendInquiryEmails(inquiry.id));
   return { ok: true };
 }
