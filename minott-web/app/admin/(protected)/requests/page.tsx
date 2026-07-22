@@ -24,7 +24,7 @@ export default async function AdminRequestsPage({
   const inquiries = await db.inquiry.findMany({
     where: active === "ALL" ? {} : { type: active },
     orderBy: { createdAt: "desc" },
-    include: { items: true, product: true },
+    include: { items: true, product: true, notes: { orderBy: { createdAt: "desc" } } },
   });
 
   return (
@@ -96,6 +96,20 @@ export default async function AdminRequestsPage({
               <p className="mt-3 whitespace-pre-line text-sm text-mec-ink/75">
                 {inq.message}
               </p>
+            )}
+
+            {inq.notes.length > 0 && (
+              <div className="mt-3 space-y-1.5 border-t border-black/5 pt-3">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-mec-ink/50">
+                  Rep notes
+                </p>
+                {inq.notes.map((n) => (
+                  <p key={n.id} className="text-sm text-mec-ink/70">
+                    <span className="text-mec-ink">{n.body}</span>{" "}
+                    <span className="text-xs text-mec-ink/45">— {n.authorLabel}</span>
+                  </p>
+                ))}
+              </div>
             )}
           </div>
         ))}
