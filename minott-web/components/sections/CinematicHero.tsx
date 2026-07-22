@@ -196,11 +196,11 @@ export function CinematicHero() {
       {/* Legibility tint + cinematic vignette */}
       <div
         aria-hidden
-        className="absolute inset-0 bg-gradient-to-r from-mec-ink/95 via-mec-ink/65 to-mec-ink/30"
+        className="absolute inset-0 bg-gradient-to-r from-mec-ink/70 via-mec-ink/40 to-mec-ink/10"
       />
       <div
         aria-hidden
-        className="absolute inset-0 bg-gradient-to-b from-mec-ink/70 via-transparent to-mec-ink"
+        className="absolute inset-0 bg-gradient-to-b from-mec-ink/45 via-transparent to-mec-ink/85"
       />
       {/* Entrance veil — raised to full black by GSAP, then faded out */}
       <div aria-hidden className="chero-veil absolute inset-0 bg-mec-ink opacity-0" />
