@@ -3,10 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { Prisma } from "@prisma/client";
-import { APIError } from "better-auth/api";
-import { auth } from "@/lib/auth/portal";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { db } from "@/lib/db";
+import { provisionUser, sendInvite, INVITE_REDIRECT } from "@/lib/auth/provision";
 
 export type CreateCustomerState = { error?: string };
 
@@ -23,14 +22,8 @@ function parseSalesRepId(formData: FormData): number | null | "invalid" {
 }
 
 /**
- * Provision a portal customer account from the (password-gated) MEC admin.
- *
- * Public sign-up is disabled on the portal auth instance, so accounts are
- * created here via the admin plugin's `auth.api.createUser`. We deliberately
- * call it WITHOUT `headers`: with no request context the admin-plugin endpoint
- * skips its own BetterAuth session/permission check, which lets our existing
- * shared-password admin (not itself a BetterAuth admin) create users. This
- * action is gated by `requireAdmin()` instead.
+ * Provision a portal customer from the (password-gated) MEC admin. The customer
+ * sets their own password via the emailed invite — no admin-typed credential.
  */
 export async function createCustomer(
   _prev: CreateCustomerState,
@@ -39,58 +32,37 @@ export async function createCustomer(
   await requireAdmin();
 
   const email = str(formData, "email").toLowerCase();
-  const password = str(formData, "password");
   const name = str(formData, "name");
   const companyName = str(formData, "companyName");
   const phone = str(formData, "phone");
   const whatsapp = str(formData, "whatsapp");
   const salesRepId = parseSalesRepId(formData);
   if (salesRepId === "invalid") return { error: "Invalid sales rep." };
-
   if (!email) return { error: "Email is required." };
   if (!name) return { error: "Contact name is required." };
-  if (password.length < 8)
-    return { error: "Temporary password must be at least 8 characters." };
 
-  try {
-    await auth.api.createUser({
-      body: {
-        email,
-        password,
-        name,
-        // role omitted → falls back to the configured defaultRole ("customer").
-        // The plugin's createUser typings only allow "user" | "admin" here.
-        data: {
-          companyName: companyName || undefined,
-          phone: phone || undefined,
-          whatsapp: whatsapp || undefined,
-        },
-      },
-      // NOTE: no `headers` — see the doc comment above.
-    });
-  } catch (e) {
-    if (e instanceof APIError) {
-      const msg = e.message || "";
-      if (/already exists|existing/i.test(msg))
-        return { error: "A customer with that email already exists." };
-      return { error: msg || "Could not create the customer account." };
-    }
-    throw e;
-  }
+  const result = await provisionUser({
+    email,
+    name,
+    role: "customer",
+    redirectTo: INVITE_REDIRECT.customer,
+    data: {
+      companyName: companyName || undefined,
+      phone: phone || undefined,
+      whatsapp: whatsapp || undefined,
+    },
+  });
+  if (!result.ok) return { error: result.error };
 
-  // BetterAuth's createUser only handles its declared additional fields, so
-  // the relational FK is set directly. Email is unique, so it identifies the
-  // user we just created.
   if (salesRepId !== null) {
     try {
       await db.user.update({ where: { email }, data: { salesRepId } });
     } catch (e) {
-      if (
-        e instanceof Prisma.PrismaClientKnownRequestError &&
-        e.code === "P2003"
-      )
-        // Account was created; only the assignment failed.
-        return { error: "Customer created, but the selected sales rep no longer exists. Assign a rep from the customer's edit page." };
+      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2003")
+        return {
+          error:
+            "Customer created & invited, but the selected sales rep no longer exists. Assign one from the customer's edit page.",
+        };
       throw e;
     }
   }
@@ -104,16 +76,8 @@ function isUniqueViolation(e: unknown): boolean {
 }
 
 /**
- * Update a portal customer's profile (and optionally reset their password)
- * from the MEC admin.
- *
- * Profile fields are written directly via Prisma — BetterAuth's
- * `adminUpdateUser` endpoint sits behind `adminMiddleware`, which requires a
- * BetterAuth session our shared-password admin doesn't have (unlike
- * `createUser`, it has no headerless escape hatch). The password is hashed and
- * stored through `auth.$context`'s internal adapter — the same code path the
- * admin `setUserPassword` endpoint uses — and all of the customer's sessions
- * are revoked so the old credentials stop working immediately.
+ * Update a portal customer's profile from the MEC admin. Passwords are no longer
+ * set here — use `resendInvite` to send a fresh set-password link instead.
  */
 export async function updateCustomer(
   _prev: CreateCustomerState,
@@ -124,18 +88,14 @@ export async function updateCustomer(
   const id = str(formData, "id");
   const email = str(formData, "email").toLowerCase();
   const name = str(formData, "name");
-  const password = str(formData, "password");
   const companyName = str(formData, "companyName");
   const phone = str(formData, "phone");
   const whatsapp = str(formData, "whatsapp");
   const salesRepId = parseSalesRepId(formData);
   if (salesRepId === "invalid") return { error: "Invalid sales rep." };
-
   if (!id) return { error: "Missing customer id." };
   if (!email) return { error: "Email is required." };
   if (!name) return { error: "Contact name is required." };
-  if (password && password.length < 8)
-    return { error: "New password must be at least 8 characters." };
 
   try {
     await db.user.update({
@@ -152,26 +112,40 @@ export async function updateCustomer(
   } catch (e) {
     if (isUniqueViolation(e))
       return { error: "Another customer already uses that email." };
-    if (
-      e instanceof Prisma.PrismaClientKnownRequestError &&
-      e.code === "P2025"
-    )
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2025")
       return { error: "Customer not found." };
-    if (
-      e instanceof Prisma.PrismaClientKnownRequestError &&
-      e.code === "P2003"
-    )
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2003")
       return { error: "Selected sales rep no longer exists." };
     throw e;
   }
 
-  if (password) {
-    const ctx = await auth.$context;
-    const hashed = await ctx.password.hash(password);
-    await ctx.internalAdapter.updatePassword(id, hashed);
-    await ctx.internalAdapter.deleteUserSessions(id);
-  }
-
   revalidatePath("/admin/customers");
   redirect("/admin/customers");
+}
+
+export type ResendInviteState = { error?: string; success?: boolean };
+
+/**
+ * Re-send the set-password invite to a provisioned user (customer or rep). The
+ * redirect portal is derived from the user's role so reps land on /sales.
+ */
+export async function resendInvite(
+  _prev: ResendInviteState,
+  formData: FormData,
+): Promise<ResendInviteState> {
+  await requireAdmin();
+  const id = str(formData, "id");
+  if (!id) return { error: "Missing user id." };
+  const user = await db.user.findUnique({
+    where: { id },
+    select: { email: true, role: true },
+  });
+  if (!user) return { error: "User not found." };
+  await sendInvite(
+    user.email,
+    user.role === "rep" ? INVITE_REDIRECT.sales : INVITE_REDIRECT.customer,
+  );
+  revalidatePath("/admin/customers");
+  revalidatePath("/admin/sales-reps");
+  return { success: true };
 }
