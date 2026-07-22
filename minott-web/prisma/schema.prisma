@@ -85,6 +85,7 @@ model Inquiry {
   user      User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
   userId    String?
   items     InquiryItem[]
+  notes     InquiryNote[]
   createdAt DateTime        @default(now())
 }
 
@@ -100,13 +101,27 @@ model InquiryItem {
   quantity    Int             @default(1)
 }
 
+model InquiryNote {
+  id          Int      @id @default(autoincrement())
+  inquiry     Inquiry  @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+  inquiryId   Int
+  body        String
+  authorLabel String
+  createdAt   DateTime @default(now())
+
+  @@index([inquiryId])
+}
+
 model SalesRep {
   id        Int      @id @default(autoincrement())
   name      String
-  email     String?
+  email     String
   phone     String?
   active    Boolean  @default(true)
-  clients   User[]
+  clients   User[]   @relation("ClientRep")
+  // The rep's own portal login (BetterAuth User with role="rep"). One-to-one.
+  userId    String?  @unique
+  user      User?    @relation("RepAccount", fields: [userId], references: [id], onDelete: SetNull)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -132,8 +147,12 @@ model User {
   companyName   String?
   phone         String?
   whatsapp      String?
-  salesRep      SalesRep? @relation(fields: [salesRepId], references: [id], onDelete: SetNull)
+  salesRep      SalesRep? @relation("ClientRep", fields: [salesRepId], references: [id], onDelete: SetNull)
   salesRepId    Int?
+  // If this user IS a sales rep, the SalesRep record they log in as.
+  repAccount    SalesRep? @relation("RepAccount")
+  // Null until the invitee sets their password; stamped on first password set.
+  activatedAt   DateTime?
   sessions      Session[]
   accounts      Account[]
   inquiries     Inquiry[]
