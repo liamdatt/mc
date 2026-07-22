@@ -26,8 +26,9 @@ export default async function AdminCustomersPage() {
 
       <p className="mt-3 max-w-2xl text-sm text-mec-ink/60">
         Portal accounts are provisioned here — public sign-up is disabled.
-        Customers sign in at <span className="font-mono">/portal/sign-in</span>{" "}
-        to track their quotes and history.
+        New customers are invited by email to set their own password, then
+        sign in at <span className="font-mono">/portal/sign-in</span> to
+        track their quotes and history.
       </p>
 
       <div className="mt-6 overflow-hidden rounded-md border border-black/10 bg-mec-pure">
@@ -38,6 +39,7 @@ export default async function AdminCustomersPage() {
               <th className="px-4 py-3">Company</th>
               <th className="px-4 py-3">Email</th>
               <th className="px-4 py-3">Sales rep</th>
+              <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Requests</th>
               <th className="px-4 py-3">Added</th>
               <th className="px-4 py-3">
@@ -48,7 +50,7 @@ export default async function AdminCustomersPage() {
           <tbody>
             {customers.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-6 text-mec-ink/60">
+                <td colSpan={8} className="px-4 py-6 text-mec-ink/60">
                   No portal customers yet.
                 </td>
               </tr>
@@ -73,6 +75,17 @@ export default async function AdminCustomersPage() {
                 </td>
                 <td className="px-4 py-3 text-mec-ink/70">
                   {c.salesRep?.name ?? "—"}
+                </td>
+                <td className="px-4 py-3">
+                  {c.activatedAt ? (
+                    <span className="rounded-pill bg-mec-ink/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-mec-ink/60">
+                      active
+                    </span>
+                  ) : (
+                    <span className="rounded-pill bg-mec-red/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-mec-red">
+                      pending
+                    </span>
+                  )}
                 </td>
                 <td className="px-4 py-3 text-mec-ink/70">
                   {c._count.inquiries}

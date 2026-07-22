@@ -162,6 +162,7 @@ export function getPortalUsers() {
       whatsapp: true,
       salesRep: { select: { name: true } },
       role: true,
+      activatedAt: true,
       banned: true,
       createdAt: true,
       _count: { select: { inquiries: true } },

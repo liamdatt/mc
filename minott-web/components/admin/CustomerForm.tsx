@@ -28,10 +28,8 @@ export type SalesRepOption = { id: number; name: string };
 /**
  * Admin form to provision or edit a portal customer. Posts the
  * `createCustomer` / `updateCustomer` Server Actions (gated by the
- * shared-password admin). On create the password is required (the customer's
- * temporary credential); on edit it's optional — leave it blank to keep the
- * current password, or set a new one to reset it (which also signs the
- * customer out everywhere).
+ * shared-password admin). The customer sets their own password via an emailed
+ * invite — this form never collects or sets a credential.
  */
 export function CustomerForm({
   customer,
@@ -67,22 +65,6 @@ export function CustomerForm({
           defaultValue={customer?.email}
           className={field}
         />
-      </label>
-      <label className={label}>
-        {editing ? "New password (optional, min 8 chars)" : "Temporary password (min 8 chars)"}
-        <input
-          name="password"
-          type="text"
-          minLength={8}
-          required={!editing}
-          placeholder={editing ? "Leave blank to keep current password" : undefined}
-          className={field}
-        />
-        <span className="mt-1 block text-[11px] font-normal normal-case tracking-normal text-mec-ink/50">
-          {editing
-            ? "Setting a new password signs the customer out of all devices. Share it with them securely."
-            : "Share this with the customer securely; they sign in with it at /portal/sign-in."}
-        </span>
       </label>
       <label className={label}>
         Company name

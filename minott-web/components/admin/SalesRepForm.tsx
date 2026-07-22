@@ -40,6 +40,7 @@ export function SalesRepForm({ rep }: { rep?: SalesRepFormData }) {
         <input
           name="email"
           type="email"
+          required
           defaultValue={rep?.email ?? ""}
           className={field}
         />
@@ -60,7 +61,7 @@ export function SalesRepForm({ rep }: { rep?: SalesRepFormData }) {
           defaultChecked={rep?.active ?? true}
           className="h-4 w-4 accent-mec-red"
         />
-        Active (available for new client assignments)
+        Active (can sign in to the sales portal & receive new clients)
       </label>
 
       {state.error && <p className="text-sm text-mec-red">{state.error}</p>}

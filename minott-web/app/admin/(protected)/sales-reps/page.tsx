@@ -5,7 +5,10 @@ import { DeleteSalesRepButton } from "@/components/admin/DeleteSalesRepButton";
 export default async function AdminSalesRepsPage() {
   const reps = await db.salesRep.findMany({
     orderBy: { name: "asc" },
-    include: { _count: { select: { clients: true } } },
+    include: {
+      _count: { select: { clients: true } },
+      user: { select: { activatedAt: true } },
+    },
   });
 
   return (
@@ -34,6 +37,7 @@ export default async function AdminSalesRepsPage() {
               <th className="px-4 py-3">Email</th>
               <th className="px-4 py-3">Phone</th>
               <th className="px-4 py-3">Clients</th>
+              <th className="px-4 py-3">Portal</th>
               <th className="px-4 py-3">
                 <span className="sr-only">Actions</span>
               </th>
@@ -42,7 +46,7 @@ export default async function AdminSalesRepsPage() {
           <tbody>
             {reps.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-mec-ink/60">
+                <td colSpan={6} className="px-4 py-6 text-mec-ink/60">
                   No sales reps yet.
                 </td>
               </tr>
@@ -69,6 +73,15 @@ export default async function AdminSalesRepsPage() {
                 <td className="px-4 py-3 text-mec-ink/70">{r.phone ?? "—"}</td>
                 <td className="px-4 py-3 text-mec-ink/70">
                   {r._count.clients}
+                </td>
+                <td className="px-4 py-3">
+                  {!r.user ? (
+                    <span className="text-xs text-mec-ink/40">—</span>
+                  ) : r.user.activatedAt ? (
+                    <span className="rounded-pill bg-mec-ink/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-mec-ink/60">active</span>
+                  ) : (
+                    <span className="rounded-pill bg-mec-red/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-mec-red">pending</span>
+                  )}
                 </td>
                 <td className="px-4 py-3 text-right">
                   <Link
