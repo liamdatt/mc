@@ -27,7 +27,7 @@ export function getRepCustomers(repId: number) {
     select: {
       id: true, name: true, email: true, companyName: true,
       phone: true, whatsapp: true, activatedAt: true, createdAt: true,
-      _count: { select: { inquiries: true } },
+      _count: { select: { inquiries: { where: { type: "QUOTE" } } } },
     },
   });
 }
