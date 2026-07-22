@@ -25,6 +25,7 @@ export default async function PortalProtectedLayout({
 }) {
   const session = await getPortalSession();
   if (!session) redirect("/portal/sign-in");
+  if (session.user.role === "rep") redirect("/sales");
 
   return (
     // pt-24 clears the fixed site nav; the portal's own navigation renders as
