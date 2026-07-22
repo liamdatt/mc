@@ -18,4 +18,5 @@ export const portalAuthClient = createAuthClient({
   plugins: [inferAdditionalFields<PortalAuth>(), adminClient()],
 });
 
-export const { signIn, signOut, useSession, getSession } = portalAuthClient;
+export const { signIn, signOut, useSession, getSession, resetPassword } =
+  portalAuthClient;

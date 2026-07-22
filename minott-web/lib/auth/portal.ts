@@ -3,6 +3,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
 import { admin } from "better-auth/plugins";
 import { db } from "@/lib/db";
+import { sendAccountInvite } from "@/lib/email/send-account-invite";
 
 /**
  * BetterAuth server instance for the customer/B2B portal.
@@ -31,6 +32,21 @@ export const auth = betterAuth({
     enabled: true,
     // Accounts are provisioned by MEC admins, not self-service.
     disableSignUp: true,
+    // Invite/reset links are valid for 72h (covers onboarding lead time).
+    resetPasswordTokenExpiresIn: 60 * 60 * 72,
+    // Emails the branded invite/reset link. `user.id` + `url` are enough; the
+    // sender re-reads role/activation to pick copy. Best-effort (never throws).
+    sendResetPassword: async ({ user, url }) => {
+      await sendAccountInvite(user.id, url);
+    },
+    // Fires after a successful password set/reset — marks the account activated
+    // so it stops showing as "Pending" and can sign in.
+    onPasswordReset: async ({ user }) => {
+      await db.user.update({
+        where: { id: user.id },
+        data: { activatedAt: new Date() },
+      });
+    },
   },
   session: {
     // 30-day persistent sessions ("remember me").
