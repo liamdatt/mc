@@ -21,9 +21,10 @@ export default async function EditCustomerPage({
       whatsapp: true,
       salesRepId: true,
       activatedAt: true,
+      role: true,
     },
   });
-  if (!customer) notFound();
+  if (!customer || customer.role !== "customer") notFound();
 
   const salesReps = await db.salesRep.findMany({
     where: {

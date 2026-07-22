@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Container } from "@/components/primitives/Container";
 import { SalesSignOutButton } from "@/components/sales/SalesSignOutButton";
 import { getSalesSession } from "@/lib/sales";
+import { getPortalSession } from "@/lib/portal";
 
 const NAV = [
   { href: "/sales", label: "Dashboard" },
@@ -21,7 +22,12 @@ export default async function SalesProtectedLayout({
   children: React.ReactNode;
 }) {
   const sales = await getSalesSession();
-  if (!sales) redirect("/sales/sign-in");
+  if (!sales) {
+    // A signed-in customer belongs in their own portal, not the rep sign-in.
+    const session = await getPortalSession();
+    if (session?.user.role === "customer") redirect("/portal");
+    redirect("/sales/sign-in");
+  }
 
   return (
     <div className="min-h-screen bg-mec-mist pt-8 text-mec-ink">

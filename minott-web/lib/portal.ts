@@ -152,6 +152,7 @@ export async function getUserHistoryCategories(userId: string) {
 /** List all portal customer accounts for the admin provisioning screen. */
 export function getPortalUsers() {
   return db.user.findMany({
+    where: { role: "customer" },
     orderBy: { createdAt: "desc" },
     select: {
       id: true,

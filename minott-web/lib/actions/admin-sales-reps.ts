@@ -96,6 +96,23 @@ export async function updateSalesRep(
       return { error: "Another account already uses that email." };
     throw e;
   }
+
+  // Legacy reps created before portal logins existed have no linked account.
+  // Saving them now provisions a login + sends the set-password invite.
+  if (!existing.userId) {
+    const result = await provisionUser({
+      email: data.email,
+      name: data.name,
+      role: "rep",
+      redirectTo: INVITE_REDIRECT.sales,
+    });
+    if (!result.ok) {
+      revalidatePath("/admin/sales-reps");
+      return { error: `Rep saved, but the portal login could not be created: ${result.error}` };
+    }
+    await db.salesRep.update({ where: { id }, data: { userId: result.userId } });
+  }
+
   revalidatePath("/admin/sales-reps");
   revalidatePath("/admin/customers");
   redirect("/admin/sales-reps");
