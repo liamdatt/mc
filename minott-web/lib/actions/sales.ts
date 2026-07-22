@@ -73,8 +73,9 @@ export async function updateRepQuoteStatus(
 
   const inquiryId = Number(formData.get("inquiryId"));
   const status = str(formData, "status");
-  if (!Number.isFinite(inquiryId)) return { error: "Invalid quote id." };
-  if (!(status in INQUIRY_STATUS)) return { error: "Invalid status." };
+  if (!Number.isInteger(inquiryId)) return { error: "Invalid quote id." };
+  if (!Object.prototype.hasOwnProperty.call(INQUIRY_STATUS, status))
+    return { error: "Invalid status." };
   if (!(await assertRepOwnsQuote(sales.rep.id, inquiryId)))
     return { error: "That quote is not assigned to you." };
 
@@ -95,7 +96,7 @@ export async function addQuoteNote(
 
   const inquiryId = Number(formData.get("inquiryId"));
   const body = str(formData, "body");
-  if (!Number.isFinite(inquiryId)) return { error: "Invalid quote id." };
+  if (!Number.isInteger(inquiryId)) return { error: "Invalid quote id." };
   if (!body) return { error: "Note cannot be empty." };
   if (!(await assertRepOwnsQuote(sales.rep.id, inquiryId)))
     return { error: "That quote is not assigned to you." };

@@ -42,7 +42,7 @@ export function RepCustomerForm({ customer }: { customer: RepCustomerFormData })
         WhatsApp
         <input name="whatsapp" type="tel" defaultValue={customer.whatsapp ?? ""} className={field} />
       </label>
-      {state.error && <p className="text-sm text-mec-red">{state.error}</p>}
+      {state.error && <p role="alert" className="text-sm text-mec-red">{state.error}</p>}
       {state.success && <p className="text-sm text-mec-ink/60">Saved.</p>}
       <div className="flex items-center gap-3">
         <button type="submit" disabled={pending} className="bg-mec-red px-6 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-mec-pure hover:bg-mec-red-hover disabled:opacity-50">

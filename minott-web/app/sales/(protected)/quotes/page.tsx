@@ -15,7 +15,10 @@ export default async function SalesQuotesPage({
   const sales = await getSalesSession();
   if (!sales) redirect("/sales/sign-in");
   const sp = await searchParams;
-  const status = sp.status && sp.status in INQUIRY_STATUS ? sp.status : undefined;
+  const status =
+    sp.status && Object.prototype.hasOwnProperty.call(INQUIRY_STATUS, sp.status)
+      ? sp.status
+      : undefined;
   const quotes = await getRepQuotes(sales.rep.id, { status, from: sp.from, to: sp.to });
 
   const filterCls = "rounded-sm border border-black/15 bg-mec-pure px-3 py-2 text-sm text-mec-ink outline-none focus:border-mec-red";

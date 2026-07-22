@@ -8,7 +8,7 @@ export function AddNoteForm({ inquiryId }: { inquiryId: number }) {
   const ref = useRef<HTMLFormElement>(null);
   useEffect(() => {
     if (state.success) ref.current?.reset();
-  }, [state.success]);
+  }, [state]);
   return (
     <form ref={ref} action={formAction} className="space-y-3">
       <input type="hidden" name="inquiryId" value={inquiryId} />
@@ -17,7 +17,7 @@ export function AddNoteForm({ inquiryId }: { inquiryId: number }) {
         <button type="submit" disabled={pending} className="rounded-sm bg-mec-ink px-4 py-2 text-sm font-semibold uppercase tracking-[0.1em] text-mec-pure hover:bg-mec-graphite disabled:opacity-50">
           {pending ? "Adding…" : "Add note"}
         </button>
-        {state.error && <span className="text-sm text-mec-red">{state.error}</span>}
+        {state.error && <span role="alert" className="text-sm text-mec-red">{state.error}</span>}
       </div>
     </form>
   );

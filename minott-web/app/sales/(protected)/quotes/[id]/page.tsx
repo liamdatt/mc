@@ -17,7 +17,7 @@ export default async function SalesQuoteDetailPage({
   if (!sales) redirect("/sales/sign-in");
   const { id } = await params;
   const quoteId = Number(id);
-  if (!Number.isFinite(quoteId)) notFound();
+  if (!Number.isInteger(quoteId)) notFound();
   const quote = await getRepQuoteById(sales.rep.id, quoteId);
   if (!quote) notFound();
 

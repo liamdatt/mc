@@ -18,7 +18,7 @@ export function QuoteStatusForm({ inquiryId, status }: { inquiryId: number; stat
         {pending ? "Saving…" : "Update"}
       </button>
       {state.success && <span className="text-sm text-mec-ink/60">Updated.</span>}
-      {state.error && <span className="text-sm text-mec-red">{state.error}</span>}
+      {state.error && <span role="alert" className="text-sm text-mec-red">{state.error}</span>}
     </form>
   );
 }
