@@ -35,21 +35,27 @@ export async function createSalesRep(
   if (!data.name) return { error: "Name is required." };
   if (!data.email) return { error: "Email is required (used to send the portal invite)." };
 
-  const rep = await db.salesRep.create({ data });
-
   const result = await provisionUser({
     email: data.email,
     name: data.name,
     role: "rep",
     redirectTo: INVITE_REDIRECT.sales,
   });
-  if (!result.ok) {
-    // Roll back the directory record so the admin can correct and retry cleanly.
-    await db.salesRep.delete({ where: { id: rep.id } });
-    return { error: result.error };
-  }
+  if (!result.ok) return { error: result.error };
 
-  await db.salesRep.update({ where: { id: rep.id }, data: { userId: result.userId } });
+  try {
+    // Single write links the login and the directory record atomically.
+    await db.salesRep.create({ data: { ...data, userId: result.userId } });
+  } catch (e) {
+    // Compensate: remove the login we just created so the admin retries cleanly
+    // (BetterAuth can't join a Prisma transaction, so this is manual).
+    await db.user
+      .delete({ where: { id: result.userId } })
+      .catch((err) => console.error(`[sales-rep] failed to roll back user ${result.userId}:`, err));
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002")
+      return { error: "Another account already uses that email." };
+    throw e;
+  }
 
   revalidatePath("/admin/sales-reps");
   redirect("/admin/sales-reps");
@@ -73,14 +79,16 @@ export async function updateSalesRep(
   if (!existing) return { error: "Sales rep not found." };
 
   try {
-    await db.salesRep.update({ where: { id }, data });
-    // Keep the linked login's name/email in sync with the directory record.
-    if (existing.userId) {
-      await db.user.update({
-        where: { id: existing.userId },
-        data: { name: data.name, email: data.email },
-      });
-    }
+    await db.$transaction(async (tx) => {
+      await tx.salesRep.update({ where: { id }, data });
+      // Keep the linked login's name/email in sync with the directory record.
+      if (existing.userId) {
+        await tx.user.update({
+          where: { id: existing.userId },
+          data: { name: data.name, email: data.email },
+        });
+      }
+    });
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2025")
       return { error: "Sales rep not found." };
@@ -112,7 +120,9 @@ export async function deleteSalesRep(
   await db.salesRep.delete({ where: { id } });
   if (rep?.userId) {
     // Cascades delete the rep's sessions/accounts too.
-    await db.user.delete({ where: { id: rep.userId } }).catch(() => {});
+    await db.user.delete({ where: { id: rep.userId } }).catch((e) =>
+      console.error(`[sales-rep] failed to delete login for rep ${id}:`, e),
+    );
   }
   revalidatePath("/admin/sales-reps");
   revalidatePath("/admin/customers");
