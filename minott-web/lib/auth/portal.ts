@@ -42,10 +42,16 @@ export const auth = betterAuth({
     // Fires after a successful password set/reset — marks the account activated
     // so it stops showing as "Pending" and can sign in.
     onPasswordReset: async ({ user }) => {
-      await db.user.update({
-        where: { id: user.id },
-        data: { activatedAt: new Date() },
-      });
+      try {
+        // Stamp only the first activation (updateMany no-ops if already set),
+        // and never throw — the password change has already succeeded.
+        await db.user.updateMany({
+          where: { id: user.id, activatedAt: null },
+          data: { activatedAt: new Date() },
+        });
+      } catch (e) {
+        console.error(`[invite] failed to stamp activatedAt for user ${user.id}:`, e);
+      }
     },
   },
   session: {
