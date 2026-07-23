@@ -79,19 +79,23 @@ export function Nav({ categories }: { categories: CategoryLink[] }) {
         )}
       >
         <div className="mx-auto flex w-full max-w-[1440px] items-center justify-between gap-6 px-6 py-4 md:px-10">
-          <Link href="/" data-cursor="Home" aria-label="Minott Equipment & Chemicals — Home">
-            <Logo className="h-9 md:h-10" />
+          <Link
+            href="/"
+            data-cursor="Home"
+            aria-label="Minott Equipment & Chemicals — Home"
+            className="xl:flex-1"
+          >
+            <Logo className="h-12 md:h-14" />
           </Link>
 
           {/* The full row only fits from xl up; below that the hamburger
               takes over. "Home" is omitted on desktop (the logo covers it)
               and "Contact" is omitted because the red CTA button on the
-              right already links there. The main links and the CTA cluster
-              are grouped in one flex container so `justify-between` on the
-              header only spaces the logo against this group — otherwise it
-              would distribute free space and open a gap in the middle. */}
-          <div className="hidden items-center gap-3 xl:flex 2xl:gap-7">
-          <nav className="flex items-center gap-3 2xl:gap-7">
+              right already links there. Three equal-weight sections keep the
+              nav visually centered in the header: the logo and the CTA
+              cluster each take `flex-1` (left / right), so the middle nav sits
+              centered in the viewport regardless of their differing widths. */}
+          <nav className="hidden items-center justify-center gap-3 xl:flex 2xl:gap-7">
             {LINKS.filter((l) => l.href !== "/" && l.href !== "/contact").map((l) => (
               <div key={l.href} className="group relative">
                 <Link
@@ -134,7 +138,7 @@ export function Nav({ categories }: { categories: CategoryLink[] }) {
             ))}
           </nav>
 
-          <div className="flex items-center gap-2.5 2xl:gap-5">
+          <div className="hidden items-center justify-end gap-2.5 xl:flex xl:flex-1 2xl:gap-5">
             {CTA_LINKS.map((l) => (
               <Link
                 key={l.href}
@@ -168,7 +172,6 @@ export function Nav({ categories }: { categories: CategoryLink[] }) {
             <Button href="/contact" variant="primary" arrow>
               Contact
             </Button>
-          </div>
           </div>
 
           <button
