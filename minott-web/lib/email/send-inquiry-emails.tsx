@@ -1,3 +1,4 @@
+import { render } from "@react-email/components";
 import { getResend } from "@/lib/email/resend";
 import { getEmailSettings } from "@/lib/settings";
 import { db } from "@/lib/db";
@@ -76,26 +77,32 @@ export async function sendInquiryEmails(inquiryId: number): Promise<void> {
 
     // 1) Internal notification (rep + CC inbox, or inbox alone).
     try {
+      const notification = (
+        <InquiryNotification
+          typeLabel={typeLabel}
+          inquiryId={inquiry.id}
+          name={inquiry.name}
+          company={inquiry.company}
+          email={inquiry.email}
+          phone={inquiry.phone}
+          message={inquiry.message}
+          items={items}
+          repName={repRouted ? rep!.name : null}
+          adminUrl={`${baseUrl}/admin/requests`}
+        />
+      );
+      const [html, text] = await Promise.all([
+        render(notification),
+        render(notification, { plainText: true }),
+      ]);
       const { error } = await resend.emails.send({
         from,
         to: repRouted ? [rep!.email!] : [settings.generalInboxEmail],
         cc: repRouted ? [settings.generalInboxEmail] : undefined,
         replyTo: inquiry.email,
         subject: `New ${typeLabel.toLowerCase()} from ${inquiry.name}${inquiry.company ? ` (${inquiry.company})` : ""}`,
-        react: (
-          <InquiryNotification
-            typeLabel={typeLabel}
-            inquiryId={inquiry.id}
-            name={inquiry.name}
-            company={inquiry.company}
-            email={inquiry.email}
-            phone={inquiry.phone}
-            message={inquiry.message}
-            items={items}
-            repName={repRouted ? rep!.name : null}
-            adminUrl={`${baseUrl}/admin/requests`}
-          />
-        ),
+        html,
+        text,
       });
       if (error) {
         console.error(
@@ -112,6 +119,17 @@ export async function sendInquiryEmails(inquiryId: number): Promise<void> {
 
     // 2) Customer confirmation.
     try {
+      const confirmation = (
+        <InquiryConfirmation
+          type={inquiry.type as "QUOTE" | "SAMPLE" | "CONTACT"}
+          name={inquiry.name}
+          items={items}
+        />
+      );
+      const [html, text] = await Promise.all([
+        render(confirmation),
+        render(confirmation, { plainText: true }),
+      ]);
       const { error } = await resend.emails.send({
         from,
         to: [inquiry.email],
@@ -122,13 +140,8 @@ export async function sendInquiryEmails(inquiryId: number): Promise<void> {
             : inquiry.type === "SAMPLE"
               ? "We received your sample request"
               : "We received your message",
-        react: (
-          <InquiryConfirmation
-            type={inquiry.type as "QUOTE" | "SAMPLE" | "CONTACT"}
-            name={inquiry.name}
-            items={items}
-          />
-        ),
+        html,
+        text,
       });
       if (error) {
         console.error(

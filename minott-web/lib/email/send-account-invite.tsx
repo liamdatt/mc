@@ -1,3 +1,4 @@
+import { render } from "@react-email/components";
 import { getResend } from "@/lib/email/resend";
 import { getEmailSettings } from "@/lib/settings";
 import { db } from "@/lib/db";
@@ -39,6 +40,18 @@ export async function sendAccountInvite(
       ? `${settings.fromName} <${settings.fromEmail}>`
       : settings.fromEmail;
 
+    // Pre-render to HTML/text ourselves rather than handing Resend a `react:`
+    // component. Resend delegates react rendering to `@react-email/render`,
+    // which is only a nested dependency of `@react-email/components` and is not
+    // resolvable from Resend's own module path in the production build.
+    const email = (
+      <AccountInvite name={user.name} url={url} portal={portal} isInvite={isInvite} />
+    );
+    const [html, text] = await Promise.all([
+      render(email),
+      render(email, { plainText: true }),
+    ]);
+
     const { error } = await resend.emails.send({
       from,
       to: [user.email],
@@ -48,9 +61,8 @@ export async function sendAccountInvite(
           ? "Set up your MEC sales portal access"
           : "Activate your Minott account"
         : "Reset your Minott password",
-      react: (
-        <AccountInvite name={user.name} url={url} portal={portal} isInvite={isInvite} />
-      ),
+      html,
+      text,
     });
     if (error) console.error(`[email] invite failed for user ${userId}:`, error);
   } catch (e) {
