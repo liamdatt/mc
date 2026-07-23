@@ -95,13 +95,13 @@ export function Nav({ categories }: { categories: CategoryLink[] }) {
               nav visually centered in the header: the logo and the CTA
               cluster each take `flex-1` (left / right), so the middle nav sits
               centered in the viewport regardless of their differing widths. */}
-          <nav className="hidden items-center justify-center gap-3 xl:flex 2xl:gap-7">
+          <nav className="hidden items-center justify-center gap-3 xl:flex min-[1440px]:gap-7">
             {LINKS.filter((l) => l.href !== "/" && l.href !== "/contact").map((l) => (
               <div key={l.href} className="group relative">
                 <Link
                   href={l.href}
                   className={cn(
-                    "relative flex items-center gap-1 whitespace-nowrap text-[13px] font-semibold uppercase tracking-[0.1em] transition-colors hover:text-mec-red 2xl:text-sm 2xl:tracking-[0.12em]",
+                    "relative flex items-center gap-1 whitespace-nowrap text-[13px] font-semibold uppercase tracking-[0.1em] transition-colors hover:text-mec-red min-[1440px]:text-sm min-[1440px]:tracking-[0.12em]",
                     linkColor,
                     isActive(l.href) && "text-mec-red",
                   )}
@@ -138,13 +138,13 @@ export function Nav({ categories }: { categories: CategoryLink[] }) {
             ))}
           </nav>
 
-          <div className="hidden items-center justify-end gap-2.5 xl:flex xl:flex-1 2xl:gap-5">
+          <div className="hidden items-center justify-end gap-2.5 xl:flex xl:flex-1 min-[1440px]:gap-5">
             {CTA_LINKS.map((l) => (
               <Link
                 key={l.href}
                 href={l.href}
                 className={cn(
-                  "relative whitespace-nowrap text-[13px] font-semibold uppercase tracking-[0.1em] transition-colors hover:text-mec-red 2xl:text-sm 2xl:tracking-[0.12em]",
+                  "relative whitespace-nowrap text-[13px] font-semibold uppercase tracking-[0.1em] transition-colors hover:text-mec-red min-[1440px]:text-sm min-[1440px]:tracking-[0.12em]",
                   linkColor,
                   isActive(l.href) && "text-mec-red",
                 )}
@@ -156,12 +156,12 @@ export function Nav({ categories }: { categories: CategoryLink[] }) {
             <Link
               href="/quote"
               className={cn(
-                "relative inline-flex items-center gap-2 whitespace-nowrap text-[13px] font-semibold uppercase tracking-[0.1em] transition-colors hover:text-mec-red 2xl:text-sm 2xl:tracking-[0.12em]",
+                "relative inline-flex items-center gap-2 whitespace-nowrap text-[13px] font-semibold uppercase tracking-[0.1em] transition-colors hover:text-mec-red min-[1440px]:text-sm min-[1440px]:tracking-[0.12em]",
                 linkColor,
               )}
               data-cursor="View"
             >
-              <FileText className="hidden h-4 w-4 2xl:block" aria-hidden />
+              <FileText className="hidden h-4 w-4 min-[1440px]:block" aria-hidden />
               Quote
               {count > 0 && (
                 <span className="grid h-5 min-w-5 place-items-center rounded-full bg-mec-red px-1 text-[11px] font-bold text-mec-pure">
