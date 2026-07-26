@@ -18,7 +18,9 @@ export type InquiryNotificationProps = {
   items: NotificationItem[];
   /** Assigned rep name when routed to a rep, else null. */
   repName: string | null;
-  adminUrl: string; // absolute link to /admin/requests
+  /** Absolute CTA link: sales-portal quote page when rep-routed, else /admin/requests. */
+  ctaUrl: string;
+  ctaLabel: string;
 };
 
 const detailLabel = {
@@ -105,8 +107,8 @@ export function InquiryNotification(props: InquiryNotificationProps) {
 
       <Hr style={{ borderColor: "rgba(0,0,0,0.08)", margin: "24px 0" }} />
       <Text style={{ fontSize: 14, margin: 0 }}>
-        <Link href={props.adminUrl} style={{ color: emailColors.red }}>
-          View in the admin inbox →
+        <Link href={props.ctaUrl} style={{ color: emailColors.red }}>
+          {props.ctaLabel}
         </Link>
       </Text>
     </EmailLayout>

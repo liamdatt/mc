@@ -75,8 +75,16 @@ export async function sendInquiryEmails(inquiryId: number): Promise<void> {
     const typeLabel = INQUIRY_TYPE_LABELS[inquiry.type] ?? "Inquiry";
     const baseUrl = process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
 
-    // 1) Internal notification (rep + CC inbox, or inbox alone).
+    // 1) Internal notification (rep + CC inbox, or inbox alone). Reps cannot
+    // access /admin, so rep-routed sends link to the sales portal instead.
     try {
+      // Rep-routed inquiries are always quotes (only submitQuote attaches a userId), so this link always resolves.
+      const ctaUrl = repRouted
+        ? `${baseUrl}/sales/quotes/${inquiry.id}`
+        : `${baseUrl}/admin/requests`;
+      const ctaLabel = repRouted
+        ? "View in the sales portal →"
+        : "View in the admin inbox →";
       const notification = (
         <InquiryNotification
           typeLabel={typeLabel}
@@ -88,7 +96,8 @@ export async function sendInquiryEmails(inquiryId: number): Promise<void> {
           message={inquiry.message}
           items={items}
           repName={repRouted ? rep!.name : null}
-          adminUrl={`${baseUrl}/admin/requests`}
+          ctaUrl={ctaUrl}
+          ctaLabel={ctaLabel}
         />
       );
       const [html, text] = await Promise.all([
