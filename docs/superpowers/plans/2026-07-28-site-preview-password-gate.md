@@ -579,13 +579,32 @@ git commit -m "feat(preview): site-wide password gate in proxy"
 
 ---
 
-### Task 5: Environment and docs
+### Task 5: Environment, robots, and docs
 
 **Suggested subagent model:** sonnet
 
 **Files:**
+- Create: `minott-web/app/robots.ts`
 - Modify: `minott-web/.env.example` (append)
 - Modify: `CLAUDE.md` (root — the Env line under "Data & admin")
+
+- [ ] **Step 0: Create `app/robots.ts`**
+
+The proxy's `X-Robots-Tag` covers gated paths only; the exempt sign-in pages (`/portal`, `/sales`, `/set-password`, `/admin/login`, `/preview`) stay crawlable while the site is locked. A conditional robots file closes that for polite crawlers and flips back automatically at launch. (`/robots.txt` contains a dot, so the proxy matcher already lets it through ungated.)
+
+```ts
+import type { MetadataRoute } from "next";
+
+// While the preview gate is up, ask crawlers to stay away from everything —
+// the proxy's X-Robots-Tag only covers gated paths, not the exempt sign-in
+// pages. Unsetting SITE_PASSWORD at launch flips this back automatically.
+export default function robots(): MetadataRoute.Robots {
+  if (process.env.SITE_PASSWORD) {
+    return { rules: { userAgent: "*", disallow: "/" } };
+  }
+  return { rules: { userAgent: "*", allow: "/" } };
+}
+```
 
 - [ ] **Step 1: Append to `minott-web/.env.example`**
 
