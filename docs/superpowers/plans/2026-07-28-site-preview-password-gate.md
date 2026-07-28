@@ -596,7 +596,7 @@ git commit -m "feat(preview): site-wide password gate in proxy"
 
 - [ ] **Step 0: Create `app/robots.ts`**
 
-The proxy's `X-Robots-Tag` covers gated paths only; the exempt sign-in pages (`/portal`, `/sales`, `/set-password`, `/admin/login`, `/preview`) stay crawlable while the site is locked. A conditional robots file closes that for polite crawlers and flips back automatically at launch. (`/robots.txt` contains a dot, so the proxy matcher already lets it through ungated.)
+The proxy's `X-Robots-Tag` covers gated paths only; the exempt sign-in pages (`/portal`, `/sales`, `/set-password`, `/admin/login`, `/preview`) stay crawlable while the site is locked. A conditional robots file closes that for polite crawlers and flips back automatically at launch. (Load-bearing coupling: the proxy matcher exempts the anchored literal `robots\.txt$` specifically so this route serves that path — without this route, the exemption serves the branded 404 ungated; without the exemption, this route gets 307'd to `/preview`.)
 
 ```ts
 import type { MetadataRoute } from "next";

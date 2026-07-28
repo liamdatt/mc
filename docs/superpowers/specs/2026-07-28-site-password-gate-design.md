@@ -26,9 +26,15 @@ admin gate — so the URL leaking doesn't expose the site publicly.
 
 ## Gate logic (`minott-web/proxy.ts`)
 
-Matcher broadens from `/admin/:path*` to all routes **except** `_next`
-internals and any path containing a file extension (so `/images/*.png`,
-`favicon.ico`, `og.jpg` etc. stay unblocked; pages don't).
+Matcher broadens from `/admin/:path*` to all routes **except** `_next/`
+internals, the static directories `images/`, `brand-logos/`, `svg/`, and the
+exact literals `/favicon.ico` and `/robots.txt`. Directory-scoped, NOT
+extension-scoped: an extension allowlist (and the original "any path with a
+dot" rule) is bypassable via a fabricated dotted page path like `/about.png`,
+which would escape the matcher and serve the branded 404 — full nav with
+category names plus footer contact info — ungated. Consequence: any new file
+placed at the `public/` root (e.g. the pending `og.jpg`) is gated unless it
+moves under `public/images/` or gets its own anchored matcher literal.
 
 Runtime branching:
 
@@ -48,6 +54,18 @@ Runtime branching:
    `/preview?next=<original path + query string>`.
 4. While the gate is active, responses on gated paths get
    `X-Robots-Tag: noindex, nofollow` so the URL can't be indexed.
+
+### Crawler control (`app/robots.ts`)
+
+The proxy header can't reach the exempt pages (`/portal`, `/sales`,
+`/set-password`, `/admin/login`, `/preview`), so a conditional metadata
+route serves `/robots.txt`: `Disallow: /` for all agents while
+`SITE_PASSWORD` is set, `Allow: /` otherwise. The route is
+`force-dynamic` — metadata routes are otherwise prerendered at build time,
+which would bake the gate state into the build and defeat the runtime kill
+switch. Load-bearing coupling: the matcher exempts the anchored literal
+`robots\.txt$` specifically so this route (not the branded 404) serves that
+path — the literal and the route must ship together.
 
 ## Unlock page (`/preview`)
 
