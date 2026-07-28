@@ -15,8 +15,10 @@ export function PreviewUnlockForm({ next }: { next: string }) {
         className="w-full max-w-sm rounded-md border border-white/10 bg-white/5 p-8"
       >
         <p className="font-display text-3xl tracking-wider">
-          <span className="text-mec-red">Minott</span> Equipment &amp;
-          Chemicals
+          {/* Explicit {" "} — JSX drops the space at a line wrap, which would
+              render "MinottEquipment". */}
+          <span className="text-mec-red">Minott</span>{" "}
+          Equipment &amp; Chemicals
         </p>
         <p className="mt-2 text-sm text-mec-pure/60">
           This site is in private preview. Enter the password you were given to
