@@ -34,7 +34,9 @@ Runtime branching:
 
 1. `/admin/*` → existing admin-cookie logic, unchanged.
 2. Pass through untouched (own auth or token-gated):
-   `/preview`, `/portal(/*)`, `/sales(/*)`, `/set-password`, `/api/auth/*`.
+   `/preview`, `/portal(/*)`, `/sales(/*)`, `/set-password`, `/api/auth/*`,
+   `/api/admin/*` (admin-cookie-authed itself; must stay reachable for admin
+   users, who don't hold a preview cookie).
 3. Everything else, when `SITE_PASSWORD` is set → require a valid
    `mec_preview` cookie; otherwise redirect to
    `/preview?next=<original path + query string>`.
@@ -69,8 +71,9 @@ customer with the preview password could paste their cookie value into
 
 Fix: `signSession`/`verifySession` in `lib/auth/session.ts` gain an audience
 field — payload becomes `{exp, aud}` with `aud: "admin" | "preview"` — and
-verification requires the expected audience. All existing call sites
-(admin login action, `proxy.ts`, protected admin layout) pass `"admin"`.
+verification requires the expected audience. All five existing call sites
+(admin login action, `proxy.ts`, protected admin layout,
+`lib/auth/require-admin.ts`, `app/api/admin/upload/route.ts`) pass `"admin"`.
 
 Side effect: existing admin session cookies (8h TTL) are invalidated once;
 admins re-login one time.
