@@ -55,10 +55,14 @@ Runtime branching:
 - New server action (`lib/actions/preview.ts`) verifies the submitted
   password against `SITE_PASSWORD`, signs a session token, sets the cookie,
   and redirects to the `next` path.
-- `next` validation: strip ASCII control characters, then require `/`
-  followed by neither `/` nor `\`, else fall back to `/`. (Browsers treat
-  `\` as `/` and strip control chars in URLs, so a plain "starts with `/`,
-  not `//`" check is bypassable via `/\evil.com` — prevents open redirect.)
+- `next` validation: shared helper `lib/safe-path.ts` (`safeRelativePath`),
+  extracted from the portal sign-in page's existing validator so one security
+  invariant lives in one place. Rejects anything that isn't `/` + a
+  non-`/`-non-`\` continuation or that contains control characters, falling
+  back to `/`. (Browsers treat `\` as `/` and strip control chars in URLs,
+  so a plain "starts with `/`, not `//`" check is bypassable via
+  `/\evil.com` — prevents open redirect.) The unlock redirect uses
+  `RedirectType.replace` so the lock screen doesn't stay in history.
 - If `SITE_PASSWORD` is unset, visiting `/preview` redirects to `/`.
 
 ## Cookie

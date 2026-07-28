@@ -220,6 +220,92 @@ git commit -m "feat(preview): unlock server action for site-wide preview gate"
 
 ---
 
+### Task 2b: Shared safe-path validator (code-review follow-up)
+
+Code review found the repo already had a second open-redirect validator — `safeNextPath` in `app/portal/sign-in/page.tsx:25` — with stricter reject-based semantics (rejects control chars/backslash instead of stripping). Two divergent copies of one security invariant drift; extract one shared helper used by both, keeping the portal's reject semantics. Also switch the unlock redirect to `replace` so the lock screen doesn't stay in browser history.
+
+**Suggested subagent model:** sonnet
+
+**Files:**
+- Create: `minott-web/lib/safe-path.ts`
+- Modify: `minott-web/lib/actions/preview.ts` (drop local `safeNext`, use helper, `RedirectType.replace`)
+- Modify: `minott-web/app/portal/sign-in/page.tsx` (drop local `safeNextPath`, use helper)
+
+- [ ] **Step 1: Create `lib/safe-path.ts`**
+
+```ts
+/**
+ * Same-origin relative-path validator shared by flows that round-trip a
+ * `next` path through a form or query param (portal sign-in, preview unlock).
+ * Returns the path only when it is safe to redirect to: must start with a
+ * single "/", and must not contain backslashes or control characters
+ * ("//host" and a backslash-path are open redirects, and browsers strip
+ * control characters from URLs, which would turn a tab-separated
+ * "/<TAB>/host" into "//host"). Anything else → undefined.
+ */
+export function safeRelativePath(
+  next: string | null | undefined,
+): string | undefined {
+  if (!next || !next.startsWith("/") || next.startsWith("//")) {
+    return undefined;
+  }
+  for (let i = 0; i < next.length; i++) {
+    const code = next.charCodeAt(i);
+    // control chars (< 0x20), DEL (0x7f), and backslash (0x5c)
+    if (code < 0x20 || code === 0x7f || code === 0x5c) return undefined;
+  }
+  return next;
+}
+```
+
+- [ ] **Step 2: Use it in `lib/actions/preview.ts`**
+
+Delete the local `safeNext` function (and its comment). Change the imports and the final redirect:
+
+```ts
+import { redirect, RedirectType } from "next/navigation";
+import { safeRelativePath } from "@/lib/safe-path";
+```
+
+```ts
+  // `replace` keeps the lock screen out of browser history — Back after
+  // unlocking should not return to the password form.
+  redirect(
+    safeRelativePath(String(formData.get("next") ?? "")) ?? "/",
+    RedirectType.replace,
+  );
+```
+
+Note the behavior change vs. the old strip-based guard: a path containing control chars is now rejected (falls back to `/`) instead of being silently rewritten — rejection is the safer contract.
+
+- [ ] **Step 3: Use it in `app/portal/sign-in/page.tsx`**
+
+Delete the local `safeNextPath` function and its doc comment. Import the helper and update the one call site (`const safeNext = safeRelativePath(next);`). Keep the existing `/**` comment lines about `next` round-tripping IF they describe the page flow rather than the validator; the validator's rationale now lives in `lib/safe-path.ts`.
+
+- [ ] **Step 4: Type-check and behavioral check**
+
+Run: `cd /home/liamd/Work/github/Minott/minott-web && npx tsc --noEmit`
+Expected: clean.
+
+```bash
+node -e '
+function safeRelativePath(next){if(!next||!next.startsWith("/")||next.startsWith("//")){return undefined;}for(let i=0;i<next.length;i++){const code=next.charCodeAt(i);if(code<0x20||code===0x7f||code===0x5c)return undefined;}return next;}
+const cases=[["/","/"],["/products","/products"],["/products?view=grid","/products?view=grid"],["//evil.com",undefined],["/\\evil.com",undefined],["/\t/evil.com",undefined],["https://evil.com",undefined],["",undefined],[null,undefined]];
+for(const [inp,want] of cases){const got=safeRelativePath(inp);if(got!==want){console.error("FAIL",JSON.stringify(inp));process.exit(1);}}
+console.log("ALL_PASS");'
+```
+
+Expected: `ALL_PASS`.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add minott-web/lib/safe-path.ts minott-web/lib/actions/preview.ts minott-web/app/portal/sign-in/page.tsx
+git commit -m "refactor(auth): shared safeRelativePath validator for next-path redirects"
+```
+
+---
+
 ### Task 3: `/preview` unlock page
 
 Server page reads async `searchParams` and bails to `/` when the gate is off; a client form component mirrors the admin login styling. `PublicChrome` must also skip Nav/Footer on `/preview` (a lock screen must not render the category nav).
@@ -583,6 +669,51 @@ Expected, in order:
 2. `307 …/preview?next=%2F` (audience mismatch → still locked)
 3. `307 …/admin/login` (preview password can NOT open admin)
 4. `200`
+
+- [ ] **Step 4b: Real form flow end-to-end (Python Playwright)**
+
+The curl matrix never exercises the actual Server Action POST. Python Playwright with cached Chromium is installed on this machine (`python -c "from playwright.sync_api import sync_playwright"` works). With the gate-ON server from Step 2 still running, write this to `/tmp/claude-1000/-home-liamd-Work-github-Minott/67520637-473a-4618-9473-7177bca77879/scratchpad/preview_e2e.py` and run `python .../preview_e2e.py`:
+
+```python
+from playwright.sync_api import sync_playwright
+
+BASE = "http://localhost:3100"
+PASSWORD = "preview-test-123"
+
+with sync_playwright() as p:
+    browser = p.chromium.launch()
+    ctx = browser.new_context()
+    page = ctx.new_page()
+
+    # Locked visit redirects to /preview carrying the original path.
+    page.goto(f"{BASE}/products")
+    assert page.url == f"{BASE}/preview?next=%2Fproducts", page.url
+
+    # Wrong password -> inline error, still locked.
+    page.fill("#password", "wrong-password")
+    page.click("button[type=submit]")
+    page.wait_for_selector("text=Incorrect password.")
+
+    # Correct password -> lands on the originally requested path.
+    page.fill("#password", PASSWORD)
+    page.click("button[type=submit]")
+    page.wait_for_url(f"{BASE}/products")
+
+    # Cookie is session-scoped (Playwright reports expires == -1) + httpOnly.
+    cookies = [c for c in ctx.cookies() if c["name"] == "mec_preview"]
+    assert len(cookies) == 1, cookies
+    assert cookies[0]["expires"] == -1, cookies[0]
+    assert cookies[0]["httpOnly"] is True, cookies[0]
+
+    # Unlocked browsing works.
+    page.goto(f"{BASE}/")
+    assert page.url == f"{BASE}/", page.url
+
+    print("E2E_PASS")
+    browser.close()
+```
+
+Expected output: `E2E_PASS`. If Playwright fails to launch in this environment, report that and defer these checks to the Task 7 manual checklist — do not skip silently.
 
 - [ ] **Step 5: Gate OFF when SITE_PASSWORD is unset**
 
