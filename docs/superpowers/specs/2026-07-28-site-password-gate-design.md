@@ -34,7 +34,9 @@ Runtime branching:
 
 1. `/admin/*` → existing admin-cookie logic, unchanged.
 2. Pass through untouched (own auth or token-gated):
-   `/preview`, `/portal(/*)`, `/sales(/*)`, `/set-password`, `/api/auth/*`,
+   `/preview` (exact match only — `/preview/*` sub-paths stay gated so the
+   branded 404 with nav/footer never serves unauthenticated),
+   `/portal(/*)`, `/sales(/*)`, `/set-password`, `/api/auth/*`,
    `/api/admin/*` (admin-cookie-authed itself; must stay reachable for admin
    users, who don't hold a preview cookie), `/api/products(/*)` and
    `/api/categories` (public rate-limited catalog JSON consumed
@@ -64,6 +66,9 @@ Runtime branching:
   `/\evil.com` — prevents open redirect.) The unlock redirect uses
   `RedirectType.replace` so the lock screen doesn't stay in history.
 - If `SITE_PASSWORD` is unset, visiting `/preview` redirects to `/`.
+- If the visitor already holds a valid preview cookie, `/preview` redirects
+  to the sanitized `next` (no dead form on a bookmarked lock screen). The
+  page also sanitizes `next` before echoing it into the hidden form field.
 
 ## Cookie
 

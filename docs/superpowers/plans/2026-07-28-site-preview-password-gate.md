@@ -320,8 +320,11 @@ Server page reads async `searchParams` and bails to `/` when the gate is off; a 
 - [ ] **Step 1: Create `app/preview/page.tsx`**
 
 ```tsx
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { PreviewUnlockForm } from "@/components/preview/PreviewUnlockForm";
+import { verifySession, PREVIEW_COOKIE } from "@/lib/auth/session";
+import { safeRelativePath } from "@/lib/safe-path";
 
 export const metadata = { title: "Private preview" };
 
@@ -332,7 +335,15 @@ export default async function PreviewPage({
 }) {
   if (!process.env.SITE_PASSWORD) redirect("/");
   const { next } = await searchParams;
-  return <PreviewUnlockForm next={next ?? "/"} />;
+  // Sanitize at render too (the action re-checks) so a hostile ?next= never
+  // even round-trips through the form.
+  const safeNext = safeRelativePath(next) ?? "/";
+  // Already unlocked (e.g. a bookmarked lock screen) — skip the dead form.
+  const token = (await cookies()).get(PREVIEW_COOKIE)?.value;
+  if (await verifySession(process.env.SESSION_SECRET ?? "", token, "preview")) {
+    redirect(safeNext);
+  }
+  return <PreviewUnlockForm next={safeNext} />;
 }
 ```
 
@@ -356,8 +367,10 @@ export function PreviewUnlockForm({ next }: { next: string }) {
         className="w-full max-w-sm rounded-md border border-white/10 bg-white/5 p-8"
       >
         <p className="font-display text-3xl tracking-wider">
-          <span className="text-mec-red">Minott</span> Equipment &amp;
-          Chemicals
+          {/* Explicit {" "} — JSX drops the space at a line wrap, which would
+              render "MinottEquipment". */}
+          <span className="text-mec-red">Minott</span>{" "}
+          Equipment &amp; Chemicals
         </p>
         <p className="mt-2 text-sm text-mec-pure/60">
           This site is in private preview. Enter the password you were given to
@@ -451,8 +464,10 @@ import {
 // /set-password is token-gated. /api/products and /api/categories are public
 // rate-limited catalog JSON consumed server-to-server (no cookies) by the
 // OneChat AI widget — gating them would break the assistant during preview.
-const PREVIEW_EXEMPT = [
-  "/preview",
+// /preview itself is exempted by exact match below — NOT as a prefix, so
+// /preview/anything stays gated (it would otherwise serve the branded 404
+// with full nav/footer to unauthenticated visitors).
+const PREVIEW_EXEMPT_PREFIXES = [
   "/portal",
   "/sales",
   "/set-password",
@@ -492,7 +507,10 @@ export async function proxy(req: NextRequest) {
   }
 
   if (
-    PREVIEW_EXEMPT.some((p) => pathname === p || pathname.startsWith(`${p}/`))
+    pathname === "/preview" ||
+    PREVIEW_EXEMPT_PREFIXES.some(
+      (p) => pathname === p || pathname.startsWith(`${p}/`),
+    )
   ) {
     return NextResponse.next();
   }
