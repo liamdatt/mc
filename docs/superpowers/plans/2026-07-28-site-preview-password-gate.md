@@ -703,6 +703,11 @@ Expected:
 - `/images/products/`-style real asset paths still `200`/`404-as-static`
   (never a `/preview` redirect): pick one real file from `public/images/` and
   assert `200` without cookies.
+- `/robots.txt` → `200` containing `Disallow: /` while the gate is ON
+  (`curl -s http://localhost:3100/robots.txt`); in the gate-OFF step it must
+  contain `Allow: /` instead. (Hard dependency: the matcher exempts
+  `/robots.txt`, so only this route stands between that path and the
+  branded 404.)
 - `/preview` meta robots → contains `noindex` (lock screen is exempt from
   the gate's `X-Robots-Tag` header, so the page carries robots metadata)
 
