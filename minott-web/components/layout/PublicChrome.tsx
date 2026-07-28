@@ -13,10 +13,13 @@ export function PublicChrome({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  // The admin and sales portals render their own chrome.
-  const isPortalChrome =
-    pathname.startsWith("/admin") || pathname.startsWith("/sales");
-  if (isPortalChrome) return <>{children}</>;
+  // The admin and sales portals render their own chrome; the preview lock
+  // screen renders bare.
+  const isBareChrome =
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/sales") ||
+    pathname === "/preview";
+  if (isBareChrome) return <>{children}</>;
   // The home route is a single non-scrollable screen — no footer below the fold.
   const isLanding = pathname === "/";
   return (
