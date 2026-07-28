@@ -557,11 +557,14 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  // Everything except Next internals (/_next/*) and any path containing a
-  // file extension (static assets: images, favicon, og.jpg, …). Product slugs
-  // never contain dots (lib/slug.ts strips non-alphanumerics), so no page
-  // route is excluded by the dot rule.
-  matcher: ["/((?!_next|.*\\..*).*)"],
+  // Everything except Next internals (/_next/*) and known static-asset
+  // extensions (public/ images, favicon, robots/sitemap, fonts, upload
+  // formats). An explicit allowlist rather than "any dot": a blanket dot
+  // rule would let fabricated paths like /about. escape the matcher and
+  // serve the branded 404 (full nav + footer) without the gate.
+  matcher: [
+    "/((?!_next|.*\\.(?:png|jpe?g|svg|webp|gif|ico|css|js|mjs|txt|xml|json|map|woff2?)$).*)",
+  ],
 };
 ```
 
@@ -686,6 +689,10 @@ Expected:
 - `/favicon.ico` → `200` (assets exempt via matcher)
 - `/api/products` → `200` with no cookie (AI-widget catalog exemption)
 - `/preview?next=/a&next=/b` → `200` (array-valued `next` must not 500)
+- `/about.` → `307 …/preview?next=%2Fabout.` (fabricated dotted path must
+  NOT escape the matcher — add
+  `curl -s -o /dev/null -w "%{http_code} %{redirect_url}\n" http://localhost:3100/about.`
+  to the matrix)
 - `/preview` meta robots → contains `noindex` (lock screen is exempt from
   the gate's `X-Robots-Tag` header, so the page carries robots metadata)
 
