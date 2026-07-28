@@ -95,8 +95,11 @@ path — the literal and the route must ship together.
 
 - Name `mec_preview`; httpOnly; `sameSite: lax`; `secure` in production;
   path `/`; **no `maxAge`** (true browser-session cookie).
-- Signed token carries a 24-hour expiry as a backstop for browsers that
-  restore session cookies.
+- Signed token carries a 4-hour expiry. Originally 24h as a backstop, but
+  browsers commonly restore session cookies on relaunch (Chrome "continue
+  where you left off", all mobile browsers), so the token expiry — not
+  browser close — is the effective re-prompt interval. 4h keeps a single
+  review session uninterrupted while re-prompting between visits.
 
 ## Security fix: token audience
 
