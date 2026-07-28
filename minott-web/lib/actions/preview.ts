@@ -36,8 +36,5 @@ export async function unlock(
   });
   // `replace` keeps the lock screen out of browser history — Back after
   // unlocking should not return to the password form.
-  redirect(
-    safeRelativePath(String(formData.get("next") ?? "")) ?? "/",
-    RedirectType.replace,
-  );
+  redirect(safeRelativePath(formData.get("next")) ?? "/", RedirectType.replace);
 }

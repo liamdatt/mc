@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 export default async function PortalSignInPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string }>;
+  searchParams: Promise<{ next?: string | string[] }>;
 }) {
   const { next } = await searchParams;
   const safeNext = safeRelativePath(next);
