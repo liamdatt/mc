@@ -90,7 +90,7 @@ export const PREVIEW_TTL_MS = 1000 * 60 * 60 * 24; // 24 hours
 
 Everything above `signSession` (the b64url helpers and `getKey`) stays unchanged.
 
-- [ ] **Step 2: Pass `"admin"` at the four admin call sites**
+- [ ] **Step 2: Pass `"admin"` at the five admin call sites**
 
 In `lib/actions/auth.ts`, the `signSession` call becomes:
 
@@ -359,7 +359,9 @@ import {
 // Paths that keep their own auth (or are token-gated) and stay reachable
 // without the preview password. /api/admin and /admin check the admin cookie
 // themselves; /portal, /sales and /api/auth are BetterAuth-gated in-layout;
-// /set-password is token-gated.
+// /set-password is token-gated. /api/products and /api/categories are public
+// rate-limited catalog JSON consumed server-to-server (no cookies) by the
+// OneChat AI widget — gating them would break the assistant during preview.
 const PREVIEW_EXEMPT = [
   "/preview",
   "/portal",
@@ -367,6 +369,8 @@ const PREVIEW_EXEMPT = [
   "/set-password",
   "/api/auth",
   "/api/admin",
+  "/api/products",
+  "/api/categories",
 ];
 
 export async function proxy(req: NextRequest) {
@@ -521,6 +525,7 @@ curl -s -o /dev/null -w "%{http_code} %{redirect_url}\n" http://localhost:3100/p
 curl -s -o /dev/null -w "%{http_code} %{redirect_url}\n" http://localhost:3100/sales
 curl -s -o /dev/null -w "%{http_code} %{redirect_url}\n" http://localhost:3100/admin
 curl -s -o /dev/null -w "%{http_code}\n" http://localhost:3100/favicon.ico
+curl -s -o /dev/null -w "%{http_code}\n" http://localhost:3100/api/products
 ```
 
 Expected:
@@ -531,6 +536,7 @@ Expected:
 - `/portal` and `/sales` → NOT a redirect to `/preview` (200, or a redirect within their own portal — either is fine)
 - `/admin` → `307 …/admin/login` (unchanged admin behavior)
 - `/favicon.ico` → `200` (assets exempt via matcher)
+- `/api/products` → `200` with no cookie (AI-widget catalog exemption)
 
 Also confirm the gated redirect carries the robots header:
 

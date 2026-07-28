@@ -36,7 +36,11 @@ Runtime branching:
 2. Pass through untouched (own auth or token-gated):
    `/preview`, `/portal(/*)`, `/sales(/*)`, `/set-password`, `/api/auth/*`,
    `/api/admin/*` (admin-cookie-authed itself; must stay reachable for admin
-   users, who don't hold a preview cookie).
+   users, who don't hold a preview cookie), `/api/products(/*)` and
+   `/api/categories` (public rate-limited catalog JSON consumed
+   server-to-server — no cookies — by the OneChat AI widget; gating them
+   would break the assistant during customer preview. Confirmed with user
+   2026-07-28: catalog JSON staying fetchable is an accepted trade-off).
 3. Everything else, when `SITE_PASSWORD` is set → require a valid
    `mec_preview` cookie; otherwise redirect to
    `/preview?next=<original path + query string>`.
