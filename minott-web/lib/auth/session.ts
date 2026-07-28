@@ -59,6 +59,7 @@ export async function verifySession(
     if (!valid) return false;
     const parsed = JSON.parse(decoder.decode(b64urlToBytes(payload)));
     return (
+      typeof parsed.aud === "string" &&
       parsed.aud === aud &&
       typeof parsed.exp === "number" &&
       parsed.exp > Date.now()
