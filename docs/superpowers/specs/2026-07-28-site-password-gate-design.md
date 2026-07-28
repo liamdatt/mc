@@ -69,6 +69,9 @@ Runtime branching:
 - If the visitor already holds a valid preview cookie, `/preview` redirects
   to the sanitized `next` (no dead form on a bookmarked lock screen). The
   page also sanitizes `next` before echoing it into the hidden form field.
+- The lock screen carries `robots: noindex, nofollow` metadata — it is
+  exempt from the gate (so it never gets the proxy's `X-Robots-Tag` header)
+  yet is the one page a crawler that finds the URL can actually reach.
 
 ## Cookie
 

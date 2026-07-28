@@ -237,16 +237,20 @@ Code review found the repo already had a second open-redirect validator — `saf
 /**
  * Same-origin relative-path validator shared by flows that round-trip a
  * `next` path through a form or query param (portal sign-in, preview unlock).
- * Returns the path only when it is safe to redirect to: must start with a
+ * Accepts unknown input (query params can be string[] on duplicate keys,
+ * FormData entries can be File) and returns the path only when it is a
+ * string safe to redirect to: must start with a
  * single "/", and must not contain backslashes or control characters
  * ("//host" and a backslash-path are open redirects, and browsers strip
  * control characters from URLs, which would turn a tab-separated
  * "/<TAB>/host" into "//host"). Anything else → undefined.
  */
-export function safeRelativePath(
-  next: string | null | undefined,
-): string | undefined {
-  if (!next || !next.startsWith("/") || next.startsWith("//")) {
+export function safeRelativePath(next: unknown): string | undefined {
+  if (
+    typeof next !== "string" ||
+    !next.startsWith("/") ||
+    next.startsWith("//")
+  ) {
     return undefined;
   }
   for (let i = 0; i < next.length; i++) {
@@ -270,17 +274,14 @@ import { safeRelativePath } from "@/lib/safe-path";
 ```ts
   // `replace` keeps the lock screen out of browser history — Back after
   // unlocking should not return to the password form.
-  redirect(
-    safeRelativePath(String(formData.get("next") ?? "")) ?? "/",
-    RedirectType.replace,
-  );
+  redirect(safeRelativePath(formData.get("next")) ?? "/", RedirectType.replace);
 ```
 
 Note the behavior change vs. the old strip-based guard: a path containing control chars is now rejected (falls back to `/`) instead of being silently rewritten — rejection is the safer contract.
 
 - [ ] **Step 3: Use it in `app/portal/sign-in/page.tsx`**
 
-Delete the local `safeNextPath` function and its doc comment. Import the helper and update the one call site (`const safeNext = safeRelativePath(next);`). Keep the existing `/**` comment lines about `next` round-tripping IF they describe the page flow rather than the validator; the validator's rationale now lives in `lib/safe-path.ts`.
+Delete the local `safeNextPath` function and its doc comment. Import the helper and update the one call site (`const safeNext = safeRelativePath(next);`). Keep the existing `/**` comment lines about `next` round-tripping IF they describe the page flow rather than the validator; the validator's rationale now lives in `lib/safe-path.ts`. Also widen the page's `searchParams` annotation to `Promise<{ next?: string | string[] }>` — the canonical Next.js type; duplicate query keys (`?next=/a&next=/b`) produce arrays at runtime, and the narrow annotation hid a crash.
 
 - [ ] **Step 4: Type-check and behavioral check**
 
@@ -320,18 +321,25 @@ Server page reads async `searchParams` and bails to `/` when the gate is off; a 
 - [ ] **Step 1: Create `app/preview/page.tsx`**
 
 ```tsx
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { PreviewUnlockForm } from "@/components/preview/PreviewUnlockForm";
 import { verifySession, PREVIEW_COOKIE } from "@/lib/auth/session";
 import { safeRelativePath } from "@/lib/safe-path";
 
-export const metadata = { title: "Private preview" };
+// The lock screen is the one page an unauthenticated visitor can reach while
+// the gate is on (it's exempt from the proxy's X-Robots-Tag) — keep it out of
+// search indexes via metadata.
+export const metadata: Metadata = {
+  title: "Private preview",
+  robots: { index: false, follow: false },
+};
 
 export default async function PreviewPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string }>;
+  searchParams: Promise<{ next?: string | string[] }>;
 }) {
   if (!process.env.SITE_PASSWORD) redirect("/");
   const { next } = await searchParams;
@@ -361,17 +369,20 @@ export function PreviewUnlockForm({ next }: { next: string }) {
   const [state, formAction, pending] = useActionState(unlock, initial);
 
   return (
-    <main className="grid min-h-screen place-items-center bg-mec-ink px-6 text-mec-pure">
+    <main
+      id="main"
+      className="grid min-h-screen place-items-center bg-mec-ink px-6 text-mec-pure"
+    >
       <form
         action={formAction}
         className="w-full max-w-sm rounded-md border border-white/10 bg-white/5 p-8"
       >
-        <p className="font-display text-3xl tracking-wider">
+        <h1 className="font-display text-3xl tracking-wider">
           {/* Explicit {" "} — JSX drops the space at a line wrap, which would
               render "MinottEquipment". */}
           <span className="text-mec-red">Minott</span>{" "}
           Equipment &amp; Chemicals
-        </p>
+        </h1>
         <p className="mt-2 text-sm text-mec-pure/60">
           This site is in private preview. Enter the password you were given to
           continue.
@@ -391,11 +402,20 @@ export function PreviewUnlockForm({ next }: { next: string }) {
           type="password"
           autoFocus
           required
+          autoComplete="current-password"
+          aria-invalid={!!state.error}
+          aria-describedby={state.error ? "unlock-error" : undefined}
           className="mt-2 w-full rounded-sm border border-white/20 bg-mec-ink px-4 py-3 text-mec-pure outline-none focus:border-mec-red"
         />
 
         {state.error && (
-          <p className="mt-3 text-sm text-mec-red">{state.error}</p>
+          <p
+            id="unlock-error"
+            role="alert"
+            className="mt-3 text-sm text-mec-red"
+          >
+            {state.error}
+          </p>
         )}
 
         <button
@@ -633,6 +653,8 @@ curl -s -o /dev/null -w "%{http_code} %{redirect_url}\n" http://localhost:3100/s
 curl -s -o /dev/null -w "%{http_code} %{redirect_url}\n" http://localhost:3100/admin
 curl -s -o /dev/null -w "%{http_code}\n" http://localhost:3100/favicon.ico
 curl -s -o /dev/null -w "%{http_code}\n" http://localhost:3100/api/products
+curl -s -o /dev/null -w "%{http_code}\n" "http://localhost:3100/preview?next=/a&next=/b"
+curl -s http://localhost:3100/preview | grep -io '<meta name="robots" content="[^"]*"' | head -1
 ```
 
 Expected:
@@ -644,6 +666,9 @@ Expected:
 - `/admin` → `307 …/admin/login` (unchanged admin behavior)
 - `/favicon.ico` → `200` (assets exempt via matcher)
 - `/api/products` → `200` with no cookie (AI-widget catalog exemption)
+- `/preview?next=/a&next=/b` → `200` (array-valued `next` must not 500)
+- `/preview` meta robots → contains `noindex` (lock screen is exempt from
+  the gate's `X-Robots-Tag` header, so the page carries robots metadata)
 
 Also confirm the gated redirect carries the robots header:
 
