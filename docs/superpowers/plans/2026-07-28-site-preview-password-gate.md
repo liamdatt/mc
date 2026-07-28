@@ -479,8 +479,9 @@ import {
 } from "@/lib/auth/session";
 
 // Paths that keep their own auth (or are token-gated) and stay reachable
-// without the preview password. /api/admin and /admin check the admin cookie
-// themselves; /portal, /sales and /api/auth are BetterAuth-gated in-layout;
+// without the preview password. /api/admin checks the admin cookie itself
+// (/admin never reaches this list — the branch above returns first);
+// /portal, /sales and /api/auth are BetterAuth-gated in-layout;
 // /set-password is token-gated. /api/products and /api/categories are public
 // rate-limited catalog JSON consumed server-to-server (no cookies) by the
 // OneChat AI widget — gating them would break the assistant during preview.
@@ -557,13 +558,15 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  // Everything except Next internals (/_next/*) and known static-asset
-  // extensions (public/ images, favicon, robots/sitemap, fonts, upload
-  // formats). An explicit allowlist rather than "any dot": a blanket dot
-  // rule would let fabricated paths like /about. escape the matcher and
-  // serve the branded 404 (full nav + footer) without the gate.
+  // Everything except Next internals and the directories that actually hold
+  // static files (public/images — including admin uploads — public/brand-logos,
+  // public/svg), plus /favicon.ico and the /robots.txt route. Directory-scoped,
+  // not extension-scoped: an extension rule cannot tell /images/hero.jpg from
+  // a fabricated /about.png, and the latter would escape the gate and serve
+  // the branded 404 (nav + footer) ungated. Anything else — dotted or not —
+  // goes through the gate.
   matcher: [
-    "/((?!_next|.*\\.(?:png|jpe?g|svg|webp|gif|ico|css|js|mjs|txt|xml|json|map|woff2?)$).*)",
+    "/((?!_next/|images/|brand-logos/|svg/|favicon\\.ico|robots\\.txt).*)",
   ],
 };
 ```
@@ -693,6 +696,13 @@ Expected:
   NOT escape the matcher — add
   `curl -s -o /dev/null -w "%{http_code} %{redirect_url}\n" http://localhost:3100/about.`
   to the matrix)
+- Fabricated asset-suffix paths must ALSO be gated (an extension rule would
+  pass these; the directory-scoped matcher must not):
+  `for ext in png json txt js map; do curl -s -o /dev/null -w "%{http_code} %{redirect_url}\n" "http://localhost:3100/about.$ext"; done`
+  → every line `307 …/preview?next=%2Fabout.<ext>`
+- `/images/products/`-style real asset paths still `200`/`404-as-static`
+  (never a `/preview` redirect): pick one real file from `public/images/` and
+  assert `200` without cookies.
 - `/preview` meta robots → contains `noindex` (lock screen is exempt from
   the gate's `X-Robots-Tag` header, so the page carries robots metadata)
 
