@@ -1,25 +1,15 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { redirect, RedirectType } from "next/navigation";
 import {
   signSession,
   PREVIEW_COOKIE,
   PREVIEW_TTL_MS,
 } from "@/lib/auth/session";
+import { safeRelativePath } from "@/lib/safe-path";
 
 export type UnlockState = { error?: string };
-
-// Only allow same-origin path redirects — prevents open-redirect abuse via
-// the ?next= param. Browsers treat "\" as "/" in URLs and strip control
-// characters before parsing, so "//host", "/\host" and "/<TAB>/host" would
-// all escape to an external origin; strip controls first, then require "/"
-// followed by neither "/" nor "\".
-function safeNext(raw: FormDataEntryValue | null): string {
-  const next = String(raw ?? "").replace(/[\x00-\x1F\x7F]/g, "");
-  if (next === "/" || /^\/[^/\\]/.test(next)) return next;
-  return "/";
-}
 
 export async function unlock(
   _prev: UnlockState,
@@ -44,5 +34,10 @@ export async function unlock(
     path: "/",
     // No maxAge: session cookie by design — cleared when the browser closes.
   });
-  redirect(safeNext(formData.get("next")));
+  // `replace` keeps the lock screen out of browser history — Back after
+  // unlocking should not return to the password form.
+  redirect(
+    safeRelativePath(String(formData.get("next") ?? "")) ?? "/",
+    RedirectType.replace,
+  );
 }

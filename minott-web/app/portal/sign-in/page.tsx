@@ -7,6 +7,7 @@ import { RevealOnScroll } from "@/components/motion/RevealOnScroll";
 import { SignInForm } from "@/components/portal/SignInForm";
 import { getPortalSession } from "@/lib/portal";
 import { WHATSAPP_URL } from "@/lib/constants";
+import { safeRelativePath } from "@/lib/safe-path";
 
 export const metadata: Metadata = {
   title: "Customer Portal Sign In | Minott Equipment & Chemicals",
@@ -14,33 +15,13 @@ export const metadata: Metadata = {
     "Sign in to the Minott Equipment & Chemicals customer portal to track your quote requests and order history.",
 };
 
-/**
- * `next` lets flows like the quote page round-trip through sign-in and land
- * back where they started. Only same-site relative paths are honored: must
- * start with a single "/", and must not contain backslashes or control
- * characters ("//host" and a backslash-path are open redirects, and browsers
- * strip control characters from URLs, which would turn a tab-separated
- * "/<TAB>/host" into "//host").
- */
-function safeNextPath(next: string | undefined): string | undefined {
-  if (!next || !next.startsWith("/") || next.startsWith("//")) {
-    return undefined;
-  }
-  for (let i = 0; i < next.length; i++) {
-    const code = next.charCodeAt(i);
-    // control chars (< 0x20), DEL (0x7f), and backslash (0x5c)
-    if (code < 0x20 || code === 0x7f || code === 0x5c) return undefined;
-  }
-  return next;
-}
-
 export default async function PortalSignInPage({
   searchParams,
 }: {
   searchParams: Promise<{ next?: string }>;
 }) {
   const { next } = await searchParams;
-  const safeNext = safeNextPath(next);
+  const safeNext = safeRelativePath(next);
 
   // Already signed in? Skip the form.
   const session = await getPortalSession();
