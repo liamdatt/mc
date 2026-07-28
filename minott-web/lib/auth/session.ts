@@ -25,12 +25,15 @@ async function getKey(secret: string): Promise<CryptoKey> {
   );
 }
 
+export type SessionAudience = "admin" | "preview";
+
 export async function signSession(
   secret: string,
   ttlMs: number,
+  aud: SessionAudience,
 ): Promise<string> {
   const payload = bytesToB64url(
-    encoder.encode(JSON.stringify({ exp: Date.now() + ttlMs })),
+    encoder.encode(JSON.stringify({ exp: Date.now() + ttlMs, aud })),
   );
   const key = await getKey(secret);
   const sig = await crypto.subtle.sign("HMAC", key, encoder.encode(payload));
@@ -40,6 +43,7 @@ export async function signSession(
 export async function verifySession(
   secret: string,
   token: string | undefined,
+  aud: SessionAudience,
 ): Promise<boolean> {
   if (!secret || !token) return false;
   const [payload, sig] = token.split(".");
@@ -53,8 +57,12 @@ export async function verifySession(
       encoder.encode(payload),
     );
     if (!valid) return false;
-    const { exp } = JSON.parse(decoder.decode(b64urlToBytes(payload)));
-    return typeof exp === "number" && exp > Date.now();
+    const parsed = JSON.parse(decoder.decode(b64urlToBytes(payload)));
+    return (
+      parsed.aud === aud &&
+      typeof parsed.exp === "number" &&
+      parsed.exp > Date.now()
+    );
   } catch {
     return false;
   }
@@ -62,3 +70,7 @@ export async function verifySession(
 
 export const SESSION_COOKIE = "mec_admin";
 export const SESSION_TTL_MS = 1000 * 60 * 60 * 8; // 8 hours
+export const PREVIEW_COOKIE = "mec_preview";
+// Backstop expiry inside the preview token. The cookie itself is session-scoped
+// (no maxAge); this bounds browsers that restore session cookies on relaunch.
+export const PREVIEW_TTL_MS = 1000 * 60 * 60 * 24; // 24 hours

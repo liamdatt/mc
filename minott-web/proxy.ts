@@ -10,7 +10,7 @@ export async function proxy(req: NextRequest) {
   }
 
   const token = req.cookies.get(SESSION_COOKIE)?.value;
-  const ok = await verifySession(process.env.SESSION_SECRET ?? "", token);
+  const ok = await verifySession(process.env.SESSION_SECRET ?? "", token, "admin");
   if (!ok) {
     const url = req.nextUrl.clone();
     url.pathname = "/admin/login";

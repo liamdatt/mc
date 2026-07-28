@@ -23,7 +23,7 @@ const EXT: Record<string, string> = {
 
 export async function POST(req: Request) {
   const token = (await cookies()).get(SESSION_COOKIE)?.value;
-  if (!(await verifySession(process.env.SESSION_SECRET ?? "", token))) {
+  if (!(await verifySession(process.env.SESSION_SECRET ?? "", token, "admin"))) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 

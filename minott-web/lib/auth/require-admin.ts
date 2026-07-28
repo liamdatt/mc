@@ -10,6 +10,6 @@ import { verifySession, SESSION_COOKIE } from "@/lib/auth/session";
  */
 export async function requireAdmin(): Promise<void> {
   const token = (await cookies()).get(SESSION_COOKIE)?.value;
-  const ok = await verifySession(process.env.SESSION_SECRET ?? "", token);
+  const ok = await verifySession(process.env.SESSION_SECRET ?? "", token, "admin");
   if (!ok) redirect("/admin/login");
 }

@@ -21,6 +21,7 @@ export async function login(
   const token = await signSession(
     process.env.SESSION_SECRET ?? "",
     SESSION_TTL_MS,
+    "admin",
   );
   const store = await cookies();
   store.set(SESSION_COOKIE, token, {
