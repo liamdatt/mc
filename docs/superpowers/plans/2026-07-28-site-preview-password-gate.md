@@ -566,7 +566,7 @@ export const config = {
   // the branded 404 (nav + footer) ungated. Anything else — dotted or not —
   // goes through the gate.
   matcher: [
-    "/((?!_next/|images/|brand-logos/|svg/|favicon\\.ico|robots\\.txt).*)",
+    "/((?!_next/|images/|brand-logos/|svg/|favicon\\.ico$|robots\\.txt$).*)",
   ],
 };
 ```
