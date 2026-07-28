@@ -84,9 +84,12 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  // Everything except Next internals (/_next/*) and any path containing a
-  // file extension (static assets: images, favicon, og.jpg, …). Product slugs
-  // never contain dots (lib/slug.ts strips non-alphanumerics), so no page
-  // route is excluded by the dot rule.
-  matcher: ["/((?!_next|.*\\..*).*)"],
+  // Everything except Next internals (/_next/*) and known static-asset
+  // extensions (public/ images, favicon, robots/sitemap, fonts, upload
+  // formats). An explicit allowlist rather than "any dot": a blanket dot
+  // rule would let fabricated paths like /about. escape the matcher and
+  // serve the branded 404 (full nav + footer) without the gate.
+  matcher: [
+    "/((?!_next|.*\\.(?:png|jpe?g|svg|webp|gif|ico|css|js|mjs|txt|xml|json|map|woff2?)$).*)",
+  ],
 };
