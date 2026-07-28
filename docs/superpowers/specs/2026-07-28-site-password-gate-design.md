@@ -55,8 +55,10 @@ Runtime branching:
 - New server action (`lib/actions/preview.ts`) verifies the submitted
   password against `SITE_PASSWORD`, signs a session token, sets the cookie,
   and redirects to the `next` path.
-- `next` validation: must start with `/` and not `//`, else fall back to
-  `/` (prevents open redirect).
+- `next` validation: strip ASCII control characters, then require `/`
+  followed by neither `/` nor `\`, else fall back to `/`. (Browsers treat
+  `\` as `/` and strip control chars in URLs, so a plain "starts with `/`,
+  not `//`" check is bypassable via `/\evil.com` — prevents open redirect.)
 - If `SITE_PASSWORD` is unset, visiting `/preview` redirects to `/`.
 
 ## Cookie
