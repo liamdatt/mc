@@ -27,18 +27,26 @@ JS). Alternatives considered and rejected:
 
 1. **Time-range filter** — pill tabs like `/admin/requests`: Last 30 days / Last 90
    days / Last 12 months / All time (`?range=30d|90d|12m|all`, default `90d`).
-   Scopes everything below.
+   Scopes everything below. Window starts are aligned to the trend's bucket
+   boundary (Monday of the week for 30d/90d, first of the month for 12m) so the
+   trend never opens on a partial bucket masquerading as a full one; the delta
+   compares against the equal-length window immediately before. All bucketing and
+   date display use business time (`America/Jamaica`, fixed UTC−05:00 — no DST,
+   so boundaries are derived with a constant shift).
 2. **KPI row** — stat tiles: Quote requests, Sample requests, Contact messages,
    Units quoted (Σ `InquiryItem.quantity`), Unique requesters (distinct email).
    Each tile (except in All time) shows a signed delta vs. the previous
    equal-length period.
 3. **Top products** — horizontal bar chart, top 8 by number of quote requests
    containing the product (sample requests counted in and shown in the row detail);
-   total units quoted shown per row. Grouped by denormalized `productName` so
-   deleted products keep their history.
-4. **Top categories** — horizontal bar chart, request counts rolled up via each
-   item's current `product.category`. Items whose product was deleted fall into
-   "Removed products."
+   total units quoted shown per row. Keyed by the live product name when the
+   product still exists (so renames merge with sample counts), falling back to the
+   denormalized `productName` snapshot so deleted products keep their quote
+   history (orphaned sample requests are dropped — no snapshot exists for them).
+4. **Top categories** — horizontal bar chart, counted like products: once per
+   quote/sample request touching the category (not per line item), rolled up via
+   each item's current `product.category`. Items whose product was deleted fall
+   into "Removed products."
 5. **Requests over time** — stacked columns bucketed by ISO week (30d/90d) or
    month (12m/all), one segment per inquiry type. CSS-only hover/focus tooltip
    gives per-type values; totals labeled on column caps.
@@ -66,9 +74,9 @@ JS). Alternatives considered and rejected:
 ## Architecture
 
 - `lib/analytics.ts` — `getAdminAnalytics(range)`: resolves the window, runs two
-  fetches (inquiries with items+product+category for current window; count-only
-  aggregates for previous window for deltas), aggregates in JS, returns one typed
-  payload. Server-only, mirrors `lib/products.ts` style.
+  same-shape fetches (inquiries with items+product+category for the current and
+  previous windows — the previous one feeds the KPI deltas), aggregates in JS,
+  returns one typed payload. Server-only, mirrors `lib/products.ts` style.
 - `components/admin/AnalyticsCharts.tsx` — presentational server components:
   `StatTile`, `HBarList`, `StackedTrend`, `StatusBar`. No `"use client"`; hover
   tooltips are CSS (`group-hover` / `focus-within`, `tabindex=0`).
