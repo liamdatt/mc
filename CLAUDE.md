@@ -35,7 +35,7 @@ This is **Next.js 16 / React 19**, which has breaking changes vs. older training
 
 ## Architecture
 
-Multi-page App Router site backed by **SQLite via Prisma**. Public pages: Home (`app/page.tsx`), About, Solutions, Contact, plus a DB-driven Products catalog (`/products`, `/products/[category]`, `/products/[category]/[slug]`) and a quote builder (`/quote`). A password-protected admin (`/admin/*`) manages products/categories and an inquiry inbox. Reads run in Server Components via `lib/products.ts`; mutations run through Server Actions in `lib/actions/`. The marketing **sections** in `components/sections/` are reused and redistributed across the public pages.
+Multi-page App Router site backed by **SQLite via Prisma**. Public pages: Home (`app/page.tsx`), About, Solutions, Contact, plus a DB-driven Products catalog (`/products`, `/products/[category]`, `/products/[category]/[slug]`) and a quote builder (`/quote`). A password-protected admin (`/admin/*`) manages products/categories, an inquiry inbox, and a read-only analytics page (`/admin/analytics`: demand by product/category, request trend, pipeline, top companies — aggregation in `lib/analytics.ts`, server-rendered chart primitives in `components/admin/AnalyticsCharts.tsx`, all bucketing in `America/Jamaica` time). Reads run in Server Components via `lib/products.ts`; mutations run through Server Actions in `lib/actions/`. The marketing **sections** in `components/sections/` are reused and redistributed across the public pages.
 
 The root layout sets `export const dynamic = "force-dynamic"` so every route renders on demand — this keeps the nav category dropdown and catalog in sync with admin edits (Prisma reads are not auto-dynamic, so without this they would be prerendered stale).
 
