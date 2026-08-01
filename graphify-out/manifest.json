@@ -1,0 +1,992 @@
+{
+  ".claude/skills/gpt-image-2/scripts/extract_image.py": {
+    "mtime": 1780849571.6104012,
+    "ast_hash": "1cb344b1ac69aed683b798e59100ad26",
+    "semantic_hash": "1cb344b1ac69aed683b798e59100ad26"
+  },
+  ".claude/skills/gpt-image-2/scripts/gen.sh": {
+    "mtime": 1780849571.6104438,
+    "ast_hash": "0021aed9d3576c32938d7ad94e3d23f1",
+    "semantic_hash": "0021aed9d3576c32938d7ad94e3d23f1"
+  },
+  "minott-web/app/about/page.tsx": {
+    "mtime": 1783050982.9287157,
+    "ast_hash": "231d3123bf4548412f85a61cf2466000",
+    "semantic_hash": "231d3123bf4548412f85a61cf2466000"
+  },
+  "minott-web/app/admin/(protected)/categories/[id]/edit/page.tsx": {
+    "mtime": 1780426670.826604,
+    "ast_hash": "f754314dc37eb98d85c5105a0fe385ff",
+    "semantic_hash": "f754314dc37eb98d85c5105a0fe385ff"
+  },
+  "minott-web/app/admin/(protected)/categories/new/page.tsx": {
+    "mtime": 1780426670.826604,
+    "ast_hash": "445e89918ae0fe629acff0dc6c37eaf5",
+    "semantic_hash": "445e89918ae0fe629acff0dc6c37eaf5"
+  },
+  "minott-web/app/admin/(protected)/categories/page.tsx": {
+    "mtime": 1780426670.826604,
+    "ast_hash": "3334bc19726842314da9c12fded72010",
+    "semantic_hash": "3334bc19726842314da9c12fded72010"
+  },
+  "minott-web/app/admin/(protected)/customers/[id]/page.tsx": {
+    "mtime": 1781115060.198017,
+    "ast_hash": "586a451b83038b3767f07e77a22ade91",
+    "semantic_hash": "586a451b83038b3767f07e77a22ade91"
+  },
+  "minott-web/app/admin/(protected)/customers/new/page.tsx": {
+    "mtime": 1781115051.652226,
+    "ast_hash": "364bd41c671faafc91478006ea4c4737",
+    "semantic_hash": "364bd41c671faafc91478006ea4c4737"
+  },
+  "minott-web/app/admin/(protected)/customers/page.tsx": {
+    "mtime": 1781115077.7815862,
+    "ast_hash": "575746c6300e3a3296d3f037c5a46e1b",
+    "semantic_hash": "575746c6300e3a3296d3f037c5a46e1b"
+  },
+  "minott-web/app/admin/(protected)/layout.tsx": {
+    "mtime": 1784676587.067282,
+    "ast_hash": "19c54a376aefea988834aba430f6fd36",
+    "semantic_hash": "19c54a376aefea988834aba430f6fd36"
+  },
+  "minott-web/app/admin/(protected)/page.tsx": {
+    "mtime": 1780426670.826604,
+    "ast_hash": "caeba1c51886a6ce5172e53af07c99b0",
+    "semantic_hash": "caeba1c51886a6ce5172e53af07c99b0"
+  },
+  "minott-web/app/admin/(protected)/products/[id]/edit/page.tsx": {
+    "mtime": 1782162324.9455473,
+    "ast_hash": "fcbea544a73363230f5014fbd0af98c5",
+    "semantic_hash": "fcbea544a73363230f5014fbd0af98c5"
+  },
+  "minott-web/app/admin/(protected)/products/new/page.tsx": {
+    "mtime": 1780426670.8267763,
+    "ast_hash": "795aef5a752ecc82440349ec52c5ba5f",
+    "semantic_hash": "795aef5a752ecc82440349ec52c5ba5f"
+  },
+  "minott-web/app/admin/(protected)/products/page.tsx": {
+    "mtime": 1782162324.9455473,
+    "ast_hash": "6337071cb2f5ab5dfbd4d361f0016f26",
+    "semantic_hash": "6337071cb2f5ab5dfbd4d361f0016f26"
+  },
+  "minott-web/app/admin/(protected)/requests/page.tsx": {
+    "mtime": 1780426670.8267763,
+    "ast_hash": "a6b046c45b40a7ec2d9eaaf3fd73ad50",
+    "semantic_hash": "a6b046c45b40a7ec2d9eaaf3fd73ad50"
+  },
+  "minott-web/app/admin/(protected)/sales-reps/[id]/edit/page.tsx": {
+    "mtime": 1781114677.7760415,
+    "ast_hash": "a3ce114ab40f9ad04f2b5ae17508861d",
+    "semantic_hash": "a3ce114ab40f9ad04f2b5ae17508861d"
+  },
+  "minott-web/app/admin/(protected)/sales-reps/new/page.tsx": {
+    "mtime": 1781114672.9281507,
+    "ast_hash": "7e3d6e91cc8fd1300c662987c77db24f",
+    "semantic_hash": "7e3d6e91cc8fd1300c662987c77db24f"
+  },
+  "minott-web/app/admin/(protected)/sales-reps/page.tsx": {
+    "mtime": 1781114670.8901963,
+    "ast_hash": "1c39186a2932ad381f1c68238bcdef5d",
+    "semantic_hash": "1c39186a2932ad381f1c68238bcdef5d"
+  },
+  "minott-web/app/admin/(protected)/settings/page.tsx": {
+    "mtime": 1784676587.067282,
+    "ast_hash": "98d3644799b5da582bd82ecdaede5e1f",
+    "semantic_hash": "98d3644799b5da582bd82ecdaede5e1f"
+  },
+  "minott-web/app/admin/login/page.tsx": {
+    "mtime": 1780426670.8267763,
+    "ast_hash": "806cc0dbaaa08f3b4e55cce182bfc178",
+    "semantic_hash": "806cc0dbaaa08f3b4e55cce182bfc178"
+  },
+  "minott-web/app/api/admin/upload/route.ts": {
+    "mtime": 1784005369.4277637,
+    "ast_hash": "e645c8545c4c98445f75b92642ae89c2",
+    "semantic_hash": "e645c8545c4c98445f75b92642ae89c2"
+  },
+  "minott-web/app/api/auth/[...all]/route.ts": {
+    "mtime": 1781042937.9128115,
+    "ast_hash": "7493e549188338eadd910774402c0102",
+    "semantic_hash": "7493e549188338eadd910774402c0102"
+  },
+  "minott-web/app/api/categories/route.ts": {
+    "mtime": 1780494161.9309719,
+    "ast_hash": "be06a063eca6ec80380ac1fba9853841",
+    "semantic_hash": "be06a063eca6ec80380ac1fba9853841"
+  },
+  "minott-web/app/api/products/[slug]/route.ts": {
+    "mtime": 1780494161.9310596,
+    "ast_hash": "691e95edaa58f0b879b6576d391b80e6",
+    "semantic_hash": "691e95edaa58f0b879b6576d391b80e6"
+  },
+  "minott-web/app/api/products/route.ts": {
+    "mtime": 1780494161.9310596,
+    "ast_hash": "7b6a92d5428a8103eaf24fccf1e02333",
+    "semantic_hash": "7b6a92d5428a8103eaf24fccf1e02333"
+  },
+  "minott-web/app/contact/page.tsx": {
+    "mtime": 1781043439.5056388,
+    "ast_hash": "920530326ec225909a463fdb23ff4129",
+    "semantic_hash": "920530326ec225909a463fdb23ff4129"
+  },
+  "minott-web/app/layout.tsx": {
+    "mtime": 1784309222.2330558,
+    "ast_hash": "611b27ff396d31a6badfb4ba5167ae1d",
+    "semantic_hash": "611b27ff396d31a6badfb4ba5167ae1d"
+  },
+  "minott-web/app/not-found.tsx": {
+    "mtime": 1779908953.4303246,
+    "ast_hash": "2fd0c18bfc154ef33967a3f7dc31ca52",
+    "semantic_hash": "2fd0c18bfc154ef33967a3f7dc31ca52"
+  },
+  "minott-web/app/page.tsx": {
+    "mtime": 1781061459.1223857,
+    "ast_hash": "24783e61fc7cc83f5b768798553ddffe",
+    "semantic_hash": "24783e61fc7cc83f5b768798553ddffe"
+  },
+  "minott-web/app/portal/(protected)/history/[id]/page.tsx": {
+    "mtime": 1782162324.9455473,
+    "ast_hash": "fcbbe1f1cf643111d3b04a5cb93514ef",
+    "semantic_hash": "fcbbe1f1cf643111d3b04a5cb93514ef"
+  },
+  "minott-web/app/portal/(protected)/history/export/route.ts": {
+    "mtime": 1781043423.8846993,
+    "ast_hash": "08109bc2fcfbf05f131be6cb99c6731e",
+    "semantic_hash": "08109bc2fcfbf05f131be6cb99c6731e"
+  },
+  "minott-web/app/portal/(protected)/history/page.tsx": {
+    "mtime": 1781043363.8126523,
+    "ast_hash": "1e1534525ed717b564d2b968efa469a7",
+    "semantic_hash": "1e1534525ed717b564d2b968efa469a7"
+  },
+  "minott-web/app/portal/(protected)/layout.tsx": {
+    "mtime": 1781061618.5929227,
+    "ast_hash": "cea43ffe2302fe0accc6090011ab43e2",
+    "semantic_hash": "cea43ffe2302fe0accc6090011ab43e2"
+  },
+  "minott-web/app/portal/(protected)/page.tsx": {
+    "mtime": 1781043188.2941601,
+    "ast_hash": "5506cf2c2f47c1a807393e60e526d884",
+    "semantic_hash": "5506cf2c2f47c1a807393e60e526d884"
+  },
+  "minott-web/app/portal/(protected)/profile/page.tsx": {
+    "mtime": 1781043449.2041614,
+    "ast_hash": "abb0d3d0721dcc5bc4b999e874448e6a",
+    "semantic_hash": "abb0d3d0721dcc5bc4b999e874448e6a"
+  },
+  "minott-web/app/portal/sign-in/page.tsx": {
+    "mtime": 1781116382.6000168,
+    "ast_hash": "1ce7ffc45608a5ef337340b44feec2c3",
+    "semantic_hash": "1ce7ffc45608a5ef337340b44feec2c3"
+  },
+  "minott-web/app/products/[category]/[slug]/page.tsx": {
+    "mtime": 1784005369.4277637,
+    "ast_hash": "ebc736490eed9010ceee38941280175e",
+    "semantic_hash": "ebc736490eed9010ceee38941280175e"
+  },
+  "minott-web/app/products/[category]/page.tsx": {
+    "mtime": 1780428321.5091202,
+    "ast_hash": "ad27d56131266329dac337efec9e3d0d",
+    "semantic_hash": "ad27d56131266329dac337efec9e3d0d"
+  },
+  "minott-web/app/products/all/page.tsx": {
+    "mtime": 1784663240.1831765,
+    "ast_hash": "d23a737fb0b2efe8e0af6c69fc94d0b7",
+    "semantic_hash": "d23a737fb0b2efe8e0af6c69fc94d0b7"
+  },
+  "minott-web/app/products/page.tsx": {
+    "mtime": 1783557105.1400518,
+    "ast_hash": "30f56fab76fb4d59c14a2f5fb193a316",
+    "semantic_hash": "30f56fab76fb4d59c14a2f5fb193a316"
+  },
+  "minott-web/app/quote/page.tsx": {
+    "mtime": 1781113906.0865135,
+    "ast_hash": "cc0a99f1a0242ad5978aaa1d068f48f1",
+    "semantic_hash": "cc0a99f1a0242ad5978aaa1d068f48f1"
+  },
+  "minott-web/app/social-responsibility/page.tsx": {
+    "mtime": 1781043439.5056388,
+    "ast_hash": "0cfcf642a02a6035104c36a5b711dc86",
+    "semantic_hash": "0cfcf642a02a6035104c36a5b711dc86"
+  },
+  "minott-web/app/solutions/page.tsx": {
+    "mtime": 1781043439.5056388,
+    "ast_hash": "fe4d4f191555990865a59d41cfd2440e",
+    "semantic_hash": "fe4d4f191555990865a59d41cfd2440e"
+  },
+  "minott-web/components/admin/CategoryForm.tsx": {
+    "mtime": 1780426670.8271375,
+    "ast_hash": "d3e4c7d8c974619d1c23aa6c1c25ba0e",
+    "semantic_hash": "d3e4c7d8c974619d1c23aa6c1c25ba0e"
+  },
+  "minott-web/components/admin/CustomerForm.tsx": {
+    "mtime": 1781115016.3750858,
+    "ast_hash": "811369481446b4ee16a1e78eb205eae5",
+    "semantic_hash": "811369481446b4ee16a1e78eb205eae5"
+  },
+  "minott-web/components/admin/DeleteCategoryButton.tsx": {
+    "mtime": 1780426670.8274086,
+    "ast_hash": "c1d1bb2cfafad3a125736cbc6857d72b",
+    "semantic_hash": "c1d1bb2cfafad3a125736cbc6857d72b"
+  },
+  "minott-web/components/admin/DeleteSalesRepButton.tsx": {
+    "mtime": 1781114654.2435687,
+    "ast_hash": "2388576549fcbbd55c8ac74efcfa56a0",
+    "semantic_hash": "2388576549fcbbd55c8ac74efcfa56a0"
+  },
+  "minott-web/components/admin/ImageUpload.tsx": {
+    "mtime": 1784005369.4277637,
+    "ast_hash": "04abeba7552c7097c7d203aa460568e0",
+    "semantic_hash": "04abeba7552c7097c7d203aa460568e0"
+  },
+  "minott-web/components/admin/InquiryStatusSelect.tsx": {
+    "mtime": 1780426670.8274086,
+    "ast_hash": "4d6e1aa1ca602de495980ed76ba7af3f",
+    "semantic_hash": "4d6e1aa1ca602de495980ed76ba7af3f"
+  },
+  "minott-web/components/admin/ProductForm.tsx": {
+    "mtime": 1784005369.4277637,
+    "ast_hash": "125cd0ec620b182a731de10e02545dcc",
+    "semantic_hash": "125cd0ec620b182a731de10e02545dcc"
+  },
+  "minott-web/components/admin/SalesRepForm.tsx": {
+    "mtime": 1781114650.2936566,
+    "ast_hash": "5dcd24ad0ed3a67e78e8001325e49529",
+    "semantic_hash": "5dcd24ad0ed3a67e78e8001325e49529"
+  },
+  "minott-web/components/admin/SettingsForm.tsx": {
+    "mtime": 1784676587.067282,
+    "ast_hash": "752bd02d915ecb3e9018ffee729eb1da",
+    "semantic_hash": "752bd02d915ecb3e9018ffee729eb1da"
+  },
+  "minott-web/components/admin/VariantManager.tsx": {
+    "mtime": 1784005369.4277637,
+    "ast_hash": "4b882c3b0c1cc64a3c24265a11404480",
+    "semantic_hash": "4b882c3b0c1cc64a3c24265a11404480"
+  },
+  "minott-web/components/layout/Footer.tsx": {
+    "mtime": 1781043439.5056388,
+    "ast_hash": "9dfd77ddb2fb2347cd6d3bb9e4f97f35",
+    "semantic_hash": "9dfd77ddb2fb2347cd6d3bb9e4f97f35"
+  },
+  "minott-web/components/layout/Logo.tsx": {
+    "mtime": 1783033776.9633732,
+    "ast_hash": "b79e218e466a4ba7ab11c4d101ef87e9",
+    "semantic_hash": "b79e218e466a4ba7ab11c4d101ef87e9"
+  },
+  "minott-web/components/layout/Nav.tsx": {
+    "mtime": 1783051002.1872344,
+    "ast_hash": "1353dc5acfedc1951d645c0b4c77ae20",
+    "semantic_hash": "1353dc5acfedc1951d645c0b4c77ae20"
+  },
+  "minott-web/components/layout/PageTransition.tsx": {
+    "mtime": 1779909489.7281086,
+    "ast_hash": "4860ccfd7a6a7fdb43846c9272783b71",
+    "semantic_hash": "4860ccfd7a6a7fdb43846c9272783b71"
+  },
+  "minott-web/components/layout/PublicChrome.tsx": {
+    "mtime": 1780427382.1844153,
+    "ast_hash": "04e696436f7a52351d97414ffe80d6df",
+    "semantic_hash": "04e696436f7a52351d97414ffe80d6df"
+  },
+  "minott-web/components/motion/LenisProvider.tsx": {
+    "mtime": 1780429454.8304052,
+    "ast_hash": "7efbd657c83646fd430f8c034565e128",
+    "semantic_hash": "7efbd657c83646fd430f8c034565e128"
+  },
+  "minott-web/components/motion/MotionRoot.tsx": {
+    "mtime": 1779906377.604188,
+    "ast_hash": "eb41b90936d3f430d0fbac9c1afb925b",
+    "semantic_hash": "eb41b90936d3f430d0fbac9c1afb925b"
+  },
+  "minott-web/components/motion/RevealOnScroll.tsx": {
+    "mtime": 1779905288.8360324,
+    "ast_hash": "e0a501f38d0651d86a634f190609a5ee",
+    "semantic_hash": "e0a501f38d0651d86a634f190609a5ee"
+  },
+  "minott-web/components/motion/ScrollProgress.tsx": {
+    "mtime": 1779905284.139208,
+    "ast_hash": "31b1f657329d008845b01ad1b4473a7d",
+    "semantic_hash": "31b1f657329d008845b01ad1b4473a7d"
+  },
+  "minott-web/components/portal/ProfileForm.tsx": {
+    "mtime": 1781043436.433443,
+    "ast_hash": "03ecf98c3f531a42e1f9b1e1ef6b7e20",
+    "semantic_hash": "03ecf98c3f531a42e1f9b1e1ef6b7e20"
+  },
+  "minott-web/components/portal/ReorderButton.tsx": {
+    "mtime": 1781043378.230236,
+    "ast_hash": "621fd797ced9228d3bafa2ca56e534b1",
+    "semantic_hash": "621fd797ced9228d3bafa2ca56e534b1"
+  },
+  "minott-web/components/portal/SignInForm.tsx": {
+    "mtime": 1781113390.9671395,
+    "ast_hash": "6c061804986d5a909d71101010b59c4e",
+    "semantic_hash": "6c061804986d5a909d71101010b59c4e"
+  },
+  "minott-web/components/portal/SignOutButton.tsx": {
+    "mtime": 1781043147.0191379,
+    "ast_hash": "b3d47482d9306d8d739eb336c5a67c8d",
+    "semantic_hash": "b3d47482d9306d8d739eb336c5a67c8d"
+  },
+  "minott-web/components/primitives/AnimatedNumber.tsx": {
+    "mtime": 1779905336.7702627,
+    "ast_hash": "d677e9a814389ba42a25fd4d48bf16c3",
+    "semantic_hash": "d677e9a814389ba42a25fd4d48bf16c3"
+  },
+  "minott-web/components/primitives/Button.tsx": {
+    "mtime": 1779909133.5997455,
+    "ast_hash": "aff46f4ec87875520482ce197b52dd21",
+    "semantic_hash": "aff46f4ec87875520482ce197b52dd21"
+  },
+  "minott-web/components/primitives/Card.tsx": {
+    "mtime": 1779905331.1894667,
+    "ast_hash": "6a666168cdb3ef419f939f50d69f3666",
+    "semantic_hash": "6a666168cdb3ef419f939f50d69f3666"
+  },
+  "minott-web/components/primitives/Container.tsx": {
+    "mtime": 1779905314.0880952,
+    "ast_hash": "9687f16bf70b5bdd813ddea282807ecc",
+    "semantic_hash": "9687f16bf70b5bdd813ddea282807ecc"
+  },
+  "minott-web/components/primitives/Eyebrow.tsx": {
+    "mtime": 1779905325.5456736,
+    "ast_hash": "6059ac1ec23926cab1e74d9f1e43dd07",
+    "semantic_hash": "6059ac1ec23926cab1e74d9f1e43dd07"
+  },
+  "minott-web/components/primitives/Section.tsx": {
+    "mtime": 1779905319.8908813,
+    "ast_hash": "813bea27fba3f037e12c5a324c10c8a7",
+    "semantic_hash": "813bea27fba3f037e12c5a324c10c8a7"
+  },
+  "minott-web/components/products/ProductCard.tsx": {
+    "mtime": 1784663240.1840434,
+    "ast_hash": "1e1ee9398585d59ded779592586334b3",
+    "semantic_hash": "1e1ee9398585d59ded779592586334b3"
+  },
+  "minott-web/components/products/ProductDetailActions.tsx": {
+    "mtime": 1784005369.4277637,
+    "ast_hash": "60d0216059dba49d3dfbe3eb08d42048",
+    "semantic_hash": "60d0216059dba49d3dfbe3eb08d42048"
+  },
+  "minott-web/components/products/ProductDetailView.tsx": {
+    "mtime": 1784005369.4277637,
+    "ast_hash": "811db3e6abe4b7e97f0266c6774c4681",
+    "semantic_hash": "811db3e6abe4b7e97f0266c6774c4681"
+  },
+  "minott-web/components/products/ProductFilterSidebar.tsx": {
+    "mtime": 1781043439.5056388,
+    "ast_hash": "a5539904a6aab03f35e7f89a05693f96",
+    "semantic_hash": "a5539904a6aab03f35e7f89a05693f96"
+  },
+  "minott-web/components/products/ProductSearchBar.tsx": {
+    "mtime": 1781043214.4806893,
+    "ast_hash": "7a7a1db9e7de50f3eb40a34f4ae94e30",
+    "semantic_hash": "7a7a1db9e7de50f3eb40a34f4ae94e30"
+  },
+  "minott-web/components/products/ProductSort.tsx": {
+    "mtime": 1781043439.5056388,
+    "ast_hash": "74ccdb788ffa6198ccbf70852dcce140",
+    "semantic_hash": "74ccdb788ffa6198ccbf70852dcce140"
+  },
+  "minott-web/components/products/ProductSubsection.tsx": {
+    "mtime": 1784663240.1840434,
+    "ast_hash": "4bd4a3fb2dda468ee54c9564112ebd84",
+    "semantic_hash": "4bd4a3fb2dda468ee54c9564112ebd84"
+  },
+  "minott-web/components/products/SampleRequestForm.tsx": {
+    "mtime": 1782166792.7268956,
+    "ast_hash": "f8144f2148db7d2582cf53bfdfd73748",
+    "semantic_hash": "f8144f2148db7d2582cf53bfdfd73748"
+  },
+  "minott-web/components/products/ShowroomBanner.tsx": {
+    "mtime": 1781069260.6190047,
+    "ast_hash": "989c45cd2b46ec0caf584769bea4fa4c",
+    "semantic_hash": "989c45cd2b46ec0caf584769bea4fa4c"
+  },
+  "minott-web/components/products/VariantSelector.tsx": {
+    "mtime": 1784005369.4277637,
+    "ast_hash": "79e26aee7d3edc41ed6890058141aa1e",
+    "semantic_hash": "79e26aee7d3edc41ed6890058141aa1e"
+  },
+  "minott-web/components/products/WhatsAppCta.tsx": {
+    "mtime": 1781043356.076408,
+    "ast_hash": "9ae67ee64e1d4c138f67aedecf4237cb",
+    "semantic_hash": "9ae67ee64e1d4c138f67aedecf4237cb"
+  },
+  "minott-web/components/quote/AddToQuoteButton.tsx": {
+    "mtime": 1780427894.3484592,
+    "ast_hash": "a00aa740cbf7bed8048fcd664d52a4ab",
+    "semantic_hash": "a00aa740cbf7bed8048fcd664d52a4ab"
+  },
+  "minott-web/components/quote/QuoteCartProvider.tsx": {
+    "mtime": 1782162324.9455473,
+    "ast_hash": "bbd041a94b03106d8e7b97fd108b4f11",
+    "semantic_hash": "bbd041a94b03106d8e7b97fd108b4f11"
+  },
+  "minott-web/components/quote/QuotePageClient.tsx": {
+    "mtime": 1783557324.282218,
+    "ast_hash": "4386ce818a620f147592d60c025c1af1",
+    "semantic_hash": "4386ce818a620f147592d60c025c1af1"
+  },
+  "minott-web/components/sections/AboutHero.tsx": {
+    "mtime": 1780432280.680159,
+    "ast_hash": "a3a4771f34fbcab0f37173374826c29e",
+    "semantic_hash": "a3a4771f34fbcab0f37173374826c29e"
+  },
+  "minott-web/components/sections/BoardOfDirectors.tsx": {
+    "mtime": 1781043439.5056388,
+    "ast_hash": "44e4798e822494ebf9a7038d2dcca0ff",
+    "semantic_hash": "44e4798e822494ebf9a7038d2dcca0ff"
+  },
+  "minott-web/components/sections/BrandWordmarks.tsx": {
+    "mtime": 1783495932.6363926,
+    "ast_hash": "a7014cbe8300c55c4d6fd3e795a2cbc5",
+    "semantic_hash": "a7014cbe8300c55c4d6fd3e795a2cbc5"
+  },
+  "minott-web/components/sections/CinematicHero.tsx": {
+    "mtime": 1783033788.5191393,
+    "ast_hash": "6af0353eae7dbf6d1ccbdb982fec2230",
+    "semantic_hash": "6af0353eae7dbf6d1ccbdb982fec2230"
+  },
+  "minott-web/components/sections/CompanyValues.tsx": {
+    "mtime": 1780432280.680159,
+    "ast_hash": "3a2b902ef1c9a54cebe824ee2e1bc430",
+    "semantic_hash": "3a2b902ef1c9a54cebe824ee2e1bc430"
+  },
+  "minott-web/components/sections/ContactForm.tsx": {
+    "mtime": 1780426670.8277488,
+    "ast_hash": "03afe1cd71c8ad7ef40513932fdf7248",
+    "semantic_hash": "03afe1cd71c8ad7ef40513932fdf7248"
+  },
+  "minott-web/components/sections/CsrGallery.tsx": {
+    "mtime": 1783051051.8799977,
+    "ast_hash": "7ffb66e45f80544cff2413f5302b8bd2",
+    "semantic_hash": "7ffb66e45f80544cff2413f5302b8bd2"
+  },
+  "minott-web/components/sections/DualPlay.tsx": {
+    "mtime": 1779909150.8965528,
+    "ast_hash": "7df7ea1c08ae26e0148092f3aa3a6532",
+    "semantic_hash": "7df7ea1c08ae26e0148092f3aa3a6532"
+  },
+  "minott-web/components/sections/FounderStory.tsx": {
+    "mtime": 1779909283.385884,
+    "ast_hash": "888d17bb6db25cbed350fc8a63566548",
+    "semantic_hash": "888d17bb6db25cbed350fc8a63566548"
+  },
+  "minott-web/components/sections/IndustriesGrid.tsx": {
+    "mtime": 1780433171.5366077,
+    "ast_hash": "73a8cc30e05b268a5a1ddb3e54a5f17d",
+    "semantic_hash": "73a8cc30e05b268a5a1ddb3e54a5f17d"
+  },
+  "minott-web/components/sections/LeadershipTeam.tsx": {
+    "mtime": 1783495768.9002638,
+    "ast_hash": "75d6a8634795bba32cb7fb26f46d30d0",
+    "semantic_hash": "75d6a8634795bba32cb7fb26f46d30d0"
+  },
+  "minott-web/components/sections/LegacyBanner.tsx": {
+    "mtime": 1781043439.506135,
+    "ast_hash": "17c32f816d86d0bbad46025dfaafa344",
+    "semantic_hash": "17c32f816d86d0bbad46025dfaafa344"
+  },
+  "minott-web/components/sections/LocationContact.tsx": {
+    "mtime": 1779908823.410003,
+    "ast_hash": "2166ca982a174854f0861fcdd0148749",
+    "semantic_hash": "2166ca982a174854f0861fcdd0148749"
+  },
+  "minott-web/components/sections/MissionStatement.tsx": {
+    "mtime": 1781043093.6392748,
+    "ast_hash": "238486d554f1c1a5c44383e955a3e712",
+    "semantic_hash": "238486d554f1c1a5c44383e955a3e712"
+  },
+  "minott-web/components/sections/NumbersBar.tsx": {
+    "mtime": 1779909552.2406895,
+    "ast_hash": "870862ede822ed5425b7113facba653a",
+    "semantic_hash": "870862ede822ed5425b7113facba653a"
+  },
+  "minott-web/components/sections/OurStory.tsx": {
+    "mtime": 1783495651.750473,
+    "ast_hash": "177c84bb63c5bca88b6110cfda0d0514",
+    "semantic_hash": "177c84bb63c5bca88b6110cfda0d0514"
+  },
+  "minott-web/components/sections/ProductCategories.tsx": {
+    "mtime": 1780426670.8277488,
+    "ast_hash": "572a4b0a752da4fdb2847c83f3a39b22",
+    "semantic_hash": "572a4b0a752da4fdb2847c83f3a39b22"
+  },
+  "minott-web/components/sections/QuoteCTA.tsx": {
+    "mtime": 1780426670.8277488,
+    "ast_hash": "4b932102d219829be53524f67f412f03",
+    "semantic_hash": "4b932102d219829be53524f67f412f03"
+  },
+  "minott-web/components/sections/TailoredSolutions.tsx": {
+    "mtime": 1784000953.8248656,
+    "ast_hash": "af6dd467797fb53ad936d4a41d7b1d3b",
+    "semantic_hash": "af6dd467797fb53ad936d4a41d7b1d3b"
+  },
+  "minott-web/components/sections/TrustBar.tsx": {
+    "mtime": 1781043439.506135,
+    "ast_hash": "313549ff3e776e5cb4b1ce1d7ced1fbc",
+    "semantic_hash": "313549ff3e776e5cb4b1ce1d7ced1fbc"
+  },
+  "minott-web/components/sections/ValuePillars.tsx": {
+    "mtime": 1779907297.2976158,
+    "ast_hash": "76aeb8c294802b60b3452db24fc2b06f",
+    "semantic_hash": "76aeb8c294802b60b3452db24fc2b06f"
+  },
+  "minott-web/emails/components/EmailLayout.tsx": {
+    "mtime": 1784676587.0676246,
+    "ast_hash": "7e2dd1f52b37587af7b612156bea3b64",
+    "semantic_hash": "7e2dd1f52b37587af7b612156bea3b64"
+  },
+  "minott-web/emails/inquiry-confirmation.tsx": {
+    "mtime": 1784676587.0676246,
+    "ast_hash": "bc6e18166bd20c8aefdcefcedab50470",
+    "semantic_hash": "bc6e18166bd20c8aefdcefcedab50470"
+  },
+  "minott-web/emails/inquiry-notification.tsx": {
+    "mtime": 1784676587.0676246,
+    "ast_hash": "6b7a88a8cacc2499686c76a5daeba08b",
+    "semantic_hash": "6b7a88a8cacc2499686c76a5daeba08b"
+  },
+  "minott-web/eslint.config.mjs": {
+    "mtime": 1779905058.5137494,
+    "ast_hash": "dfa1f5f6a7037bf39dc510f30b180002",
+    "semantic_hash": "dfa1f5f6a7037bf39dc510f30b180002"
+  },
+  "minott-web/lib/actions/admin-categories.ts": {
+    "mtime": 1780426670.8277488,
+    "ast_hash": "f8bb7ee4682215b3bef18fe34e6e6044",
+    "semantic_hash": "f8bb7ee4682215b3bef18fe34e6e6044"
+  },
+  "minott-web/lib/actions/admin-inquiries.ts": {
+    "mtime": 1780426670.8280234,
+    "ast_hash": "c806b042df0a29403681e150c800ef4f",
+    "semantic_hash": "c806b042df0a29403681e150c800ef4f"
+  },
+  "minott-web/lib/actions/admin-products.ts": {
+    "mtime": 1784005369.4277637,
+    "ast_hash": "22d53d054991967f031518182096b986",
+    "semantic_hash": "22d53d054991967f031518182096b986"
+  },
+  "minott-web/lib/actions/admin-sales-reps.ts": {
+    "mtime": 1781114431.8593075,
+    "ast_hash": "da84d221891b66c75a85a7020b196697",
+    "semantic_hash": "da84d221891b66c75a85a7020b196697"
+  },
+  "minott-web/lib/actions/admin-settings.ts": {
+    "mtime": 1784676587.0676246,
+    "ast_hash": "fc85facc70a11dbe34f5be7d53ecae80",
+    "semantic_hash": "fc85facc70a11dbe34f5be7d53ecae80"
+  },
+  "minott-web/lib/actions/admin-variants.ts": {
+    "mtime": 1782162324.9465473,
+    "ast_hash": "7f0d657c5020ad1c84c177c5ed02e0ae",
+    "semantic_hash": "7f0d657c5020ad1c84c177c5ed02e0ae"
+  },
+  "minott-web/lib/actions/auth.ts": {
+    "mtime": 1780426670.8280234,
+    "ast_hash": "c310c9147fc9855a92056dff6cda65d5",
+    "semantic_hash": "c310c9147fc9855a92056dff6cda65d5"
+  },
+  "minott-web/lib/actions/customers.ts": {
+    "mtime": 1781115460.6719987,
+    "ast_hash": "f8fe9a03a8a89140878ceeb8b5bdf674",
+    "semantic_hash": "f8fe9a03a8a89140878ceeb8b5bdf674"
+  },
+  "minott-web/lib/actions/inquiries.ts": {
+    "mtime": 1784676587.0676246,
+    "ast_hash": "66a06777d5d795d20a2414b2e2c09c26",
+    "semantic_hash": "66a06777d5d795d20a2414b2e2c09c26"
+  },
+  "minott-web/lib/actions/portal.ts": {
+    "mtime": 1781043315.2173235,
+    "ast_hash": "fa0d259ca5a51a72f8656c8d7ea4709d",
+    "semantic_hash": "fa0d259ca5a51a72f8656c8d7ea4709d"
+  },
+  "minott-web/lib/api/http.ts": {
+    "mtime": 1780494161.9310596,
+    "ast_hash": "81dc585555a25c6a9e542d0d14099499",
+    "semantic_hash": "81dc585555a25c6a9e542d0d14099499"
+  },
+  "minott-web/lib/api/serialize.ts": {
+    "mtime": 1782162324.9465473,
+    "ast_hash": "dc6ab4f16efce68c3d8b8907292ee444",
+    "semantic_hash": "dc6ab4f16efce68c3d8b8907292ee444"
+  },
+  "minott-web/lib/auth/portal-client.ts": {
+    "mtime": 1781042942.2675023,
+    "ast_hash": "ee164429ce7068ba175165bfe97a7c58",
+    "semantic_hash": "ee164429ce7068ba175165bfe97a7c58"
+  },
+  "minott-web/lib/auth/portal.ts": {
+    "mtime": 1781042873.5891936,
+    "ast_hash": "6b23575d83de6539408841b3b6aabcdb",
+    "semantic_hash": "6b23575d83de6539408841b3b6aabcdb"
+  },
+  "minott-web/lib/auth/require-admin.ts": {
+    "mtime": 1780426670.8280234,
+    "ast_hash": "3ee438da91cf5662228ba1c6167c688e",
+    "semantic_hash": "3ee438da91cf5662228ba1c6167c688e"
+  },
+  "minott-web/lib/auth/session.ts": {
+    "mtime": 1780426670.828165,
+    "ast_hash": "29f15e9400e567555922ab7fd43d4755",
+    "semantic_hash": "29f15e9400e567555922ab7fd43d4755"
+  },
+  "minott-web/lib/cn.ts": {
+    "mtime": 1779905198.815728,
+    "ast_hash": "15976d7183d9ab24ca381d90f2381bfe",
+    "semantic_hash": "15976d7183d9ab24ca381d90f2381bfe"
+  },
+  "minott-web/lib/constants.ts": {
+    "mtime": 1781043439.506135,
+    "ast_hash": "831f99abcb159c9119056817270594fe",
+    "semantic_hash": "831f99abcb159c9119056817270594fe"
+  },
+  "minott-web/lib/db.ts": {
+    "mtime": 1780426670.828165,
+    "ast_hash": "1a250e3a82efbef63b3049342bd63db5",
+    "semantic_hash": "1a250e3a82efbef63b3049342bd63db5"
+  },
+  "minott-web/lib/email/resend.ts": {
+    "mtime": 1784676587.0676246,
+    "ast_hash": "46e70e9e1252a7eaf9a2404b888b1933",
+    "semantic_hash": "46e70e9e1252a7eaf9a2404b888b1933"
+  },
+  "minott-web/lib/email/send-inquiry-emails.tsx": {
+    "mtime": 1784676587.0680296,
+    "ast_hash": "b391440f4359aebb0dfb899f93fac5b0",
+    "semantic_hash": "b391440f4359aebb0dfb899f93fac5b0"
+  },
+  "minott-web/lib/motion.ts": {
+    "mtime": 1779905209.637048,
+    "ast_hash": "b3b498426ac3ff9ed8d7be96894cba7a",
+    "semantic_hash": "b3b498426ac3ff9ed8d7be96894cba7a"
+  },
+  "minott-web/lib/portal.ts": {
+    "mtime": 1782162324.9465473,
+    "ast_hash": "0701142eb00b12cb05141632eb6574e1",
+    "semantic_hash": "0701142eb00b12cb05141632eb6574e1"
+  },
+  "minott-web/lib/products.ts": {
+    "mtime": 1782162324.9465473,
+    "ast_hash": "6c84a6b979822836271ee10e7fc518f4",
+    "semantic_hash": "6c84a6b979822836271ee10e7fc518f4"
+  },
+  "minott-web/lib/rate-limit.ts": {
+    "mtime": 1780494161.9311693,
+    "ast_hash": "3de0e7f8f8e21e3c7fcee35dc2538812",
+    "semantic_hash": "3de0e7f8f8e21e3c7fcee35dc2538812"
+  },
+  "minott-web/lib/settings.ts": {
+    "mtime": 1784676587.0680296,
+    "ast_hash": "bc78a5b7585112aa44454e3dc423f886",
+    "semantic_hash": "bc78a5b7585112aa44454e3dc423f886"
+  },
+  "minott-web/lib/slug.ts": {
+    "mtime": 1780426670.828165,
+    "ast_hash": "9d5b138d894ac3f457434e5da5affe77",
+    "semantic_hash": "9d5b138d894ac3f457434e5da5affe77"
+  },
+  "minott-web/lib/use-reduced-motion.ts": {
+    "mtime": 1779911499.3548307,
+    "ast_hash": "edf1262d7e37390b792f585b787cc99e",
+    "semantic_hash": "edf1262d7e37390b792f585b787cc99e"
+  },
+  "minott-web/next-env.d.ts": {
+    "mtime": 1784669762.7644734,
+    "ast_hash": "2a74d3909800ca5467fa83b0ab4a4890",
+    "semantic_hash": "2a74d3909800ca5467fa83b0ab4a4890"
+  },
+  "minott-web/next.config.ts": {
+    "mtime": 1780426670.828165,
+    "ast_hash": "31f3bf354c0848fb2c29b822c9cc8d05",
+    "semantic_hash": "31f3bf354c0848fb2c29b822c9cc8d05"
+  },
+  "minott-web/package.json": {
+    "mtime": 1784676587.0680296,
+    "ast_hash": "6a31589954fe55436700de4c171cf110",
+    "semantic_hash": "6a31589954fe55436700de4c171cf110"
+  },
+  "minott-web/postcss.config.mjs": {
+    "mtime": 1779905058.5136628,
+    "ast_hash": "239f3ebf717465dc636818a1a619398d",
+    "semantic_hash": "239f3ebf717465dc636818a1a619398d"
+  },
+  "minott-web/prisma.config.ts": {
+    "mtime": 1780426670.828165,
+    "ast_hash": "f5795f799097580262717bcd6919d06f",
+    "semantic_hash": "f5795f799097580262717bcd6919d06f"
+  },
+  "minott-web/prisma/data/_listing-types.ts": {
+    "mtime": 1784005369.4277637,
+    "ast_hash": "ff1ef7f4da4a5a5a4d9cba82c404b9a8",
+    "semantic_hash": "ff1ef7f4da4a5a5a4d9cba82c404b9a8"
+  },
+  "minott-web/prisma/data/bins.ts": {
+    "mtime": 1784002292.6887631,
+    "ast_hash": "77840220d4da8e5390bc41ff2e65cf7e",
+    "semantic_hash": "77840220d4da8e5390bc41ff2e65cf7e"
+  },
+  "minott-web/prisma/data/chemicals.ts": {
+    "mtime": 1784005369.4277637,
+    "ast_hash": "2518fad1f17020d8c416e4897181a30c",
+    "semantic_hash": "2518fad1f17020d8c416e4897181a30c"
+  },
+  "minott-web/prisma/data/cleaning-tools.ts": {
+    "mtime": 1784002292.6887631,
+    "ast_hash": "1225c5e145d01b6846444f36272a9981",
+    "semantic_hash": "1225c5e145d01b6846444f36272a9981"
+  },
+  "minott-web/prisma/data/dispensers.ts": {
+    "mtime": 1784002292.6887631,
+    "ast_hash": "56e052cf70ef1daaefb3a0bc27a3326e",
+    "semantic_hash": "56e052cf70ef1daaefb3a0bc27a3326e"
+  },
+  "minott-web/prisma/data/facility-care.ts": {
+    "mtime": 1784002292.6887631,
+    "ast_hash": "406f5bb131e7bc3802a7ef543c750837",
+    "semantic_hash": "406f5bb131e7bc3802a7ef543c750837"
+  },
+  "minott-web/prisma/data/floor-maintenance.ts": {
+    "mtime": 1784002292.6887631,
+    "ast_hash": "864f4ed287961e6392ef3339a006d49d",
+    "semantic_hash": "864f4ed287961e6392ef3339a006d49d"
+  },
+  "minott-web/prisma/data/food-service-supplies.ts": {
+    "mtime": 1784002292.6887631,
+    "ast_hash": "86ba2f19bf0f5a23534c94c26f49edbf",
+    "semantic_hash": "86ba2f19bf0f5a23534c94c26f49edbf"
+  },
+  "minott-web/prisma/data/garbage-bags.ts": {
+    "mtime": 1784002292.6887631,
+    "ast_hash": "674422280a3cdba3de320287213c65a4",
+    "semantic_hash": "674422280a3cdba3de320287213c65a4"
+  },
+  "minott-web/prisma/data/gloves.ts": {
+    "mtime": 1784002292.689763,
+    "ast_hash": "0be5666727ea55224d09c6e440a965cd",
+    "semantic_hash": "0be5666727ea55224d09c6e440a965cd"
+  },
+  "minott-web/prisma/data/mats.ts": {
+    "mtime": 1784002292.689763,
+    "ast_hash": "a15e774487419bf33e8e3dc9cd68ac34",
+    "semantic_hash": "a15e774487419bf33e8e3dc9cd68ac34"
+  },
+  "minott-web/prisma/data/paper.ts": {
+    "mtime": 1784002292.689763,
+    "ast_hash": "41390bf90c85efd3c71b65f6d238e32a",
+    "semantic_hash": "41390bf90c85efd3c71b65f6d238e32a"
+  },
+  "minott-web/prisma/data/safety.ts": {
+    "mtime": 1784002292.689763,
+    "ast_hash": "4dc207703da9cbcf2bd9b9a6fd03310d",
+    "semantic_hash": "4dc207703da9cbcf2bd9b9a6fd03310d"
+  },
+  "minott-web/prisma/migrations/20260602174743_init/migration.sql": {
+    "mtime": 1780426670.8288894,
+    "ast_hash": "2c878baa6c329ac47b80336d9a23cfac",
+    "semantic_hash": "2c878baa6c329ac47b80336d9a23cfac"
+  },
+  "minott-web/prisma/migrations/20260602191658_product_sku_packsize_specs/migration.sql": {
+    "mtime": 1780427818.0717366,
+    "ast_hash": "29427ea447311c747155ca88e9b3f40a",
+    "semantic_hash": "29427ea447311c747155ca88e9b3f40a"
+  },
+  "minott-web/prisma/migrations/20260609220844_portal_auth_and_catalog_attrs/migration.sql": {
+    "mtime": 1781042924.0385904,
+    "ast_hash": "6003c060a9e6397557bec1a68f398dab",
+    "semantic_hash": "6003c060a9e6397557bec1a68f398dab"
+  },
+  "minott-web/prisma/migrations/20260610173713_sales_rep_assignment/migration.sql": {
+    "mtime": 1781113033.3708515,
+    "ast_hash": "12ad1181afa8e60d3f168744912b8187",
+    "semantic_hash": "12ad1181afa8e60d3f168744912b8187"
+  },
+  "minott-web/prisma/migrations/20260622141120_product_variants/migration.sql": {
+    "mtime": 1782162324.9465473,
+    "ast_hash": "9330d1ed54e976df6fdd86863e4e2adf",
+    "semantic_hash": "9330d1ed54e976df6fdd86863e4e2adf"
+  },
+  "minott-web/prisma/migrations/20260713140000_add_option_label/migration.sql": {
+    "mtime": 1784005369.4277637,
+    "ast_hash": "5c5f7de4ad472f8c54f7f98ee2afa6bc",
+    "semantic_hash": "5c5f7de4ad472f8c54f7f98ee2afa6bc"
+  },
+  "minott-web/prisma/migrations/20260721211608_add_setting/migration.sql": {
+    "mtime": 1784676587.0689232,
+    "ast_hash": "cf9ebd134269677222fb701db9090f5a",
+    "semantic_hash": "cf9ebd134269677222fb701db9090f5a"
+  },
+  "minott-web/prisma/seed.ts": {
+    "mtime": 1783050226.3869135,
+    "ast_hash": "d490c15a1db831b4fed3654cf9cc304f",
+    "semantic_hash": "d490c15a1db831b4fed3654cf9cc304f"
+  },
+  "minott-web/proxy.ts": {
+    "mtime": 1780426670.8288894,
+    "ast_hash": "ec4cde7e271aa7c6417f2eeebcc64e2e",
+    "semantic_hash": "ec4cde7e271aa7c6417f2eeebcc64e2e"
+  },
+  "minott-web/scripts/extract-product-xlsx.py": {
+    "mtime": 1781544616.0774827,
+    "ast_hash": "670422a809a3fd5a1afedf35bcc19fa4",
+    "semantic_hash": "670422a809a3fd5a1afedf35bcc19fa4"
+  },
+  "minott-web/scripts/import-catalog.ts": {
+    "mtime": 1784005369.4277637,
+    "ast_hash": "64997472e3a6b974aa877ca6e54a6902",
+    "semantic_hash": "64997472e3a6b974aa877ca6e54a6902"
+  },
+  "minott-web/tsconfig.json": {
+    "mtime": 1779905058.5141826,
+    "ast_hash": "02fc19ad21338c2ab820a70136310db4",
+    "semantic_hash": "02fc19ad21338c2ab820a70136310db4"
+  },
+  ".claude/skills/gpt-image-2/SKILL.md": {
+    "mtime": 1780849571.610292,
+    "ast_hash": "9ca424487b157e7fcaf2280ef775398a",
+    "semantic_hash": "9ca424487b157e7fcaf2280ef775398a"
+  },
+  "CLAUDE.md": {
+    "mtime": 1784676587.067282,
+    "ast_hash": "b376028d41d8672f9ebafc180c935f60",
+    "semantic_hash": "b376028d41d8672f9ebafc180c935f60"
+  },
+  "Minott_Chemicals_Design_Prompt.md": {
+    "mtime": 1779901340.2716556,
+    "ast_hash": "1ecc364a0cf4fb45092d44fa79a13f47",
+    "semantic_hash": "1ecc364a0cf4fb45092d44fa79a13f47"
+  },
+  "Minott_Chemicals_Image_Assets.md": {
+    "mtime": 1779901909.270171,
+    "ast_hash": "408511e02407913a6b1c7e4219439179",
+    "semantic_hash": "408511e02407913a6b1c7e4219439179"
+  },
+  "docs/api.md": {
+    "mtime": 1781554296.7462237,
+    "ast_hash": "9c325d7f9b2c2f0f4ca14d453a363e77",
+    "semantic_hash": "9c325d7f9b2c2f0f4ca14d453a363e77"
+  },
+  "docs/handoff/2026-05-27-minott-demo-handoff.md": {
+    "mtime": 1779909691.6108117,
+    "ast_hash": "3b8444636bdba74a59c7231acb0672fe",
+    "semantic_hash": "3b8444636bdba74a59c7231acb0672fe"
+  },
+  "docs/superpowers/plans/2026-05-27-minott-chemicals-homepage-implementation.md": {
+    "mtime": 1779904803.278113,
+    "ast_hash": "5987b3eba0c5cd3d58db1c74c41c0424",
+    "semantic_hash": "5987b3eba0c5cd3d58db1c74c41c0424"
+  },
+  "docs/superpowers/plans/2026-06-02-minott-multipage-products-admin.md": {
+    "mtime": 1780426670.8250635,
+    "ast_hash": "063fa68bde5eebcd2362b79220934ac1",
+    "semantic_hash": "063fa68bde5eebcd2362b79220934ac1"
+  },
+  "docs/superpowers/plans/2026-06-03-ai-widget-api-endpoints.md": {
+    "mtime": 1780470655.035781,
+    "ast_hash": "1bd866dbb9d59b6271bc01ab9a982053",
+    "semantic_hash": "1bd866dbb9d59b6271bc01ab9a982053"
+  },
+  "docs/superpowers/plans/2026-06-10-quote-signin-salesreps-nav.md": {
+    "mtime": 1781112933.9034789,
+    "ast_hash": "2e5727ac601e46e094e6b731bede1c57",
+    "semantic_hash": "2e5727ac601e46e094e6b731bede1c57"
+  },
+  "docs/superpowers/plans/2026-06-22-product-variants.md": {
+    "mtime": 1782162324.9455473,
+    "ast_hash": "0731d017632a018b8c717fa053d3f860",
+    "semantic_hash": "0731d017632a018b8c717fa053d3f860"
+  },
+  "docs/superpowers/plans/2026-07-21-products-grid-layout.md": {
+    "mtime": 1784661863.918411,
+    "ast_hash": "c1ae18a0b989f4b984087f9cc6855ef0",
+    "semantic_hash": "c1ae18a0b989f4b984087f9cc6855ef0"
+  },
+  "docs/superpowers/plans/2026-07-21-resend-email-notifications.md": {
+    "mtime": 1784668267.7943606,
+    "ast_hash": "8fb92584c6475e6093e33a034c5f3aa4",
+    "semantic_hash": "8fb92584c6475e6093e33a034c5f3aa4"
+  },
+  "docs/superpowers/specs/2026-05-27-minott-chemicals-homepage-design.md": {
+    "mtime": 1779904208.3797562,
+    "ast_hash": "3cbf1f1dfda6d8c70040d12ab4a85e93",
+    "semantic_hash": "3cbf1f1dfda6d8c70040d12ab4a85e93"
+  },
+  "docs/superpowers/specs/2026-06-02-minott-multipage-products-admin-design.md": {
+    "mtime": 1780426670.8250635,
+    "ast_hash": "fb3db1701a65670772fb6eac35e8c239",
+    "semantic_hash": "fb3db1701a65670772fb6eac35e8c239"
+  },
+  "docs/superpowers/specs/2026-06-03-ai-widget-api-endpoints-design.md": {
+    "mtime": 1780470471.738055,
+    "ast_hash": "128245959cf3ed3661a5cb452d28a6bf",
+    "semantic_hash": "128245959cf3ed3661a5cb452d28a6bf"
+  },
+  "docs/superpowers/specs/2026-06-10-quote-signin-salesreps-nav-design.md": {
+    "mtime": 1781112493.4834125,
+    "ast_hash": "8a9517be3a5fb67fb9ae54963ee5fdd0",
+    "semantic_hash": "8a9517be3a5fb67fb9ae54963ee5fdd0"
+  },
+  "docs/superpowers/specs/2026-06-22-product-variants-design.md": {
+    "mtime": 1782162324.9455473,
+    "ast_hash": "029e2a37a4732f1c4a7a52431292c09f",
+    "semantic_hash": "029e2a37a4732f1c4a7a52431292c09f"
+  },
+  "docs/superpowers/specs/2026-07-21-products-grid-layout-design.md": {
+    "mtime": 1784661576.1120539,
+    "ast_hash": "6eccad3b963caa655c0bba68598af567",
+    "semantic_hash": "6eccad3b963caa655c0bba68598af567"
+  },
+  "docs/superpowers/specs/2026-07-21-resend-email-design.md": {
+    "mtime": 1784667573.8714273,
+    "ast_hash": "814cc183e25bea05bbdf5af25823987b",
+    "semantic_hash": "814cc183e25bea05bbdf5af25823987b"
+  },
+  "graphify-out/converted/MEC Website Project Overview_ec3590bd.md": {
+    "mtime": 1784676892.7697213,
+    "ast_hash": "1fdd34d3679ad84ca3b46a548cb9d359",
+    "semantic_hash": "1fdd34d3679ad84ca3b46a548cb9d359"
+  },
+  "graphify-out/converted/Minott_Chemicals_Knowledge_Base_607e3d1d.md": {
+    "mtime": 1784676892.812642,
+    "ast_hash": "2b09da0af57996482e1d967cc05bbdd0",
+    "semantic_hash": "2b09da0af57996482e1d967cc05bbdd0"
+  },
+  "minott-web/AGENTS.md": {
+    "mtime": 1779905086.903987,
+    "ast_hash": "9e09241799026ac05be315a2f0b50055",
+    "semantic_hash": "9e09241799026ac05be315a2f0b50055"
+  },
+  "minott-web/CLAUDE.md": {
+    "mtime": 1779905086.903987,
+    "ast_hash": "5c27369b226fcf2be8a6cfe52224e767",
+    "semantic_hash": "5c27369b226fcf2be8a6cfe52224e767"
+  },
+  "minott-web/README.md": {
+    "mtime": 1783050226.3839135,
+    "ast_hash": "4ad396df7fa7babef1faa29ce6bdb662",
+    "semantic_hash": "4ad396df7fa7babef1faa29ce6bdb662"
+  },
+  "minott-web/docs/superpowers/plans/2026-06-02-about-us-page-redesign.md": {
+    "mtime": 1780431139.3951712,
+    "ast_hash": "9fee8cae69948e288ec829491eb335f2",
+    "semantic_hash": "9fee8cae69948e288ec829491eb335f2"
+  },
+  "minott-web/docs/superpowers/specs/2026-06-02-about-us-page-redesign-design.md": {
+    "mtime": 1780430931.1632128,
+    "ast_hash": "1b43eabefcedca167e33cdf6de5694af",
+    "semantic_hash": "1b43eabefcedca167e33cdf6de5694af"
+  },
+  "newchanges.md": {
+    "mtime": 1781035343.8407483,
+    "ast_hash": "d0702b1ce76bc3eec0d9763063daeae3",
+    "semantic_hash": "d0702b1ce76bc3eec0d9763063daeae3"
+  },
+  "proposal.md": {
+    "mtime": 1780686373.8928814,
+    "ast_hash": "b6e64e2c797b14ca47f2386e97ab71f5",
+    "semantic_hash": "b6e64e2c797b14ca47f2386e97ab71f5"
+  }
+}
