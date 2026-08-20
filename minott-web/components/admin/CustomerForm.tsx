@@ -125,7 +125,7 @@ export function CustomerForm({
               : "Create Customer"}
         </button>
         <Link
-          href="/admin/customers"
+          href="/portal/customers"
           className="px-6 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-mec-ink/70 hover:text-mec-red"
         >
           Cancel

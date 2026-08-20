@@ -4,12 +4,8 @@ import { db } from "@/lib/db";
 import { CustomerForm } from "@/components/admin/CustomerForm";
 import { ResendInviteButton } from "@/components/admin/ResendInviteButton";
 
-export default async function EditCustomerPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
+/** Admin edit view for a single portal customer. Caller (the page) gates on role. */
+export async function AdminCustomerEditView({ id }: { id: string }) {
   const customer = await db.user.findUnique({
     where: { id },
     select: {
@@ -37,7 +33,7 @@ export default async function EditCustomerPage({
   return (
     <div>
       <Link
-        href="/admin/customers"
+        href="/portal/customers"
         className="text-sm font-semibold text-mec-ink/60 hover:text-mec-red"
       >
         ← Back to customers

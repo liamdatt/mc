@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ArrowRight, Download, FileText } from "lucide-react";
 import { Eyebrow } from "@/components/primitives/Eyebrow";
 import { RevealOnScroll } from "@/components/motion/RevealOnScroll";
@@ -52,7 +53,8 @@ export default async function PortalHistoryPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const session = await getPortalSession();
-  if (!session) return null;
+  if (!session) redirect("/portal/sign-in");
+  if (session.user.role !== "customer") redirect("/portal");
 
   const sp = await searchParams;
   const one = (v: string | string[] | undefined) =>

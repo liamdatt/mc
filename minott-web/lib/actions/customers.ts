@@ -67,8 +67,8 @@ export async function createCustomer(
     }
   }
 
-  revalidatePath("/admin/customers");
-  redirect("/admin/customers");
+  revalidatePath("/portal/customers");
+  redirect("/portal/customers");
 }
 
 function isUniqueViolation(e: unknown): boolean {
@@ -119,8 +119,8 @@ export async function updateCustomer(
     throw e;
   }
 
-  revalidatePath("/admin/customers");
-  redirect("/admin/customers");
+  revalidatePath("/portal/customers");
+  redirect("/portal/customers");
 }
 
 export type ResendInviteState = { error?: string; success?: boolean };
@@ -145,7 +145,7 @@ export async function resendInvite(
     user.email,
     user.role === "rep" ? INVITE_REDIRECT.sales : INVITE_REDIRECT.customer,
   );
-  revalidatePath("/admin/customers");
-  revalidatePath("/admin/sales-reps");
+  revalidatePath("/portal/customers");
+  revalidatePath("/portal/sales-reps");
   return { success: true };
 }

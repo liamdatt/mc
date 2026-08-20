@@ -48,7 +48,7 @@ export function RepCustomerForm({ customer }: { customer: RepCustomerFormData })
         <button type="submit" disabled={pending} className="bg-mec-red px-6 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-mec-pure hover:bg-mec-red-hover disabled:opacity-50">
           {pending ? "Saving…" : "Save Changes"}
         </button>
-        <Link href="/sales/customers" className="px-6 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-mec-ink/70 hover:text-mec-red">Cancel</Link>
+        <Link href="/portal/customers" className="px-6 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-mec-ink/70 hover:text-mec-red">Cancel</Link>
       </div>
     </form>
   );

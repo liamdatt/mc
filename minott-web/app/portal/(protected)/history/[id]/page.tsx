@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { Eyebrow } from "@/components/primitives/Eyebrow";
 import { RevealOnScroll } from "@/components/motion/RevealOnScroll";
@@ -34,7 +34,8 @@ export default async function PortalHistoryDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const session = await getPortalSession();
-  if (!session) return null;
+  if (!session) redirect("/portal/sign-in");
+  if (session.user.role !== "customer") redirect("/portal");
 
   const { id } = await params;
   const numId = Number(id);

@@ -23,7 +23,7 @@ export async function updateRepCustomer(
   formData: FormData,
 ): Promise<RepCustomerState> {
   const sales = await getSalesSession();
-  if (!sales) redirect("/sales/sign-in");
+  if (!sales) redirect("/portal");
 
   const id = str(formData, "id");
   const name = str(formData, "name");
@@ -47,8 +47,8 @@ export async function updateRepCustomer(
     },
   });
 
-  revalidatePath("/sales/customers");
-  revalidatePath(`/sales/customers/${id}`);
+  revalidatePath("/portal/customers");
+  revalidatePath(`/portal/customers/${id}`);
   return { success: true };
 }
 
@@ -69,7 +69,7 @@ export async function updateRepQuoteStatus(
   formData: FormData,
 ): Promise<QuoteActionState> {
   const sales = await getSalesSession();
-  if (!sales) redirect("/sales/sign-in");
+  if (!sales) redirect("/portal");
 
   const inquiryId = Number(formData.get("inquiryId"));
   const status = str(formData, "status");
@@ -80,9 +80,9 @@ export async function updateRepQuoteStatus(
     return { error: "That quote is not assigned to you." };
 
   await db.inquiry.update({ where: { id: inquiryId }, data: { status } });
-  revalidatePath(`/sales/quotes/${inquiryId}`);
-  revalidatePath("/sales/quotes");
-  revalidatePath("/sales");
+  revalidatePath(`/portal/quotes/${inquiryId}`);
+  revalidatePath("/portal/quotes");
+  revalidatePath("/portal");
   return { success: true };
 }
 
@@ -92,7 +92,7 @@ export async function addQuoteNote(
   formData: FormData,
 ): Promise<QuoteActionState> {
   const sales = await getSalesSession();
-  if (!sales) redirect("/sales/sign-in");
+  if (!sales) redirect("/portal");
 
   const inquiryId = Number(formData.get("inquiryId"));
   const body = str(formData, "body");
@@ -104,6 +104,6 @@ export async function addQuoteNote(
   await db.inquiryNote.create({
     data: { inquiryId, body: body.slice(0, 2000), authorLabel: sales.rep.name },
   });
-  revalidatePath(`/sales/quotes/${inquiryId}`);
+  revalidatePath(`/portal/quotes/${inquiryId}`);
   return { success: true };
 }

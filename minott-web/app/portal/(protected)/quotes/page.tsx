@@ -13,7 +13,7 @@ export default async function SalesQuotesPage({
   searchParams: Promise<{ status?: string; from?: string; to?: string }>;
 }) {
   const sales = await getSalesSession();
-  if (!sales) redirect("/sales/sign-in");
+  if (!sales) redirect("/portal");
   const sp = await searchParams;
   const status =
     sp.status && Object.prototype.hasOwnProperty.call(INQUIRY_STATUS, sp.status)
@@ -45,7 +45,7 @@ export default async function SalesQuotesPage({
           <input type="date" name="to" defaultValue={sp.to ?? ""} className={`mt-1 block ${filterCls}`} />
         </label>
         <button type="submit" className="rounded-sm bg-mec-ink px-4 py-2 text-sm font-semibold uppercase tracking-[0.1em] text-mec-pure hover:bg-mec-graphite">Filter</button>
-        <Link href="/sales/quotes" className="px-2 py-2 text-sm font-semibold text-mec-ink/60 hover:text-mec-red">Reset</Link>
+        <Link href="/portal/quotes" className="px-2 py-2 text-sm font-semibold text-mec-ink/60 hover:text-mec-red">Reset</Link>
       </form>
 
       <div className="mt-6 overflow-hidden rounded-md border border-black/10 bg-mec-pure">
@@ -65,7 +65,7 @@ export default async function SalesQuotesPage({
             {quotes.map((q) => (
               <tr key={q.id} className="border-b border-black/5 hover:bg-mec-mist/50">
                 <td className="px-4 py-3">
-                  <Link href={`/sales/quotes/${q.id}`} className="font-semibold hover:text-mec-red">{q.user?.name ?? q.name}</Link>
+                  <Link href={`/portal/quotes/${q.id}`} className="font-semibold hover:text-mec-red">{q.user?.name ?? q.name}</Link>
                   {q.user?.companyName ? <span className="block text-xs text-mec-ink/50">{q.user.companyName}</span> : null}
                 </td>
                 <td className="px-4 py-3 text-mec-ink/70">{q._count.items}</td>

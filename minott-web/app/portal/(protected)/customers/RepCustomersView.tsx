@@ -1,15 +1,13 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { getSalesSession, getRepCustomers } from "@/lib/sales";
+import { getRepCustomers } from "@/lib/sales";
 
 function formatDate(date: Date) {
   return new Intl.DateTimeFormat("en-JM", { day: "numeric", month: "short", year: "numeric" }).format(date);
 }
 
-export default async function SalesCustomersPage() {
-  const sales = await getSalesSession();
-  if (!sales) redirect("/sales/sign-in");
-  const customers = await getRepCustomers(sales.rep.id);
+/** A rep's book of business. Caller (the page) supplies the rep id from the session. */
+export async function RepCustomersView({ repId }: { repId: number }) {
+  const customers = await getRepCustomers(repId);
 
   return (
     <div>
@@ -38,7 +36,7 @@ export default async function SalesCustomersPage() {
                 <td className="px-4 py-3 text-mec-ink/70">{c._count.inquiries}</td>
                 <td className="px-4 py-3 text-mec-ink/60">{formatDate(c.createdAt)}</td>
                 <td className="px-4 py-3 text-right">
-                  <Link href={`/sales/customers/${c.id}`} className="font-semibold text-mec-red hover:underline">Edit</Link>
+                  <Link href={`/portal/customers/${c.id}`} className="font-semibold text-mec-red hover:underline">Edit</Link>
                 </td>
               </tr>
             ))}

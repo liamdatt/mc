@@ -9,7 +9,8 @@ function formatDate(date: Date) {
   }).format(date);
 }
 
-export default async function AdminCustomersPage() {
+/** Admin's portal-customer provisioning list. Caller (the page) gates on role. */
+export async function AdminCustomersView() {
   const customers = await getPortalUsers();
 
   return (
@@ -17,7 +18,7 @@ export default async function AdminCustomersPage() {
       <div className="flex items-center justify-between">
         <h1 className="font-display-tight text-3xl">Portal customers</h1>
         <Link
-          href="/admin/customers/new"
+          href="/portal/customers/new"
           className="bg-mec-red px-5 py-2.5 text-sm font-semibold uppercase tracking-[0.12em] text-mec-pure hover:bg-mec-red-hover"
         >
           + New Customer
@@ -95,7 +96,7 @@ export default async function AdminCustomersPage() {
                 </td>
                 <td className="px-4 py-3 text-right">
                   <Link
-                    href={`/admin/customers/${c.id}`}
+                    href={`/portal/customers/${c.id}`}
                     className="font-semibold text-mec-red hover:underline"
                   >
                     Edit

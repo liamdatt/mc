@@ -14,7 +14,7 @@ export default async function SalesQuoteDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const sales = await getSalesSession();
-  if (!sales) redirect("/sales/sign-in");
+  if (!sales) redirect("/portal");
   const { id } = await params;
   const quoteId = Number(id);
   if (!Number.isInteger(quoteId)) notFound();
@@ -23,7 +23,7 @@ export default async function SalesQuoteDetailPage({
 
   return (
     <div>
-      <Link href="/sales/quotes" className="text-sm font-semibold text-mec-ink/60 hover:text-mec-red">← Back to quotes</Link>
+      <Link href="/portal/quotes" className="text-sm font-semibold text-mec-ink/60 hover:text-mec-red">← Back to quotes</Link>
       <h1 className="mt-4 font-display-tight text-3xl">Quote #{quote.id}</h1>
       <p className="mt-1 text-sm text-mec-ink/60">{formatDateTime(quote.createdAt)}</p>
 

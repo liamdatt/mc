@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { CustomerForm } from "@/components/admin/CustomerForm";
 import { db } from "@/lib/db";
+import { requireAdminSession } from "@/lib/portal";
 
 export default async function NewCustomerPage() {
+  await requireAdminSession();
   const salesReps = await db.salesRep.findMany({
     where: { active: true },
     orderBy: { name: "asc" },
@@ -12,7 +14,7 @@ export default async function NewCustomerPage() {
   return (
     <div>
       <Link
-        href="/admin/customers"
+        href="/portal/customers"
         className="text-sm font-semibold text-mec-ink/60 hover:text-mec-red"
       >
         ← Back to customers
