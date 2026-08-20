@@ -108,6 +108,36 @@ export const CATEGORIES: SeedCategory[] = [
 ];
 
 // ---------------------------------------------------------------------------
+// First admin account for the unified Accounts Portal.
+// ---------------------------------------------------------------------------
+
+const ADMIN_EMAIL = "admin@example.com";
+
+/**
+ * First admin account for the unified Accounts Portal. Created through
+ * better-auth (headerless createUser) so the credential Account row uses
+ * better-auth's own hash format; activated immediately (no invite email —
+ * createUser does not trigger sendResetPassword). Idempotent: skips when the
+ * email already exists.
+ */
+async function seedAdmin() {
+  const existing = await db.user.findUnique({ where: { email: ADMIN_EMAIL } });
+  if (existing) {
+    console.log(`Admin ${ADMIN_EMAIL} already exists — skipping.`);
+    return;
+  }
+  const { auth } = await import("../lib/auth/portal");
+  await auth.api.createUser({
+    body: { email: ADMIN_EMAIL, password: "test123", name: "MEC Admin", data: {} },
+  });
+  await db.user.update({
+    where: { email: ADMIN_EMAIL },
+    data: { role: "admin", activatedAt: new Date() },
+  });
+  console.log(`Seeded admin ${ADMIN_EMAIL}.`);
+}
+
+// ---------------------------------------------------------------------------
 // Seed runner — categories only. Idempotent upsert + prune of stale-empty
 // categories. Products are owned by scripts/import-catalog.ts.
 // ---------------------------------------------------------------------------
@@ -155,6 +185,8 @@ async function main() {
   console.log(
     `Category seed complete. ${keepCategorySlugs.length} categories seeded, ${removedCategories.count} stale categories removed.`,
   );
+
+  await seedAdmin();
 }
 
 if (require.main === module) {
