@@ -182,3 +182,19 @@ export function getPortalUsers() {
     },
   });
 }
+
+/** List admin accounts for the /portal/admins management screen. */
+export function getAdminUsers() {
+  return db.user.findMany({
+    where: { role: "admin" },
+    orderBy: { createdAt: "asc" },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      activatedAt: true,
+      banned: true,
+      createdAt: true,
+    },
+  });
+}
