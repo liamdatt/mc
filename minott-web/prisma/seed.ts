@@ -124,8 +124,15 @@ export const CATEGORIES: SeedCategory[] = [
  * expected to rotate it post-deploy (see README).
  */
 async function seedAdmin() {
-  const email = process.env.SEED_ADMIN_EMAIL ?? "admin@example.com";
-  const password = process.env.SEED_ADMIN_PASSWORD ?? "test123";
+  // `||` (not `??`) so the `KEY=""` idiom used in .env.example falls back to
+  // the defaults instead of seeding an empty email or a credential-less
+  // account. Lowercased because better-auth normalizes emails on create — a
+  // mixed-case env value would otherwise miss the idempotency check and abort
+  // every subsequent boot with USER_ALREADY_EXISTS.
+  const email = (process.env.SEED_ADMIN_EMAIL || "admin@example.com")
+    .trim()
+    .toLowerCase();
+  const password = process.env.SEED_ADMIN_PASSWORD || "test123";
   const usingDefaultPassword = !process.env.SEED_ADMIN_PASSWORD;
 
   const existing = await db.user.findUnique({ where: { email } });
