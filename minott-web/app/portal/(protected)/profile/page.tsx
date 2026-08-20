@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { MapPin, MessageCircle } from "lucide-react";
 import { Eyebrow } from "@/components/primitives/Eyebrow";
 import { RevealOnScroll } from "@/components/motion/RevealOnScroll";
@@ -14,7 +15,8 @@ export const metadata: Metadata = {
 
 export default async function PortalProfilePage() {
   const session = await getPortalSession();
-  if (!session) return null;
+  if (!session) redirect("/portal/sign-in");
+  if (session.user.role !== "customer") redirect("/portal");
 
   const { user } = session;
 

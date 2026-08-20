@@ -13,12 +13,9 @@ export function PublicChrome({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  // The admin and sales portals render their own chrome; the preview lock
-  // screen renders bare.
-  const isBareChrome =
-    pathname.startsWith("/admin") ||
-    pathname.startsWith("/sales") ||
-    pathname === "/preview";
+  // The Accounts Portal shows the public nav/footer for every role; only the
+  // preview lock screen renders bare.
+  const isBareChrome = pathname === "/preview";
   if (isBareChrome) return <>{children}</>;
   // The home route is a single non-scrollable screen — no footer below the fold.
   const isLanding = pathname === "/";

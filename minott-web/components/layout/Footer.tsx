@@ -8,7 +8,7 @@ const QUICK = [
   { href: "/solutions", label: "Tailored Solutions" },
   { href: "/social-responsibility", label: "Social Responsibility" },
   { href: "/about", label: "About Us" },
-  { href: "/portal", label: "Customer Portal" },
+  { href: "/portal", label: "Accounts Portal" },
   { href: "/contact", label: "Contact" },
 ];
 

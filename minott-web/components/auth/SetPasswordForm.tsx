@@ -8,20 +8,21 @@ import { portalAuthClient } from "@/lib/auth/portal-client";
  * Token-gated set-password form. The token comes from the emailed invite link
  * (BetterAuth appends it to our /set-password redirect). Only a valid, unexpired
  * token lets a password be set — that IS the access gate; no session required.
- * On success we route to the correct sign-in based on `portal`.
+ * On success we route to the unified `/portal/sign-in` for all portals; only
+ * the copy varies by `portal`.
  */
 export function SetPasswordForm({
   token,
   portal,
 }: {
   token: string | null;
-  portal: "customer" | "sales";
+  portal: "customer" | "sales" | "admin";
 }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
   const [pending, setPending] = useState(false);
-  const signInPath = portal === "sales" ? "/sales/sign-in" : "/portal/sign-in";
+  const signInPath = "/portal/sign-in";
 
   if (!token) {
     return (
@@ -78,7 +79,7 @@ export function SetPasswordForm({
     "mt-6 block text-xs font-semibold uppercase tracking-[0.16em] text-mec-ink/60 first:mt-0";
 
   return (
-    <form onSubmit={handleSubmit} className="mt-8" noValidate>
+    <form onSubmit={handleSubmit} className="mt-8" data-portal={portal} noValidate>
       <label htmlFor="password" className={labelCls}>New password</label>
       <input id="password" name="password" type="password" autoComplete="new-password" autoFocus required minLength={8} className={inputCls} />
       <label htmlFor="confirm" className={labelCls}>Confirm password</label>

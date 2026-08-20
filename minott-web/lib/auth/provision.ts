@@ -21,7 +21,7 @@ export type ProvisionResult =
 export async function provisionUser(opts: {
   email: string;
   name: string;
-  role: "customer" | "rep";
+  role: "customer" | "rep" | "admin";
   redirectTo: string;
   data?: { companyName?: string; phone?: string; whatsapp?: string };
 }): Promise<ProvisionResult> {
@@ -70,4 +70,5 @@ export async function sendInvite(email: string, redirectTo: string): Promise<voi
 export const INVITE_REDIRECT = {
   customer: "/set-password?portal=customer",
   sales: "/set-password?portal=sales",
+  admin: "/set-password?portal=admin",
 } as const;

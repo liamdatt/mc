@@ -31,6 +31,6 @@ export async function updateEmailSettings(
   await setSetting(EMAIL_SETTING_KEYS.fromName, fromName);
   await setSetting(EMAIL_SETTING_KEYS.generalInboxEmail, generalInboxEmail);
 
-  revalidatePath("/admin/settings");
+  revalidatePath("/portal/settings");
   return { saved: true };
 }

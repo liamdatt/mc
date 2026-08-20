@@ -33,6 +33,20 @@ A fresh/ephemeral deploy DB is fully populated on boot; a persistent DB is recon
 >
 > To refresh the catalog from a new spreadsheet, re-run the extraction into `prisma/data/*.ts` + `public/images/products/`, then `npm run import:catalog`.
 
+## Accounts Portal — first admin
+
+`npm run db:seed` also provisions the first login for the unified Accounts
+Portal (`/portal`): `admin@example.com` / `test123`. Override the email
+and/or password before seeding with `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD`
+in `.env`.
+
+The documented production start path (`npm run start:prod`) runs `prisma db
+seed` on every boot, so this account exists on deployed instances too — not
+just local dev. Rotate it after your first deploy: sign in at
+`/portal/sign-in`, go to `/portal/admins`, invite a real admin, then either
+deactivate the seeded `admin@example.com` account or send it a password
+reset from that same page.
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.

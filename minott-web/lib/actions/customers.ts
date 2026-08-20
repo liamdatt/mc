@@ -67,8 +67,8 @@ export async function createCustomer(
     }
   }
 
-  revalidatePath("/admin/customers");
-  redirect("/admin/customers");
+  revalidatePath("/portal/customers");
+  redirect("/portal/customers");
 }
 
 function isUniqueViolation(e: unknown): boolean {
@@ -98,8 +98,8 @@ export async function updateCustomer(
   if (!name) return { error: "Contact name is required." };
 
   try {
-    await db.user.update({
-      where: { id },
+    const { count } = await db.user.updateMany({
+      where: { id, role: "customer" },
       data: {
         email,
         name,
@@ -109,18 +109,17 @@ export async function updateCustomer(
         salesRepId,
       },
     });
+    if (count === 0) return { error: "Customer not found." };
   } catch (e) {
     if (isUniqueViolation(e))
       return { error: "Another customer already uses that email." };
-    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2025")
-      return { error: "Customer not found." };
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2003")
       return { error: "Selected sales rep no longer exists." };
     throw e;
   }
 
-  revalidatePath("/admin/customers");
-  redirect("/admin/customers");
+  revalidatePath("/portal/customers");
+  redirect("/portal/customers");
 }
 
 export type ResendInviteState = { error?: string; success?: boolean };
@@ -145,7 +144,7 @@ export async function resendInvite(
     user.email,
     user.role === "rep" ? INVITE_REDIRECT.sales : INVITE_REDIRECT.customer,
   );
-  revalidatePath("/admin/customers");
-  revalidatePath("/admin/sales-reps");
+  revalidatePath("/portal/customers");
+  revalidatePath("/portal/sales-reps");
   return { success: true };
 }

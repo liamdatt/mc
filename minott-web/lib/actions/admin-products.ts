@@ -65,9 +65,9 @@ export async function createProduct(
       return { error: "A product with that name or slug already exists." };
     throw e;
   }
-  revalidatePath("/admin/products");
+  revalidatePath("/portal/products");
   revalidatePath("/products");
-  redirect("/admin/products");
+  redirect("/portal/products");
 }
 
 export async function updateProduct(
@@ -91,15 +91,15 @@ export async function updateProduct(
       return { error: "A product with that name or slug already exists." };
     throw e;
   }
-  revalidatePath("/admin/products");
+  revalidatePath("/portal/products");
   revalidatePath("/products");
-  redirect("/admin/products");
+  redirect("/portal/products");
 }
 
 export async function deleteProduct(formData: FormData): Promise<void> {
   await requireAdmin();
   const id = Number(formData.get("id"));
   await db.product.delete({ where: { id } });
-  revalidatePath("/admin/products");
+  revalidatePath("/portal/products");
   revalidatePath("/products");
 }

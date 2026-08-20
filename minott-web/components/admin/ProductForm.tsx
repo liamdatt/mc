@@ -189,7 +189,7 @@ export function ProductForm({
           Save Product
         </button>
         <Link
-          href="/admin/products"
+          href="/portal/products"
           className="px-6 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-mec-ink/70 hover:text-mec-red"
         >
           Cancel

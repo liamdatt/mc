@@ -108,6 +108,48 @@ export const CATEGORIES: SeedCategory[] = [
 ];
 
 // ---------------------------------------------------------------------------
+// First admin account for the unified Accounts Portal.
+// ---------------------------------------------------------------------------
+
+/**
+ * First admin account for the unified Accounts Portal. Created through
+ * better-auth (headerless createUser) so the credential Account row uses
+ * better-auth's own hash format; activated immediately (no invite email —
+ * createUser does not trigger sendResetPassword). Idempotent: skips when the
+ * email already exists. Runs in every environment, including production —
+ * without it there is no way to sign in to a fresh deploy — so the seeded
+ * credential defaults to a well-known email/password pair (overridable via
+ * SEED_ADMIN_EMAIL / SEED_ADMIN_PASSWORD) and a loud warning fires when the
+ * default password is actually used to create the account. Operators are
+ * expected to rotate it post-deploy (see README).
+ */
+async function seedAdmin() {
+  const email = process.env.SEED_ADMIN_EMAIL ?? "admin@example.com";
+  const password = process.env.SEED_ADMIN_PASSWORD ?? "test123";
+  const usingDefaultPassword = !process.env.SEED_ADMIN_PASSWORD;
+
+  const existing = await db.user.findUnique({ where: { email } });
+  if (existing) {
+    console.log(`Admin ${email} already exists — skipping.`);
+    return;
+  }
+  const { auth } = await import("../lib/auth/portal");
+  await auth.api.createUser({
+    body: { email, password, name: "MEC Admin", data: {} },
+  });
+  await db.user.update({
+    where: { email },
+    data: { role: "admin", activatedAt: new Date() },
+  });
+  console.log(`Seeded admin ${email}.`);
+  if (usingDefaultPassword) {
+    console.warn(
+      "[seed] SECURITY: seeded admin with the well-known default password (test123). Set SEED_ADMIN_PASSWORD or rotate this account before exposing the site.",
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Seed runner — categories only. Idempotent upsert + prune of stale-empty
 // categories. Products are owned by scripts/import-catalog.ts.
 // ---------------------------------------------------------------------------
@@ -155,6 +197,8 @@ async function main() {
   console.log(
     `Category seed complete. ${keepCategorySlugs.length} categories seeded, ${removedCategories.count} stale categories removed.`,
   );
+
+  await seedAdmin();
 }
 
 if (require.main === module) {

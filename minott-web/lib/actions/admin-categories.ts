@@ -47,9 +47,9 @@ export async function createCategory(
       return { error: "A category with that name or slug already exists." };
     throw e;
   }
-  revalidatePath("/admin/categories");
+  revalidatePath("/portal/categories");
   revalidatePath("/products");
-  redirect("/admin/categories");
+  redirect("/portal/categories");
 }
 
 export async function updateCategory(
@@ -69,9 +69,9 @@ export async function updateCategory(
       return { error: "A category with that name or slug already exists." };
     throw e;
   }
-  revalidatePath("/admin/categories");
+  revalidatePath("/portal/categories");
   revalidatePath("/products");
-  redirect("/admin/categories");
+  redirect("/portal/categories");
 }
 
 export async function deleteCategory(
@@ -87,7 +87,7 @@ export async function deleteCategory(
     };
   }
   await db.category.delete({ where: { id } });
-  revalidatePath("/admin/categories");
+  revalidatePath("/portal/categories");
   revalidatePath("/products");
   return {};
 }

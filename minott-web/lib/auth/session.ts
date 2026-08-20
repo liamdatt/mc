@@ -69,8 +69,6 @@ export async function verifySession(
   }
 }
 
-export const SESSION_COOKIE = "mec_admin";
-export const SESSION_TTL_MS = 1000 * 60 * 60 * 8; // 8 hours
 export const PREVIEW_COOKIE = "mec_preview";
 // Backstop expiry inside the preview token. The cookie itself is session-scoped
 // (no maxAge); this bounds browsers that restore session cookies on relaunch.
