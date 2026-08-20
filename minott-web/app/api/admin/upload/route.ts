@@ -1,9 +1,8 @@
-import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { randomUUID } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { verifySession, SESSION_COOKIE } from "@/lib/auth/session";
+import { getPortalSession } from "@/lib/portal";
 import { db } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
@@ -22,8 +21,8 @@ const EXT: Record<string, string> = {
 };
 
 export async function POST(req: Request) {
-  const token = (await cookies()).get(SESSION_COOKIE)?.value;
-  if (!(await verifySession(process.env.SESSION_SECRET ?? "", token, "admin"))) {
+  const session = await getPortalSession();
+  if (session?.user.role !== "admin") {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 

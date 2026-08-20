@@ -32,6 +32,8 @@ export const auth = betterAuth({
     enabled: true,
     // Accounts are provisioned by MEC admins, not self-service.
     disableSignUp: true,
+    // Better-auth defaults to 8; the seeded admin credential (test123) is 7.
+    minPasswordLength: 6,
     // Invite/reset links are valid for 72h (covers onboarding lead time).
     resetPasswordTokenExpiresIn: 60 * 60 * 72,
     // Emails the branded invite/reset link. `user.id` + `url` are enough; the

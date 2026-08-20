@@ -7,7 +7,7 @@ export type AccountInviteProps = {
   /** The tokened set-password link (BetterAuth reset URL). */
   url: string;
   /** Which portal they're being onboarded to. */
-  portal: "customer" | "sales";
+  portal: "customer" | "sales" | "admin";
   /** First-time activation vs. a later password reset — changes the copy. */
   isInvite: boolean;
 };
@@ -34,6 +34,18 @@ const COPY = {
     reset: {
       heading: "Reset your sales portal password",
       body: "We received a request to reset the password for your MEC sales portal account. Choose a new password below.",
+      cta: "Choose a new password",
+    },
+  },
+  admin: {
+    invite: {
+      heading: "Set up your MEC admin access",
+      body: "You've been added as an administrator for Minott Equipment & Chemicals. Set your password to access the Accounts Portal, where you can manage products, requests, customers and the team.",
+      cta: "Set your password",
+    },
+    reset: {
+      heading: "Reset your MEC admin password",
+      body: "We received a request to reset the password for your MEC admin account. Choose a new password below.",
       cta: "Choose a new password",
     },
   },

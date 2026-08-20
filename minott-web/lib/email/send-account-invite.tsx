@@ -34,7 +34,8 @@ export async function sendAccountInvite(
       return;
     }
 
-    const portal = user.role === "rep" ? "sales" : "customer";
+    const portal =
+      user.role === "rep" ? "sales" : user.role === "admin" ? "admin" : "customer";
     const isInvite = user.activatedAt === null;
     const from = settings.fromName
       ? `${settings.fromName} <${settings.fromEmail}>`
@@ -59,7 +60,9 @@ export async function sendAccountInvite(
       subject: isInvite
         ? portal === "sales"
           ? "Set up your MEC sales portal access"
-          : "Activate your Minott account"
+          : portal === "admin"
+            ? "Set up your MEC admin access"
+            : "Activate your Minott account"
         : "Reset your Minott password",
       html,
       text,
