@@ -21,7 +21,7 @@ const LINKS = [
 ];
 
 const CTA_LINKS = [
-  { href: "/portal", label: "Customer Portal" },
+  { href: "/portal", label: "Accounts Portal" },
 ];
 
 export function Nav({ categories }: { categories: CategoryLink[] }) {

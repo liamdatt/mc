@@ -10,9 +10,9 @@ import { WHATSAPP_URL } from "@/lib/constants";
 import { safeRelativePath } from "@/lib/safe-path";
 
 export const metadata: Metadata = {
-  title: "Customer Portal Sign In | Minott Equipment & Chemicals",
+  title: "Accounts Portal Sign In | Minott Equipment & Chemicals",
   description:
-    "Sign in to the Minott Equipment & Chemicals customer portal to track your quote requests and order history.",
+    "Sign in to the Minott Equipment & Chemicals accounts portal — customers, sales reps and administrators.",
 };
 
 export default async function PortalSignInPage({
@@ -31,13 +31,12 @@ export default async function PortalSignInPage({
     <section className="grid min-h-[80vh] place-items-center bg-mec-mist px-6 py-[var(--spacing-section-y)] text-mec-ink">
       <RevealOnScroll className="w-full max-w-md">
         <div className="rounded-md border border-mec-ink/10 bg-mec-pure p-8 shadow-[0_24px_48px_-12px_rgba(13,13,13,0.08)] md:p-10">
-          <Eyebrow>Customer Portal</Eyebrow>
+          <Eyebrow>Accounts Portal</Eyebrow>
           <h1 className="mt-4 font-display-tight text-4xl leading-none tracking-tight md:text-5xl">
             Welcome back
           </h1>
           <p className="mt-3 text-sm text-mec-ink/65">
-            Sign in to review your quote requests and order history with Minott
-            Equipment &amp; Chemicals.
+            Sign in to your Minott Equipment &amp; Chemicals account.
           </p>
 
           <SignInForm next={safeNext} />

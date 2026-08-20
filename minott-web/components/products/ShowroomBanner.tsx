@@ -48,7 +48,7 @@ export function ShowroomBanner() {
               href="/portal"
               className="font-semibold text-mec-ink underline underline-offset-2 hover:text-mec-red"
             >
-              Sign in to the Customer Portal
+              Sign in to the Accounts Portal
             </Link>
           </span>
         </p>
