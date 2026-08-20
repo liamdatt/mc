@@ -11,6 +11,7 @@ import {
   StackedTrend,
   StatusBar,
 } from "@/components/admin/AnalyticsCharts";
+import { requireAdminSession } from "@/lib/portal";
 
 const DATE = new Intl.DateTimeFormat("en-US", {
   month: "short",
@@ -45,6 +46,7 @@ export default async function AdminAnalyticsPage({
 }: {
   searchParams: Promise<{ range?: string }>;
 }) {
+  await requireAdminSession();
   const { range: rangeParam } = await searchParams;
   const range: AnalyticsRange = isAnalyticsRange(rangeParam) ? rangeParam : "90d";
 
@@ -76,7 +78,7 @@ export default async function AdminAnalyticsPage({
         {ANALYTICS_RANGES.map((r) => (
           <Link
             key={r.key}
-            href={r.key === "90d" ? "/admin/analytics" : `/admin/analytics?range=${r.key}`}
+            href={r.key === "90d" ? "/portal/analytics" : `/portal/analytics?range=${r.key}`}
             aria-current={range === r.key ? "page" : undefined}
             className={`rounded-pill px-4 py-1.5 text-sm font-semibold ${
               range === r.key

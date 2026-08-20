@@ -25,7 +25,7 @@ function isUniqueViolation(e: unknown): boolean {
 }
 
 function revalidate() {
-  revalidatePath("/admin/products");
+  revalidatePath("/portal/products");
   revalidatePath("/products");
 }
 

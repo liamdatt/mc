@@ -5,6 +5,7 @@ import {
   INQUIRY_TYPE_LABELS,
 } from "@/lib/constants";
 import { InquiryStatusSelect } from "@/components/admin/InquiryStatusSelect";
+import { requireAdminSession } from "@/lib/portal";
 
 const TABS = [
   { key: "ALL", label: "All" },
@@ -18,6 +19,7 @@ export default async function AdminRequestsPage({
 }: {
   searchParams: Promise<{ type?: string }>;
 }) {
+  await requireAdminSession();
   const { type } = await searchParams;
   const active = type && type !== "ALL" ? type : "ALL";
 
@@ -35,7 +37,7 @@ export default async function AdminRequestsPage({
         {TABS.map((t) => (
           <Link
             key={t.key}
-            href={t.key === "ALL" ? "/admin/requests" : `/admin/requests?type=${t.key}`}
+            href={t.key === "ALL" ? "/portal/requests" : `/portal/requests?type=${t.key}`}
             className={`rounded-pill px-4 py-1.5 text-sm font-semibold ${
               active === t.key
                 ? "bg-mec-red text-mec-pure"

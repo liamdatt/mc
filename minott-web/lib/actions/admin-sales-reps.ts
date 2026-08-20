@@ -57,8 +57,8 @@ export async function createSalesRep(
     throw e;
   }
 
-  revalidatePath("/admin/sales-reps");
-  redirect("/admin/sales-reps");
+  revalidatePath("/portal/sales-reps");
+  redirect("/portal/sales-reps");
 }
 
 export async function updateSalesRep(
@@ -107,15 +107,15 @@ export async function updateSalesRep(
       redirectTo: INVITE_REDIRECT.sales,
     });
     if (!result.ok) {
-      revalidatePath("/admin/sales-reps");
+      revalidatePath("/portal/sales-reps");
       return { error: `Rep saved, but the portal login could not be created: ${result.error}` };
     }
     await db.salesRep.update({ where: { id }, data: { userId: result.userId } });
   }
 
-  revalidatePath("/admin/sales-reps");
-  revalidatePath("/admin/customers");
-  redirect("/admin/sales-reps");
+  revalidatePath("/portal/sales-reps");
+  revalidatePath("/portal/customers");
+  redirect("/portal/sales-reps");
 }
 
 /**
@@ -141,7 +141,7 @@ export async function deleteSalesRep(
       console.error(`[sales-rep] failed to delete login for rep ${id}:`, e),
     );
   }
-  revalidatePath("/admin/sales-reps");
-  revalidatePath("/admin/customers");
+  revalidatePath("/portal/sales-reps");
+  revalidatePath("/portal/customers");
   return {};
 }

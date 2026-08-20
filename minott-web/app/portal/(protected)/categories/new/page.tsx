@@ -1,7 +1,9 @@
 import { createCategory } from "@/lib/actions/admin-categories";
 import { CategoryForm } from "@/components/admin/CategoryForm";
+import { requireAdminSession } from "@/lib/portal";
 
-export default function NewCategoryPage() {
+export default async function NewCategoryPage() {
+  await requireAdminSession();
   return (
     <div>
       <h1 className="font-display-tight text-3xl">New Category</h1>

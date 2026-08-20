@@ -1,7 +1,9 @@
 import { getEmailSettings } from "@/lib/settings";
 import { SettingsForm } from "@/components/admin/SettingsForm";
+import { requireAdminSession } from "@/lib/portal";
 
 export default async function AdminSettingsPage() {
+  await requireAdminSession();
   const settings = await getEmailSettings();
 
   return (

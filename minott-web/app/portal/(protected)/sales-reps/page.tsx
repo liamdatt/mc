@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { DeleteSalesRepButton } from "@/components/admin/DeleteSalesRepButton";
+import { requireAdminSession } from "@/lib/portal";
 
 export default async function AdminSalesRepsPage() {
+  await requireAdminSession();
   const reps = await db.salesRep.findMany({
     orderBy: { name: "asc" },
     include: {
@@ -16,7 +18,7 @@ export default async function AdminSalesRepsPage() {
       <div className="flex items-center justify-between">
         <h1 className="font-display-tight text-3xl">Sales reps</h1>
         <Link
-          href="/admin/sales-reps/new"
+          href="/portal/sales-reps/new"
           className="bg-mec-red px-5 py-2.5 text-sm font-semibold uppercase tracking-[0.12em] text-mec-pure hover:bg-mec-red-hover"
         >
           + New Sales Rep
@@ -85,7 +87,7 @@ export default async function AdminSalesRepsPage() {
                 </td>
                 <td className="px-4 py-3 text-right">
                   <Link
-                    href={`/admin/sales-reps/${r.id}/edit`}
+                    href={`/portal/sales-reps/${r.id}/edit`}
                     className="font-semibold text-mec-red hover:underline"
                   >
                     Edit

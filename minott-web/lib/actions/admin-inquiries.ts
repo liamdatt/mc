@@ -13,5 +13,5 @@ export async function setInquiryStatus(formData: FormData): Promise<void> {
   const status = String(formData.get("status") ?? "");
   if (!Number.isFinite(id) || !VALID.has(status)) return;
   await db.inquiry.update({ where: { id }, data: { status } });
-  revalidatePath("/admin/requests");
+  revalidatePath("/portal/requests");
 }

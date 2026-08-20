@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { SalesRepForm } from "@/components/admin/SalesRepForm";
+import { requireAdminSession } from "@/lib/portal";
 
-export default function NewSalesRepPage() {
+export default async function NewSalesRepPage() {
+  await requireAdminSession();
   return (
     <div>
       <Link
-        href="/admin/sales-reps"
+        href="/portal/sales-reps"
         className="text-sm font-semibold text-mec-ink/60 hover:text-mec-red"
       >
         ← Back to sales reps

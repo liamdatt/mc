@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth/portal";
 
@@ -21,6 +22,17 @@ import { auth } from "@/lib/auth/portal";
 export async function getPortalSession() {
   const session = await auth.api.getSession({ headers: await headers() });
   return session ?? null;
+}
+
+/**
+ * Page gate for admin-only portal routes. Signed-out users are handled by the
+ * (protected) layout; this redirects signed-in non-admins to their own
+ * dashboard instead of an error page.
+ */
+export async function requireAdminSession() {
+  const session = await getPortalSession();
+  if (!session || session.user.role !== "admin") redirect("/portal");
+  return session;
 }
 
 /**

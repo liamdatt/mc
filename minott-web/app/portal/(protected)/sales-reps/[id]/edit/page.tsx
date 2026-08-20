@@ -3,12 +3,14 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { SalesRepForm } from "@/components/admin/SalesRepForm";
 import { ResendInviteButton } from "@/components/admin/ResendInviteButton";
+import { requireAdminSession } from "@/lib/portal";
 
 export default async function EditSalesRepPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requireAdminSession();
   const { id } = await params;
   const repId = Number(id);
   if (!Number.isFinite(repId)) notFound();
@@ -25,7 +27,7 @@ export default async function EditSalesRepPage({
   return (
     <div>
       <Link
-        href="/admin/sales-reps"
+        href="/portal/sales-reps"
         className="text-sm font-semibold text-mec-ink/60 hover:text-mec-red"
       >
         ← Back to sales reps

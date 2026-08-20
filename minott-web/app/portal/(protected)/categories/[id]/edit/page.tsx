@@ -2,12 +2,14 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { updateCategory } from "@/lib/actions/admin-categories";
 import { CategoryForm } from "@/components/admin/CategoryForm";
+import { requireAdminSession } from "@/lib/portal";
 
 export default async function EditCategoryPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requireAdminSession();
   const { id } = await params;
   const category = await db.category.findUnique({ where: { id: Number(id) } });
   if (!category) notFound();

@@ -3,12 +3,14 @@ import { db } from "@/lib/db";
 import { updateProduct } from "@/lib/actions/admin-products";
 import { ProductForm } from "@/components/admin/ProductForm";
 import { VariantManager } from "@/components/admin/VariantManager";
+import { requireAdminSession } from "@/lib/portal";
 
 export default async function EditProductPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requireAdminSession();
   const { id } = await params;
   const productId = Number(id);
   const [product, categories, variants, allListings] = await Promise.all([

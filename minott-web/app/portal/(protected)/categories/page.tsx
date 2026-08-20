@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { DeleteCategoryButton } from "@/components/admin/DeleteCategoryButton";
+import { requireAdminSession } from "@/lib/portal";
 
 export default async function AdminCategoriesPage() {
+  await requireAdminSession();
   const categories = await db.category.findMany({
     orderBy: { sortOrder: "asc" },
     include: { _count: { select: { products: true } } },
@@ -13,7 +15,7 @@ export default async function AdminCategoriesPage() {
       <div className="flex items-center justify-between">
         <h1 className="font-display-tight text-3xl">Categories</h1>
         <Link
-          href="/admin/categories/new"
+          href="/portal/categories/new"
           className="bg-mec-red px-5 py-2.5 text-sm font-semibold uppercase tracking-[0.12em] text-mec-pure hover:bg-mec-red-hover"
         >
           + New Category
@@ -38,7 +40,7 @@ export default async function AdminCategoriesPage() {
                 </td>
                 <td className="px-4 py-3 text-right">
                   <Link
-                    href={`/admin/categories/${c.id}/edit`}
+                    href={`/portal/categories/${c.id}/edit`}
                     className="font-semibold text-mec-red hover:underline"
                   >
                     Edit

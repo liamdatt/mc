@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { deleteProduct } from "@/lib/actions/admin-products";
+import { requireAdminSession } from "@/lib/portal";
 
 const UNSORTED_SLUG = "unsorted-imports";
 
@@ -32,7 +33,7 @@ function ProductRow({ p }: { p: Row }) {
       </td>
       <td className="px-4 py-3 text-right">
         <Link
-          href={`/admin/products/${p.id}/edit`}
+          href={`/portal/products/${p.id}/edit`}
           className="font-semibold text-mec-red hover:underline"
         >
           Edit
@@ -49,6 +50,7 @@ function ProductRow({ p }: { p: Row }) {
 }
 
 export default async function AdminProductsPage() {
+  await requireAdminSession();
   const products = (await db.product.findMany({
     orderBy: [{ categoryId: "asc" }, { sortOrder: "asc" }],
     include: { category: true, _count: { select: { variants: true } } },
@@ -62,7 +64,7 @@ export default async function AdminProductsPage() {
       <div className="flex items-center justify-between">
         <h1 className="font-display-tight text-3xl">Products</h1>
         <Link
-          href="/admin/products/new"
+          href="/portal/products/new"
           className="bg-mec-red px-5 py-2.5 text-sm font-semibold uppercase tracking-[0.12em] text-mec-pure hover:bg-mec-red-hover"
         >
           + New Product
@@ -83,7 +85,7 @@ export default async function AdminProductsPage() {
               </p>
             </div>
             <Link
-              href={`/admin/products/${unsorted.id}/edit`}
+              href={`/portal/products/${unsorted.id}/edit`}
               className="shrink-0 font-semibold text-mec-red hover:underline"
             >
               Sort them →

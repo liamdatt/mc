@@ -81,7 +81,7 @@ export function SalesRepForm({ rep }: { rep?: SalesRepFormData }) {
               : "Create Sales Rep"}
         </button>
         <Link
-          href="/admin/sales-reps"
+          href="/portal/sales-reps"
           className="px-6 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-mec-ink/70 hover:text-mec-red"
         >
           Cancel
