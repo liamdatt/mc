@@ -88,17 +88,17 @@ export default async function AdminAdminsPage() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-4">
-                      {status === "Pending" && (
-                        <form action={resendAdminInvite}>
-                          <input type="hidden" name="email" value={a.email} />
-                          <button
-                            type="submit"
-                            className="font-semibold text-mec-red hover:underline"
-                          >
-                            Resend invite
-                          </button>
-                        </form>
-                      )}
+                      <form action={resendAdminInvite}>
+                        <input type="hidden" name="email" value={a.email} />
+                        <button
+                          type="submit"
+                          className="font-semibold text-mec-red hover:underline"
+                        >
+                          {a.activatedAt === null
+                            ? "Resend invite"
+                            : "Send password reset"}
+                        </button>
+                      </form>
                       {status === "Deactivated" ? (
                         <form action={setAdminActive}>
                           <input type="hidden" name="userId" value={a.id} />

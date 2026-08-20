@@ -36,7 +36,12 @@ export async function createAdmin(
   redirect("/portal/admins");
 }
 
-/** Re-send the set-password invite to a pending (or locked-out) admin. */
+/**
+ * Re-send the set-password link to an admin: an invite for a Pending admin,
+ * or a password-reset link for an already-activated one (the sender picks
+ * the copy based on `activatedAt`). Available for every admin row, including
+ * the caller's own.
+ */
 export async function resendAdminInvite(formData: FormData): Promise<void> {
   await requireAdmin();
   const email = str(formData, "email").toLowerCase();
@@ -48,8 +53,9 @@ export async function resendAdminInvite(formData: FormData): Promise<void> {
  * Deactivate/reactivate an admin via better-auth's `banned` flag (the admin
  * plugin refuses sign-in for banned users). Direct DB write instead of the
  * plugin's banUser endpoint (which wants an admin session's headers), so we
- * also revoke live sessions ourselves. Guards: no self-deactivation, and the
- * last active admin can't be deactivated.
+ * also revoke live sessions ourselves. Guards (both directions): target must
+ * actually be an admin row; no self-deactivation; the last active admin
+ * can't be deactivated.
  */
 export async function setAdminActive(formData: FormData): Promise<void> {
   await requireAdmin();
@@ -57,17 +63,18 @@ export async function setAdminActive(formData: FormData): Promise<void> {
   const makeActive = str(formData, "active") === "true";
   if (!userId) return;
 
+  const target = await db.user.findUnique({
+    where: { id: userId },
+    select: { role: true, banned: true, activatedAt: true },
+  });
+  if (!target || target.role !== "admin") return;
+
   if (!makeActive) {
     const session = await getPortalSession();
     if (session?.user.id === userId) return; // never deactivate yourself
     const activeAdmins = await db.user.count({
       where: { role: "admin", NOT: { banned: true }, activatedAt: { not: null } },
     });
-    const target = await db.user.findUnique({
-      where: { id: userId },
-      select: { role: true, banned: true, activatedAt: true },
-    });
-    if (!target || target.role !== "admin") return;
     const targetIsActive = !target.banned && target.activatedAt !== null;
     if (targetIsActive && activeAdmins <= 1) return; // keep at least one
   }

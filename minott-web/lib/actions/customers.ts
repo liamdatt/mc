@@ -98,8 +98,8 @@ export async function updateCustomer(
   if (!name) return { error: "Contact name is required." };
 
   try {
-    await db.user.update({
-      where: { id },
+    const { count } = await db.user.updateMany({
+      where: { id, role: "customer" },
       data: {
         email,
         name,
@@ -109,11 +109,10 @@ export async function updateCustomer(
         salesRepId,
       },
     });
+    if (count === 0) return { error: "Customer not found." };
   } catch (e) {
     if (isUniqueViolation(e))
       return { error: "Another customer already uses that email." };
-    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2025")
-      return { error: "Customer not found." };
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2003")
       return { error: "Selected sales rep no longer exists." };
     throw e;
