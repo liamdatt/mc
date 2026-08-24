@@ -34,7 +34,14 @@ export default async function SalesQuoteDetailPage({
             <ul className="mt-3 divide-y divide-black/5">
               {quote.items.map((i) => (
                 <li key={i.id} className="flex items-center justify-between py-2 text-sm">
-                  <span>{i.productName}{i.variant?.label ? ` — ${i.variant.label}` : i.variant?.size ? ` — ${i.variant.size}` : ""}</span>
+                  <span>
+                    {i.productName}{i.variant?.label ? ` — ${i.variant.label}` : i.variant?.size ? ` — ${i.variant.size}` : ""}
+                    {i.dealLabel && (
+                      <span className="ml-2 inline-flex rounded-pill bg-mec-red px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-mec-pure">
+                        {i.dealLabel}
+                      </span>
+                    )}
+                  </span>
                   <span className="font-semibold text-mec-ink/70">× {i.quantity}</span>
                 </li>
               ))}

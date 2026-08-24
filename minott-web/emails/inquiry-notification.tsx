@@ -5,6 +5,8 @@ export type NotificationItem = {
   name: string;
   variant: string | null;
   quantity: number;
+  /** Deal badge snapshotted at submission time, if any. */
+  dealLabel: string | null;
 };
 
 export type InquiryNotificationProps = {
@@ -100,6 +102,11 @@ export function InquiryNotification(props: InquiryNotificationProps) {
             <Text key={i} style={{ ...detailValue, margin: "0 0 2px" }}>
               {item.quantity} × {item.name}
               {item.variant ? ` — ${item.variant}` : ""}
+              {item.dealLabel ? (
+                <span style={{ color: emailColors.red, fontWeight: 700 }}>
+                  {` · ${item.dealLabel}`}
+                </span>
+              ) : null}
             </Text>
           ))}
         </>

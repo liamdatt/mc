@@ -96,6 +96,11 @@ export default async function AdminRequestsPage({
                   {inq.items.map((it) => (
                     <li key={it.id}>
                       {it.quantity} × {it.productName}
+                      {it.dealLabel && (
+                        <span className="ml-2 inline-flex rounded-pill bg-mec-red px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-mec-pure">
+                          {it.dealLabel}
+                        </span>
+                      )}
                     </li>
                   ))}
                 </ul>

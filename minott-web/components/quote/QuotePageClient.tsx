@@ -18,10 +18,18 @@ export type QuotePortalUser = {
   phone: string | null;
 };
 
+/** Live deal labels keyed by variant id (exact SKU) and product id (fallback). */
+export type QuoteDealLookup = {
+  byVariant: Record<number, string>;
+  byProduct: Record<number, string>;
+};
+
 export function QuotePageClient({
   portalUser,
+  deals,
 }: {
   portalUser: QuotePortalUser | null;
+  deals: QuoteDealLookup;
 }) {
   const { items, setQuantity, removeItem, clear } = useQuoteCart();
   const [state, formAction, pending] = useActionState(submitQuote, initial);
@@ -99,53 +107,62 @@ export function QuotePageClient({
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1.4fr_1fr]">
         {/* Line items */}
         <div className="space-y-4">
-          {items.map((it) => (
-            <div
-              key={it.variantId}
-              className="flex items-center gap-4 rounded-md border border-black/10 bg-mec-pure p-4"
-            >
-              <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-sm bg-mec-mist">
-                <Image
-                  src={it.imagePath}
-                  alt={it.name}
-                  fill
-                  sizes="64px"
-                  className="object-contain p-1"
-                />
-              </div>
-              <div className="min-w-0 flex-1">
-                <Link
-                  href={`/products/${it.categorySlug}/${it.slug}`}
-                  className="font-semibold text-mec-ink hover:text-mec-red"
-                >
-                  {it.name}
-                </Link>
-                {it.variantLabel && (
-                  <p className="mt-0.5 text-sm text-mec-ink/60">
-                    {it.variantLabel}
-                  </p>
-                )}
-              </div>
-              <input
-                type="number"
-                min={1}
-                value={it.quantity}
-                onChange={(e) =>
-                  setQuantity(it.variantId, Number(e.target.value) || 1)
-                }
-                className="w-20 rounded-sm border border-black/15 px-3 py-2 text-mec-ink outline-none focus:border-mec-red"
-                aria-label={`Quantity for ${it.name}`}
-              />
-              <button
-                type="button"
-                onClick={() => removeItem(it.variantId)}
-                className="text-mec-ink/50 hover:text-mec-red"
-                aria-label={`Remove ${it.name}`}
+          {items.map((it) => {
+            const deal =
+              deals.byVariant[it.variantId] ?? deals.byProduct[it.productId];
+            return (
+              <div
+                key={it.variantId}
+                className="flex items-center gap-4 rounded-md border border-black/10 bg-mec-pure p-4"
               >
-                <Trash2 className="h-5 w-5" />
-              </button>
-            </div>
-          ))}
+                <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-sm bg-mec-mist">
+                  <Image
+                    src={it.imagePath}
+                    alt={it.name}
+                    fill
+                    sizes="64px"
+                    className="object-contain p-1"
+                  />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <Link
+                    href={`/products/${it.categorySlug}/${it.slug}`}
+                    className="font-semibold text-mec-ink hover:text-mec-red"
+                  >
+                    {it.name}
+                  </Link>
+                  {it.variantLabel && (
+                    <p className="mt-0.5 text-sm text-mec-ink/60">
+                      {it.variantLabel}
+                    </p>
+                  )}
+                  {deal && (
+                    <span className="mt-1 inline-flex rounded-pill bg-mec-red px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-mec-pure">
+                      {deal}
+                    </span>
+                  )}
+                </div>
+                <input
+                  type="number"
+                  min={1}
+                  value={it.quantity}
+                  onChange={(e) =>
+                    setQuantity(it.variantId, Number(e.target.value) || 1)
+                  }
+                  className="w-20 rounded-sm border border-black/15 px-3 py-2 text-mec-ink outline-none focus:border-mec-red"
+                  aria-label={`Quantity for ${it.name}`}
+                />
+                <button
+                  type="button"
+                  onClick={() => removeItem(it.variantId)}
+                  className="text-mec-ink/50 hover:text-mec-red"
+                  aria-label={`Remove ${it.name}`}
+                >
+                  <Trash2 className="h-5 w-5" />
+                </button>
+              </div>
+            );
+          })}
         </div>
 
         {/* Contact form */}

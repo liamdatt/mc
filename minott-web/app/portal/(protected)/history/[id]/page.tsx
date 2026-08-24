@@ -169,6 +169,11 @@ export default async function PortalHistoryDetailPage({
                           {variantLabel}
                         </p>
                       )}
+                      {it.dealLabel && (
+                        <span className="mt-1 inline-flex rounded-pill bg-mec-red px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-mec-pure">
+                          {it.dealLabel}
+                        </span>
+                      )}
                       {!reorderItem && (
                         <p className="mt-0.5 text-xs text-mec-ink/50">
                           No longer available

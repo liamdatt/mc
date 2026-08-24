@@ -61,6 +61,7 @@ export async function sendInquiryEmails(inquiryId: number): Promise<void> {
             name: i.productName,
             variant: i.variant?.label ?? i.variant?.size ?? null,
             quantity: i.quantity,
+            dealLabel: i.dealLabel ?? null,
           }))
         : inquiry.product
           ? [
@@ -69,6 +70,7 @@ export async function sendInquiryEmails(inquiryId: number): Promise<void> {
                 variant:
                   inquiry.variant?.label ?? inquiry.variant?.size ?? null,
                 quantity: 1,
+                dealLabel: null,
               },
             ]
           : [];

@@ -5,6 +5,7 @@ import { INQUIRY_TYPE } from "@/lib/constants";
 import { getPortalSession, getCustomerScope } from "@/lib/portal";
 import { after } from "next/server";
 import { sendInquiryEmails } from "@/lib/email/send-inquiry-emails";
+import { getLiveDealBadges, pickBadgeForVariant } from "@/lib/deals";
 
 export type InquiryResult = { ok: boolean; error?: string };
 
@@ -93,6 +94,10 @@ export async function submitQuote(
   const session = await getPortalSession();
   const scope = session ? await getCustomerScope(session.user.id) : null;
 
+  // Snapshot the deal that was live at submission time onto each line item;
+  // portal and email views read that snapshot, never the live deal.
+  const badges = await getLiveDealBadges();
+
   const inquiry = await db.inquiry.create({
     data: {
       type: INQUIRY_TYPE.QUOTE,
@@ -114,6 +119,11 @@ export async function submitQuote(
             Number.isFinite(i.quantity) && i.quantity > 0
               ? Math.floor(i.quantity)
               : 1,
+          dealLabel: pickBadgeForVariant(
+            badges,
+            typeof i.productId === "number" ? i.productId : -1,
+            typeof i.variantId === "number" ? i.variantId : null,
+          ),
         })),
       },
     },

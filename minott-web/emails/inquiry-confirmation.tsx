@@ -62,6 +62,11 @@ export function InquiryConfirmation(props: InquiryConfirmationProps) {
             >
               {item.quantity} × {item.name}
               {item.variant ? ` — ${item.variant}` : ""}
+              {item.dealLabel ? (
+                <span style={{ color: emailColors.red, fontWeight: 700 }}>
+                  {` · ${item.dealLabel}`}
+                </span>
+              ) : null}
             </Text>
           ))}
         </>
