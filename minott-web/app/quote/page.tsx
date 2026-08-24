@@ -3,7 +3,7 @@ import { Section } from "@/components/primitives/Section";
 import { Container } from "@/components/primitives/Container";
 import { Eyebrow } from "@/components/primitives/Eyebrow";
 import { QuotePageClient } from "@/components/quote/QuotePageClient";
-import { getPortalSession } from "@/lib/portal";
+import { getPortalSession, getUserCompany } from "@/lib/portal";
 
 export const metadata: Metadata = {
   title: "My Quote — Minott Chemicals",
@@ -15,11 +15,12 @@ export default async function QuotePage() {
   // Serialize only what the client form needs; the full session object
   // isn't a plain serializable value.
   const session = await getPortalSession();
+  const company = session ? await getUserCompany(session.user.id) : null;
   const portalUser = session
     ? {
         name: session.user.name,
         email: session.user.email,
-        companyName: session.user.companyName ?? null,
+        companyName: company?.name ?? null,
         phone: session.user.phone ?? null,
       }
     : null;

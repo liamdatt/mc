@@ -1,4 +1,5 @@
 import {
+  getCustomerScope,
   getPortalSession,
   getUserHistory,
   type HistoryFilters,
@@ -40,7 +41,8 @@ export async function GET(request: Request) {
     categorySlug: p("category"),
   };
 
-  const inquiries = await getUserHistory(session.user.id, filters);
+  const scope = await getCustomerScope(session.user.id);
+  const inquiries = await getUserHistory(scope, filters);
 
   const header = [
     "Reference",

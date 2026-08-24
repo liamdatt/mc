@@ -10,7 +10,6 @@ import {
 type ProfileValues = {
   name?: string;
   email?: string;
-  companyName?: string | null;
   phone?: string | null;
   whatsapp?: string | null;
 };
@@ -48,15 +47,6 @@ export function ProfileForm({ user }: { user: ProfileValues }) {
         <input
           value={user.email ?? ""}
           disabled
-          className={field}
-        />
-      </label>
-
-      <label className={label}>
-        Company name
-        <input
-          name="companyName"
-          defaultValue={user.companyName ?? ""}
           className={field}
         />
       </label>

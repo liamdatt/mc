@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getPortalSession } from "@/lib/portal";
+import { getPortalSession, getUserCompany } from "@/lib/portal";
 import { getSalesSession } from "@/lib/sales";
 import { AdminDashboard } from "@/components/portal/dashboards/AdminDashboard";
 import { RepDashboard } from "@/components/portal/dashboards/RepDashboard";
@@ -36,11 +36,12 @@ export default async function PortalDashboardPage() {
     return <RepDashboard rep={sales.rep} />;
   }
 
+  const company = await getUserCompany(session.user.id);
   return (
     <CustomerDashboard
-      userId={session.user.id}
+      scope={{ userId: session.user.id, companyId: company?.id ?? null }}
       userName={session.user.name}
-      companyName={session.user.companyName}
+      companyName={company?.name}
     />
   );
 }

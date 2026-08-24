@@ -50,24 +50,25 @@ const QUICK_LINKS = [
 
 /**
  * Customer dashboard for the unified Accounts Portal.
- * `userId`: the signed-in customer's User.id, used to scope inquiry reads.
- * `userName`: display name for the greeting (first name only is derived
- * here). `companyName`: optional B2B company name shown under the greeting
- * (matches the original page, which read both off the session).
+ * `scope`: the signed-in customer's read scope — reads are company-scoped
+ * (every user at a company sees the same history); users without a company
+ * fall back to their own userId. `userName`: display name for the greeting
+ * (first name only is derived here). `companyName`: optional B2B company
+ * name shown under the greeting.
  */
 export async function CustomerDashboard({
-  userId,
+  scope,
   userName,
   companyName,
 }: {
-  userId: string;
+  scope: import("@/lib/portal").CustomerScope;
   userName: string | null | undefined;
   companyName?: string | null;
 }) {
   const [recent, totalInquiries, totalQuotes] = await Promise.all([
-    getUserInquiries(userId, 5),
-    getUserInquiryCount(userId),
-    getUserInquiryCountByType(userId, INQUIRY_TYPE.QUOTE),
+    getUserInquiries(scope, 5),
+    getUserInquiryCount(scope),
+    getUserInquiryCountByType(scope, INQUIRY_TYPE.QUOTE),
   ]);
 
   const company = companyName?.trim();

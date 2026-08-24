@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db";
 import { INQUIRY_TYPE } from "@/lib/constants";
-import { getPortalSession } from "@/lib/portal";
+import { getPortalSession, getCustomerScope } from "@/lib/portal";
 import { after } from "next/server";
 import { sendInquiryEmails } from "@/lib/email/send-inquiry-emails";
 
@@ -87,14 +87,17 @@ export async function submitQuote(
     return { ok: false, error: "Your quote list is empty." };
   }
 
-  // Attach the quote to the signed-in portal account, if any. The user id is
-  // derived from the session cookie server-side — never from form data.
+  // Attach the quote to the signed-in portal account AND its company, if any.
+  // Both ids are derived from the session cookie server-side — never from
+  // form data.
   const session = await getPortalSession();
+  const scope = session ? await getCustomerScope(session.user.id) : null;
 
   const inquiry = await db.inquiry.create({
     data: {
       type: INQUIRY_TYPE.QUOTE,
       userId: session?.user.id ?? null,
+      companyId: scope?.companyId ?? null,
       name: field(formData, "name"),
       email: field(formData, "email"),
       company: field(formData, "company") || null,

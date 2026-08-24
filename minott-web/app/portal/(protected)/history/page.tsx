@@ -5,6 +5,7 @@ import { ArrowRight, Download, FileText } from "lucide-react";
 import { Eyebrow } from "@/components/primitives/Eyebrow";
 import { RevealOnScroll } from "@/components/motion/RevealOnScroll";
 import {
+  getCustomerScope,
   getPortalSession,
   getUserHistory,
   getUserHistoryCategories,
@@ -55,6 +56,7 @@ export default async function PortalHistoryPage({
   const session = await getPortalSession();
   if (!session) redirect("/portal/sign-in");
   if (session.user.role !== "customer") redirect("/portal");
+  const scope = await getCustomerScope(session.user.id);
 
   const sp = await searchParams;
   const one = (v: string | string[] | undefined) =>
@@ -69,8 +71,8 @@ export default async function PortalHistoryPage({
   };
 
   const [inquiries, categories] = await Promise.all([
-    getUserHistory(session.user.id, filters),
-    getUserHistoryCategories(session.user.id),
+    getUserHistory(scope, filters),
+    getUserHistoryCategories(scope),
   ]);
 
   const exportHref = `/portal/history/export?${new URLSearchParams(

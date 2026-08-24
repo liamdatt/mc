@@ -9,7 +9,7 @@ import {
   ReorderItemButton,
 } from "@/components/portal/ReorderButton";
 import type { QuoteItem } from "@/components/quote/QuoteCartProvider";
-import { getPortalSession, getUserInquiryById } from "@/lib/portal";
+import { getCustomerScope, getPortalSession, getUserInquiryById } from "@/lib/portal";
 import {
   INQUIRY_STATUS_LABELS,
   INQUIRY_TYPE,
@@ -42,7 +42,8 @@ export default async function PortalHistoryDetailPage({
   if (!Number.isInteger(numId)) notFound();
 
   // Ownership is enforced inside getUserInquiryById (returns null if not owned).
-  const inquiry = await getUserInquiryById(session.user.id, numId);
+  const scope = await getCustomerScope(session.user.id);
+  const inquiry = await getUserInquiryById(scope, numId);
   if (!inquiry) notFound();
 
   // A line item is reorderable only when its product still exists and is active

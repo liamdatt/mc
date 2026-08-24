@@ -26,10 +26,11 @@ function str(formData: FormData, key: string): string {
 }
 
 /**
- * Update the signed-in portal user's B2B profile (name + company contact
- * fields). Gated on the portal session itself — Server Actions are public
- * endpoints, so the owning user is resolved from the session, never trusted
- * from the form. Email/password are not editable here (managed by MEC staff).
+ * Update the signed-in portal user's personal contact details (the company
+ * is admin-managed). Gated on the portal session itself — Server Actions are
+ * public endpoints, so the owning user is resolved from the session, never
+ * trusted from the form. Email/password are not editable here (managed by
+ * MEC staff).
  */
 export async function updatePortalProfile(
   _prev: ProfileFormState,
@@ -45,7 +46,6 @@ export async function updatePortalProfile(
     where: { id: session.user.id },
     data: {
       name,
-      companyName: str(formData, "companyName") || null,
       phone: str(formData, "phone") || null,
       whatsapp: str(formData, "whatsapp") || null,
     },
