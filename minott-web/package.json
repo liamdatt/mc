@@ -7,7 +7,7 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "setup:catalog": "prisma db seed && tsx scripts/import-catalog.ts",
-    "start:prod": "prisma migrate deploy && npm run setup:catalog && next start",
+    "start:prod": "prisma migrate deploy && tsx scripts/bootstrap.ts && next start",
     "lint": "eslint",
     "postinstall": "prisma generate",
     "db:migrate": "prisma migrate dev",

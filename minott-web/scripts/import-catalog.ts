@@ -60,7 +60,7 @@ function variantLabel(
   return multiPack ? v.packType : null;
 }
 
-async function main() {
+export async function importCatalog() {
   const cats = await db.category.findMany({ select: { id: true, slug: true } });
   const catId = new Map(cats.map((c) => [c.slug, c.id]));
 
@@ -188,10 +188,12 @@ async function main() {
   );
 }
 
-main()
-  .then(() => db.$disconnect())
-  .catch(async (e) => {
-    console.error(e);
-    await db.$disconnect();
-    process.exit(1);
-  });
+if (require.main === module) {
+  importCatalog()
+    .then(() => db.$disconnect())
+    .catch(async (e) => {
+      console.error(e);
+      await db.$disconnect();
+      process.exit(1);
+    });
+}

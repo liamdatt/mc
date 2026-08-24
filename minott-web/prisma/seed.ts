@@ -123,7 +123,7 @@ export const CATEGORIES: SeedCategory[] = [
  * default password is actually used to create the account. Operators are
  * expected to rotate it post-deploy (see README).
  */
-async function seedAdmin() {
+export async function seedAdmin() {
   // `||` (not `??`) so the `KEY=""` idiom used in .env.example falls back to
   // the defaults instead of seeding an empty email or a credential-less
   // account. Lowercased because better-auth normalizes emails on create — a
@@ -161,7 +161,7 @@ async function seedAdmin() {
 // categories. Products are owned by scripts/import-catalog.ts.
 // ---------------------------------------------------------------------------
 
-async function main() {
+export async function seedCategories() {
   const keepCategorySlugs: string[] = [];
   let categorySort = 0;
 
@@ -204,7 +204,10 @@ async function main() {
   console.log(
     `Category seed complete. ${keepCategorySlugs.length} categories seeded, ${removedCategories.count} stale categories removed.`,
   );
+}
 
+async function main() {
+  await seedCategories();
   await seedAdmin();
 }
 
