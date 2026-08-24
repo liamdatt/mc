@@ -1,5 +1,6 @@
 import { CinematicHero } from "@/components/sections/CinematicHero";
 import { TrustBar } from "@/components/sections/TrustBar";
+import { FeaturedDeals } from "@/components/sections/FeaturedDeals";
 import { NumbersBar } from "@/components/sections/NumbersBar";
 import { LegacyBanner } from "@/components/sections/LegacyBanner";
 import { QuoteCTA } from "@/components/sections/QuoteCTA";
@@ -13,6 +14,7 @@ export default function HomePage() {
       <span id="top" className="sr-only" />
       <CinematicHero />
       <TrustBar />
+      <FeaturedDeals />
       <NumbersBar />
       <LegacyBanner />
       <QuoteCTA />
