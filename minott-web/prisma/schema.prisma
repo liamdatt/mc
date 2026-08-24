@@ -70,23 +70,25 @@ model ProductVariant {
 }
 
 model Inquiry {
-  id        Int             @id @default(autoincrement())
-  type      String // "QUOTE" | "SAMPLE" | "CONTACT"
-  status    String          @default("NEW") // "NEW" | "IN_PROGRESS" | "CLOSED"
-  name      String
-  company   String?
-  email     String
-  phone     String?
-  message   String?
-  product   Product?        @relation("SampleInquiryProduct", fields: [productId], references: [id], onDelete: SetNull)
-  productId Int?
-  variant   ProductVariant? @relation("SampleInquiryVariant", fields: [variantId], references: [id], onDelete: SetNull)
-  variantId Int?
-  user      User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
-  userId    String?
-  items     InquiryItem[]
-  notes     InquiryNote[]
-  createdAt DateTime        @default(now())
+  id         Int             @id @default(autoincrement())
+  type       String // "QUOTE" | "SAMPLE" | "CONTACT"
+  status     String          @default("NEW") // "NEW" | "IN_PROGRESS" | "CLOSED"
+  name       String
+  company    String?
+  email      String
+  phone      String?
+  message    String?
+  product    Product?        @relation("SampleInquiryProduct", fields: [productId], references: [id], onDelete: SetNull)
+  productId  Int?
+  variant    ProductVariant? @relation("SampleInquiryVariant", fields: [variantId], references: [id], onDelete: SetNull)
+  variantId  Int?
+  user       User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId     String?
+  companyRef Company?        @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  companyId  Int?
+  items      InquiryItem[]
+  notes      InquiryNote[]
+  createdAt  DateTime        @default(now())
 }
 
 model InquiryItem {
@@ -113,17 +115,33 @@ model InquiryNote {
 }
 
 model SalesRep {
-  id        Int      @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   name      String
   email     String
   phone     String?
-  active    Boolean  @default(true)
-  clients   User[]   @relation("ClientRep")
+  active    Boolean   @default(true)
+  companies Company[]
   // The rep's own portal login (BetterAuth User with role="rep"). One-to-one.
-  userId    String?  @unique
-  user      User?    @relation("RepAccount", fields: [userId], references: [id], onDelete: SetNull)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  userId    String?   @unique
+  user      User?     @relation("RepAccount", fields: [userId], references: [id], onDelete: SetNull)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Company {
+  id               Int       @id @default(autoincrement())
+  name             String
+  mecAccountNumber String?   @unique
+  industry         String?
+  location         String?
+  salesRep         SalesRep? @relation(fields: [salesRepId], references: [id], onDelete: SetNull)
+  salesRepId       Int?
+  users            User[]
+  inquiries        Inquiry[]
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([salesRepId])
 }
 
 // ---------------------------------------------------------------------------
@@ -144,11 +162,10 @@ model User {
   banReason     String?
   banExpires    DateTime?
   // portal / B2B profile fields
-  companyName   String?
   phone         String?
   whatsapp      String?
-  salesRep      SalesRep? @relation("ClientRep", fields: [salesRepId], references: [id], onDelete: SetNull)
-  salesRepId    Int?
+  company       Company?  @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  companyId     Int?
   // If this user IS a sales rep, the SalesRep record they log in as.
   repAccount    SalesRep? @relation("RepAccount")
   // Null until the invitee sets their password; stamped on first password set.
