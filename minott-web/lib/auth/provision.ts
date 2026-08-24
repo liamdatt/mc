@@ -23,7 +23,7 @@ export async function provisionUser(opts: {
   name: string;
   role: "customer" | "rep" | "admin";
   redirectTo: string;
-  data?: { companyName?: string; phone?: string; whatsapp?: string };
+  data?: { phone?: string; whatsapp?: string };
 }): Promise<ProvisionResult> {
   const { email, name, role, redirectTo, data } = opts;
   try {

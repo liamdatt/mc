@@ -17,7 +17,7 @@ import { auth } from "@/lib/auth/portal";
  * Use this in Server Components / the protected layout:
  *   const session = await getPortalSession();
  *   if (!session) redirect("/portal/sign-in");
- * The user object includes the B2B additional fields (companyName/phone/whatsapp).
+ * The user object includes the B2B additional fields (phone/whatsapp).
  */
 export async function getPortalSession() {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -36,27 +36,58 @@ export async function requireAdminSession() {
 }
 
 /**
- * The latest inquiries belonging to a portal user (newest first), with line
- * items and the linked product (for sample requests) included so the dashboard
- * and history pages can render type / status / date / item count.
+ * Customer inquiry reads are company-scoped: every user at a company shares
+ * the same history. Users without a company fall back to their own userId.
  */
-export function getUserInquiries(userId: string, take = 5) {
+export type CustomerScope = { userId: string; companyId: number | null };
+
+export async function getCustomerScope(userId: string): Promise<CustomerScope> {
+  const u = await db.user.findUnique({
+    where: { id: userId },
+    select: { companyId: true },
+  });
+  return { userId, companyId: u?.companyId ?? null };
+}
+
+/** The signed-in user's company record (or null). For display + scope in one read. */
+export async function getUserCompany(userId: string) {
+  const u = await db.user.findUnique({
+    where: { id: userId },
+    select: { company: true },
+  });
+  return u?.company ?? null;
+}
+
+function ownerWhere(
+  scope: CustomerScope,
+): import("@prisma/client").Prisma.InquiryWhereInput {
+  return scope.companyId != null
+    ? { companyId: scope.companyId }
+    : { userId: scope.userId };
+}
+
+/**
+ * The latest inquiries belonging to a portal user's scope (newest first), with
+ * line items and the linked product (for sample requests) included so the
+ * dashboard and history pages can render type / status / date / item count.
+ */
+export function getUserInquiries(scope: CustomerScope, take = 5) {
   return db.inquiry.findMany({
-    where: { userId },
+    where: ownerWhere(scope),
     orderBy: { createdAt: "desc" },
     include: { items: { include: { variant: true } }, product: true, variant: true },
     take,
   });
 }
 
-/** Total number of inquiries a portal user has submitted. */
-export function getUserInquiryCount(userId: string) {
-  return db.inquiry.count({ where: { userId } });
+/** Total number of inquiries in a portal user's scope. */
+export function getUserInquiryCount(scope: CustomerScope) {
+  return db.inquiry.count({ where: ownerWhere(scope) });
 }
 
-/** Number of a user's inquiries of a given type (e.g. QUOTE). */
-export function getUserInquiryCountByType(userId: string, type: string) {
-  return db.inquiry.count({ where: { userId, type } });
+/** Number of a scope's inquiries of a given type (e.g. QUOTE). */
+export function getUserInquiryCountByType(scope: CustomerScope, type: string) {
+  return db.inquiry.count({ where: { ...ownerWhere(scope), type } });
 }
 
 /**
@@ -73,8 +104,8 @@ export type HistoryFilters = {
   categorySlug?: string;
 };
 
-function buildHistoryWhere(userId: string, filters: HistoryFilters) {
-  const where: import("@prisma/client").Prisma.InquiryWhereInput = { userId };
+function buildHistoryWhere(scope: CustomerScope, filters: HistoryFilters) {
+  const where: import("@prisma/client").Prisma.InquiryWhereInput = { ...ownerWhere(scope) };
 
   if (filters.type) where.type = filters.type;
   if (filters.status) where.status = filters.status;
@@ -105,13 +136,13 @@ function buildHistoryWhere(userId: string, filters: HistoryFilters) {
 }
 
 /**
- * Full, filtered inquiry history for a portal user (newest first), with line
- * items + linked products (and their categories) for category linking and
- * reorder. Used by the history listing and the CSV export.
+ * Full, filtered inquiry history for a portal user's scope (newest first),
+ * with line items + linked products (and their categories) for category
+ * linking and reorder. Used by the history listing and the CSV export.
  */
-export function getUserHistory(userId: string, filters: HistoryFilters = {}) {
+export function getUserHistory(scope: CustomerScope, filters: HistoryFilters = {}) {
   return db.inquiry.findMany({
-    where: buildHistoryWhere(userId, filters),
+    where: buildHistoryWhere(scope, filters),
     orderBy: { createdAt: "desc" },
     include: {
       items: {
@@ -125,9 +156,9 @@ export function getUserHistory(userId: string, filters: HistoryFilters = {}) {
 
 /**
  * A single inquiry scoped to its owner. Returns `null` when the inquiry does
- * not exist OR is not owned by `userId` (callers map that to `notFound()`).
+ * not exist OR is not owned by the scope (callers map that to `notFound()`).
  */
-export async function getUserInquiryById(userId: string, id: number) {
+export async function getUserInquiryById(scope: CustomerScope, id: number) {
   const inquiry = await db.inquiry.findUnique({
     where: { id },
     include: {
@@ -138,19 +169,23 @@ export async function getUserInquiryById(userId: string, id: number) {
       variant: true,
     },
   });
-  if (!inquiry || inquiry.userId !== userId) return null;
-  return inquiry;
+  if (!inquiry) return null;
+  const owned =
+    scope.companyId != null
+      ? inquiry.companyId === scope.companyId
+      : inquiry.userId === scope.userId;
+  return owned ? inquiry : null;
 }
 
-/** Distinct categories referenced by a user's inquiries, for the history filter. */
-export async function getUserHistoryCategories(userId: string) {
+/** Distinct categories referenced by a scope's inquiries, for the history filter. */
+export async function getUserHistoryCategories(scope: CustomerScope) {
   const cats = await db.category.findMany({
     where: {
       products: {
         some: {
           OR: [
-            { inquiryItems: { some: { inquiry: { userId } } } },
-            { sampleInquiries: { some: { userId } } },
+            { inquiryItems: { some: { inquiry: ownerWhere(scope) } } },
+            { sampleInquiries: { some: ownerWhere(scope) } },
           ],
         },
       },
@@ -161,24 +196,17 @@ export async function getUserHistoryCategories(userId: string) {
   return cats;
 }
 
-/** List all portal customer accounts for the admin provisioning screen. */
-export function getPortalUsers() {
-  return db.user.findMany({
-    where: { role: "customer" },
+/** All customer companies with their users, for the admin management screen. */
+export function getPortalCompanies() {
+  return db.company.findMany({
     orderBy: { createdAt: "desc" },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      companyName: true,
-      phone: true,
-      whatsapp: true,
+    include: {
       salesRep: { select: { name: true } },
-      role: true,
-      activatedAt: true,
-      banned: true,
-      createdAt: true,
-      _count: { select: { inquiries: true } },
+      users: {
+        orderBy: { createdAt: "asc" },
+        select: { id: true, name: true, email: true, activatedAt: true, banned: true },
+      },
+      _count: { select: { users: true, inquiries: true } },
     },
   });
 }

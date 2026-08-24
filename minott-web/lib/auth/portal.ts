@@ -16,7 +16,7 @@ import { sendAccountInvite } from "@/lib/email/send-account-invite";
  *
  * Provisioning users (server-side, e.g. from a Server Action in the MEC
  * admin area): call `auth.api.createUser({ body: { email, password, name,
- * role, data: { companyName, phone, whatsapp } } })` WITHOUT passing
+ * role, data: { phone, whatsapp } } })` WITHOUT passing
  * `headers`. With no request headers the admin-plugin endpoint skips its
  * session/permission check, so our existing password-gated admin can create
  * portal users without itself being a BetterAuth admin. `auth.api.signUpEmail`
@@ -63,7 +63,6 @@ export const auth = betterAuth({
   },
   user: {
     additionalFields: {
-      companyName: { type: "string", required: false, input: true },
       phone: { type: "string", required: false, input: true },
       whatsapp: { type: "string", required: false, input: true },
     },

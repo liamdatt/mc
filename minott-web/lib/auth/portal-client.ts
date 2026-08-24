@@ -5,8 +5,8 @@ import type { PortalAuth } from "@/lib/auth/portal";
 /**
  * BetterAuth client for the customer/B2B portal, used from Client Components.
  *
- * `inferAdditionalFields` pulls the custom User fields (companyName, phone,
- * whatsapp) onto the typed session/user so client code is type-safe.
+ * `inferAdditionalFields` pulls the custom User fields (phone, whatsapp)
+ * onto the typed session/user so client code is type-safe.
  *
  * Usage (client component):
  *   import { portalAuthClient } from "@/lib/auth/portal-client";
