@@ -166,6 +166,7 @@ export async function updateCompanyUser(
   const name = str(formData, "name");
   const email = str(formData, "email").toLowerCase();
   if (!id) return { error: "Missing user id." };
+  if (!Number.isInteger(companyId)) return { error: "Missing company id." };
   if (!name) return { error: "Contact name is required." };
   if (!email) return { error: "Email is required." };
 
