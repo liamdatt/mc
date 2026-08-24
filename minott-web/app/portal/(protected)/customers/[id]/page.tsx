@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { getPortalSession } from "@/lib/portal";
 import { getSalesSession } from "@/lib/sales";
 import { AdminCompanyView } from "./AdminCompanyView";
-import { RepCustomerDetailView } from "./RepCustomerDetailView";
+import { RepCompanyDetailView } from "./RepCompanyDetailView";
 
 /**
  * Same role branch as the companies list: admins manage any company, reps
@@ -23,7 +23,7 @@ export default async function PortalCompanyDetailPage({
   if (session?.user.role === "admin") return <AdminCompanyView id={companyId} />;
   if (session?.user.role === "rep") {
     const sales = await getSalesSession();
-    if (sales) return <RepCustomerDetailView repId={sales.rep.id} id={String(companyId)} />;
+    if (sales) return <RepCompanyDetailView repId={sales.rep.id} companyId={companyId} />;
   }
   redirect("/portal");
 }

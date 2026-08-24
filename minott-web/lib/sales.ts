@@ -6,7 +6,7 @@ import type { HistoryFilters } from "@/lib/portal";
  * Sales-portal read module (reads only). `getSalesSession()` is the gate: a
  * valid BetterAuth session whose user has role="rep" AND an active linked
  * SalesRep. Returns the session + the rep record, or null. Every other helper
- * is scoped to a rep id so a rep can only ever see their own book of business.
+ * is scoped to a rep id so a rep can only ever see their own companies/quotes.
  */
 export async function getSalesSession() {
   const session = await getPortalSession();
@@ -19,36 +19,42 @@ export async function getSalesSession() {
   return { session, rep };
 }
 
-/** A rep's assigned customers (newest first) with their quote counts. */
-export function getRepCustomers(repId: number) {
-  return db.user.findMany({
+/** A rep's assigned companies (newest first) with users and quote counts. */
+export function getRepCompanies(repId: number) {
+  return db.company.findMany({
     where: { salesRepId: repId },
     orderBy: { createdAt: "desc" },
-    select: {
-      id: true, name: true, email: true, companyName: true,
-      phone: true, whatsapp: true, activatedAt: true, createdAt: true,
-      _count: { select: { inquiries: { where: { type: "QUOTE" } } } },
+    include: {
+      users: {
+        orderBy: { createdAt: "asc" },
+        select: { id: true, name: true, email: true, phone: true, activatedAt: true },
+      },
+      _count: {
+        select: { users: true, inquiries: { where: { type: "QUOTE" } } },
+      },
     },
   });
 }
 
-/** One of a rep's customers, or null if not theirs (maps to notFound()). */
-export async function getRepCustomerById(repId: number, id: string) {
-  const customer = await db.user.findUnique({
-    where: { id },
-    select: {
-      id: true, name: true, email: true, companyName: true,
-      phone: true, whatsapp: true, salesRepId: true, activatedAt: true,
+/** One of a rep's companies, or null if not theirs (maps to notFound()). */
+export async function getRepCompanyById(repId: number, companyId: number) {
+  const company = await db.company.findUnique({
+    where: { id: companyId },
+    include: {
+      users: {
+        orderBy: { createdAt: "asc" },
+        select: { id: true, name: true, email: true, phone: true, whatsapp: true, activatedAt: true },
+      },
     },
   });
-  if (!customer || customer.salesRepId !== repId) return null;
-  return customer;
+  if (!company || company.salesRepId !== repId) return null;
+  return company;
 }
 
 function buildRepQuoteWhere(repId: number, filters: HistoryFilters) {
   const where: import("@prisma/client").Prisma.InquiryWhereInput = {
     type: "QUOTE",
-    user: { salesRepId: repId },
+    companyRef: { salesRepId: repId },
   };
   if (filters.status) where.status = filters.status;
   if (filters.from || filters.to) {
@@ -66,27 +72,29 @@ function buildRepQuoteWhere(repId: number, filters: HistoryFilters) {
   return where;
 }
 
-/** A rep's customers' quote inquiries (newest first), filtered. */
+/** A rep's companies' quote inquiries (newest first), filtered. */
 export function getRepQuotes(repId: number, filters: HistoryFilters = {}) {
   return db.inquiry.findMany({
     where: buildRepQuoteWhere(repId, filters),
     orderBy: { createdAt: "desc" },
     include: {
-      user: { select: { name: true, companyName: true } },
+      user: { select: { name: true } },
+      companyRef: { select: { name: true } },
       items: { include: { variant: true } },
       _count: { select: { items: true } },
     },
   });
 }
 
-/** The most recent quotes across a rep's customers, for the dashboard feed. */
+/** The most recent quotes across a rep's companies, for the dashboard feed. */
 export function getLatestRepQuotes(repId: number, take = 8) {
   return db.inquiry.findMany({
-    where: { type: "QUOTE", user: { salesRepId: repId } },
+    where: { type: "QUOTE", companyRef: { salesRepId: repId } },
     orderBy: { createdAt: "desc" },
     take,
     include: {
-      user: { select: { name: true, companyName: true } },
+      user: { select: { name: true } },
+      companyRef: { select: { name: true } },
       _count: { select: { items: true } },
     },
   });
@@ -97,23 +105,25 @@ export async function getRepQuoteById(repId: number, id: number) {
   const quote = await db.inquiry.findUnique({
     where: { id },
     include: {
-      user: { select: { salesRepId: true, name: true, email: true, companyName: true, phone: true } },
+      user: { select: { name: true, email: true, phone: true } },
+      companyRef: { select: { name: true, salesRepId: true } },
       items: { include: { product: { include: { category: true } }, variant: true } },
       notes: { orderBy: { createdAt: "desc" } },
     },
   });
-  if (!quote || quote.type !== "QUOTE" || quote.user?.salesRepId !== repId) return null;
+  if (!quote || quote.type !== "QUOTE" || quote.companyRef?.salesRepId !== repId)
+    return null;
   return quote;
 }
 
 /** Dashboard tile counts for a rep. */
 export async function getRepStats(repId: number) {
   const [customers, openQuotes, totalQuotes] = await Promise.all([
-    db.user.count({ where: { salesRepId: repId } }),
+    db.company.count({ where: { salesRepId: repId } }),
     db.inquiry.count({
-      where: { type: "QUOTE", user: { salesRepId: repId }, status: { not: "CLOSED" } },
+      where: { type: "QUOTE", companyRef: { salesRepId: repId }, status: { not: "CLOSED" } },
     }),
-    db.inquiry.count({ where: { type: "QUOTE", user: { salesRepId: repId } } }),
+    db.inquiry.count({ where: { type: "QUOTE", companyRef: { salesRepId: repId } } }),
   ]);
   return { customers, openQuotes, totalQuotes };
 }

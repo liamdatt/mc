@@ -27,7 +27,7 @@ export async function RepDashboard({
   ]);
 
   const tiles = [
-    { label: "My customers", value: stats.customers, href: "/portal/customers" },
+    { label: "My companies", value: stats.customers, href: "/portal/customers" },
     { label: "Open quotes", value: stats.openQuotes, href: "/portal/quotes" },
     { label: "Total quotes", value: stats.totalQuotes, href: "/portal/quotes" },
   ];
@@ -86,9 +86,9 @@ export async function RepDashboard({
                   >
                     {q.user?.name ?? q.name}
                   </Link>
-                  {q.user?.companyName ? (
+                  {q.companyRef?.name ? (
                     <span className="block text-xs text-mec-ink/50">
-                      {q.user.companyName}
+                      {q.companyRef.name}
                     </span>
                   ) : null}
                 </td>

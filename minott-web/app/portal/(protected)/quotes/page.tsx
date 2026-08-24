@@ -66,7 +66,7 @@ export default async function SalesQuotesPage({
               <tr key={q.id} className="border-b border-black/5 hover:bg-mec-mist/50">
                 <td className="px-4 py-3">
                   <Link href={`/portal/quotes/${q.id}`} className="font-semibold hover:text-mec-red">{q.user?.name ?? q.name}</Link>
-                  {q.user?.companyName ? <span className="block text-xs text-mec-ink/50">{q.user.companyName}</span> : null}
+                  {q.companyRef?.name ? <span className="block text-xs text-mec-ink/50">{q.companyRef.name}</span> : null}
                 </td>
                 <td className="px-4 py-3 text-mec-ink/70">{q._count.items}</td>
                 <td className="px-4 py-3 text-mec-ink/70">{INQUIRY_STATUS_LABELS[q.status] ?? q.status}</td>

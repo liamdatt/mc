@@ -13,37 +13,36 @@ function str(formData: FormData, key: string): string {
 }
 
 /**
- * Update one of the signed-in rep's customers' profile fields. The rep is
- * re-derived from the session and the target customer's salesRepId is verified
- * against it — an id from the form is never trusted. Email and rep-assignment
+ * Update one of the signed-in rep's companies' profile fields. The rep is
+ * re-derived from the session and the company's salesRepId is verified against
+ * it — an id from the form is never trusted. Rep assignment and portal users
  * stay admin-only.
  */
-export async function updateRepCustomer(
+export async function updateRepCompany(
   _prev: RepCustomerState,
   formData: FormData,
 ): Promise<RepCustomerState> {
   const sales = await getSalesSession();
   if (!sales) redirect("/portal");
 
-  const id = str(formData, "id");
+  const id = Number(formData.get("id"));
   const name = str(formData, "name");
-  if (!id) return { error: "Missing customer id." };
-  if (!name) return { error: "Contact name is required." };
+  if (!Number.isInteger(id)) return { error: "Missing company id." };
+  if (!name) return { error: "Company name is required." };
 
-  const customer = await db.user.findUnique({
+  const company = await db.company.findUnique({
     where: { id },
     select: { salesRepId: true },
   });
-  if (!customer || customer.salesRepId !== sales.rep.id)
-    return { error: "That customer is not assigned to you." };
+  if (!company || company.salesRepId !== sales.rep.id)
+    return { error: "That company is not assigned to you." };
 
-  await db.user.update({
+  await db.company.update({
     where: { id },
     data: {
       name,
-      companyName: str(formData, "companyName") || null,
-      phone: str(formData, "phone") || null,
-      whatsapp: str(formData, "whatsapp") || null,
+      industry: str(formData, "industry") || null,
+      location: str(formData, "location") || null,
     },
   });
 
@@ -55,9 +54,9 @@ export async function updateRepCustomer(
 async function assertRepOwnsQuote(repId: number, inquiryId: number) {
   const quote = await db.inquiry.findUnique({
     where: { id: inquiryId },
-    select: { type: true, user: { select: { salesRepId: true } } },
+    select: { type: true, companyRef: { select: { salesRepId: true } } },
   });
-  if (!quote || quote.type !== "QUOTE" || quote.user?.salesRepId !== repId) return false;
+  if (!quote || quote.type !== "QUOTE" || quote.companyRef?.salesRepId !== repId) return false;
   return true;
 }
 

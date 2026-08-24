@@ -68,7 +68,7 @@ export default async function SalesQuoteDetailPage({
           <section className="rounded-md border border-black/10 bg-mec-pure p-5">
             <h2 className="text-xs font-semibold uppercase tracking-[0.1em] text-mec-ink/60">Customer</h2>
             <p className="mt-3 font-semibold">{quote.user?.name ?? quote.name}</p>
-            {quote.user?.companyName ? <p className="text-sm text-mec-ink/60">{quote.user.companyName}</p> : null}
+            {quote.companyRef?.name ? <p className="text-sm text-mec-ink/60">{quote.companyRef.name}</p> : null}
             <p className="mt-2 text-sm"><a href={`mailto:${quote.user?.email ?? quote.email}`} className="text-mec-red hover:underline">{quote.user?.email ?? quote.email}</a></p>
             {quote.user?.phone ? <p className="text-sm text-mec-ink/70">{quote.user.phone}</p> : null}
           </section>
