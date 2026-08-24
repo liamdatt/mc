@@ -42,6 +42,7 @@ model Product {
   variants         ProductVariant[]
   inquiryItems     InquiryItem[]
   sampleInquiries  Inquiry[]        @relation("SampleInquiryProduct")
+  deals            Deal[]
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
 }
@@ -63,8 +64,30 @@ model ProductVariant {
   sortOrder       Int           @default(0)
   inquiryItems    InquiryItem[]
   sampleInquiries Inquiry[]     @relation("SampleInquiryVariant")
+  deals           Deal[]
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
+
+  @@index([productId])
+}
+
+model Deal {
+  id          Int             @id @default(autoincrement())
+  type        String // "PERCENT" | "CUSTOM"
+  percentOff  Int? // 1-99; required when type == "PERCENT"
+  badgeText   String? // required when type == "CUSTOM"; rendered verbatim
+  description String? // optional card copy; falls back to product.shortDescription
+  product     Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId   Int
+  // null = whole product. SetNull: a SKU deal whose variant is deleted
+  // degrades to a product-level deal (admins can edit/remove it).
+  variant     ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  variantId   Int?
+  active      Boolean         @default(true)
+  endsAt      DateTime? // optional auto-expiry; null = until deactivated
+  sortOrder   Int             @default(0)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
 
   @@index([productId])
 }
@@ -101,6 +124,9 @@ model InquiryItem {
   variantId   Int?
   productName String
   quantity    Int             @default(1)
+  // Badge text of the deal live at submission time (e.g. "15% OFF"). Plain
+  // snapshot, no FK — survives deal edits/expiry/deletion.
+  dealLabel   String?
 }
 
 model InquiryNote {
