@@ -65,8 +65,9 @@ async function buildData(
   const endsAtRaw = str(formData, "endsAt"); // <input type="date"> — "" = none
   let endsAt: Date | null = null;
   if (endsAtRaw) {
-    // End of the given day, so "ends Aug 30" includes Aug 30.
-    const d = new Date(`${endsAtRaw}T23:59:59`);
+    // End of the given day in Jamaica time (fixed UTC-05:00, no DST), so
+    // "ends Aug 30" includes all of Aug 30 in America/Jamaica.
+    const d = new Date(`${endsAtRaw}T23:59:59-05:00`);
     if (Number.isNaN(d.getTime())) return { error: "Invalid end date." };
     endsAt = d;
   }
