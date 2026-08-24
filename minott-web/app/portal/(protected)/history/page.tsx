@@ -93,7 +93,7 @@ export default async function PortalHistoryPage({
               Your history
             </h1>
             <p className="mt-3 text-mec-ink/65">
-              Every quote, sample request and message you&apos;ve submitted.
+              Every quote, sample request and message from you and your company.
             </p>
           </div>
           <a

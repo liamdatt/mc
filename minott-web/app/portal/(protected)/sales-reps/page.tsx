@@ -26,7 +26,7 @@ export default async function AdminSalesRepsPage() {
       </div>
 
       <p className="mt-3 max-w-2xl text-sm text-mec-ink/60">
-        Reps can be assigned to portal customers from the customer&apos;s edit
+        Reps can be assigned to customer companies from the company&apos;s
         page. Inactive reps keep their existing companies but are hidden from
         the assignment dropdown.
       </p>

@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 import { getSalesSession } from "@/lib/sales";
 import { INQUIRY_STATUS } from "@/lib/constants";
 
-export type RepCustomerState = { error?: string; success?: boolean };
+export type RepCompanyState = { error?: string; success?: boolean };
 
 function str(formData: FormData, key: string): string {
   return String(formData.get(key) ?? "").trim();
@@ -19,9 +19,9 @@ function str(formData: FormData, key: string): string {
  * stay admin-only.
  */
 export async function updateRepCompany(
-  _prev: RepCustomerState,
+  _prev: RepCompanyState,
   formData: FormData,
-): Promise<RepCustomerState> {
+): Promise<RepCompanyState> {
   const sales = await getSalesSession();
   if (!sales) redirect("/portal");
 

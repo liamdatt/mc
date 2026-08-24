@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import Link from "next/link";
-import { updateRepCompany, type RepCustomerState } from "@/lib/actions/sales";
+import { updateRepCompany, type RepCompanyState } from "@/lib/actions/sales";
 
 const field = "mt-1 w-full rounded-sm border border-black/15 bg-mec-pure px-3 py-2 text-mec-ink outline-none focus:border-mec-red";
 const label = "block text-xs font-semibold uppercase tracking-[0.1em] text-mec-ink/70";
@@ -16,7 +16,7 @@ export type RepCompanyFormData = {
 
 /** Rep-editable company profile. Users and rep assignment are admin-managed. */
 export function RepCompanyForm({ company }: { company: RepCompanyFormData }) {
-  const [state, formAction, pending] = useActionState<RepCustomerState, FormData>(updateRepCompany, {});
+  const [state, formAction, pending] = useActionState<RepCompanyState, FormData>(updateRepCompany, {});
   return (
     <form action={formAction} className="max-w-xl space-y-5">
       <input type="hidden" name="id" value={company.id} />

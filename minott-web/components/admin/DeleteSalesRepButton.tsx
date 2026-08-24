@@ -20,7 +20,7 @@ export function DeleteSalesRepButton({
       onSubmit={(e) => {
         const detail =
           clientCount > 0
-            ? ` ${clientCount} client(s) will become Unassigned.`
+            ? ` ${clientCount} ${clientCount === 1 ? "company" : "companies"} will become Unassigned.`
             : "";
         if (!window.confirm(`Delete this sales rep?${detail}`))
           e.preventDefault();

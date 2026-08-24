@@ -10,7 +10,7 @@ import { SHOWROOM_ADDRESS, WHATSAPP_URL } from "@/lib/constants";
 export const metadata: Metadata = {
   title: "Your Profile | Minott Equipment & Chemicals",
   description:
-    "View and update your company and contact details for the Minott Equipment & Chemicals customer portal.",
+    "View and update your personal contact details for the Minott Equipment & Chemicals customer portal.",
 };
 
 export default async function PortalProfilePage() {
@@ -29,8 +29,8 @@ export default async function PortalProfilePage() {
           Your profile
         </h1>
         <p className="mt-3 text-mec-ink/65">
-          Keep your company and contact details current so our team can reach
-          the right person on every quote.
+          Keep your personal contact details current so our team can reach
+          you on every quote. Your company details are managed by MEC.
         </p>
       </RevealOnScroll>
 

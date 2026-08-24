@@ -27,7 +27,7 @@ export async function sendInquiryEmails(inquiryId: number): Promise<void> {
     const settings = await getEmailSettings();
     if (!settings.fromEmail || !settings.generalInboxEmail) {
       console.warn(
-        `[email] fromEmail/generalInboxEmail not configured in /admin/settings — skipping emails for inquiry ${inquiryId}`,
+        `[email] fromEmail/generalInboxEmail not configured in /portal/settings — skipping emails for inquiry ${inquiryId}`,
       );
       return;
     }
@@ -79,7 +79,7 @@ export async function sendInquiryEmails(inquiryId: number): Promise<void> {
     // 1) Internal notification (rep + CC inbox, or inbox alone). Both rep and
     // admin recipients land in the unified portal, just at different routes.
     try {
-      // Rep-routed inquiries are always quotes (only submitQuote attaches a userId), so this link always resolves.
+      // Rep-routed inquiries are always quotes (only submitQuote attaches a companyId), so this link always resolves.
       const ctaUrl = repRouted
         ? `${baseUrl}/portal/quotes/${inquiry.id}`
         : `${baseUrl}/portal/requests`;

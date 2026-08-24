@@ -56,6 +56,10 @@ export async function createCompany(
   if (contactEmail && !contactName)
     return { error: "Contact name is required when inviting a first user." };
 
+  const names = await db.company.findMany({ select: { name: true } });
+  if (names.some((c) => c.name.trim().toLowerCase() === fields.name.toLowerCase()))
+    return { error: "A company with that name already exists." };
+
   let company;
   try {
     company = await db.company.create({ data: { ...fields, salesRepId } });
@@ -79,10 +83,16 @@ export async function createCompany(
       return {
         error: `Company created, but inviting the first user failed: ${result.error} Add them from the company page.`,
       };
-    await db.user.update({
-      where: { id: result.userId },
-      data: { companyId: company.id },
-    });
+    try {
+      await db.user.update({
+        where: { id: result.userId },
+        data: { companyId: company.id },
+      });
+    } catch {
+      return {
+        error: `Company created and ${contactEmail} invited, but linking them to the company failed. Add them again from the company page to finish linking.`,
+      };
+    }
   }
 
   revalidatePath("/portal/customers");
@@ -120,7 +130,12 @@ export async function updateCompany(
   return {};
 }
 
-/** Provision + invite an additional portal user under an existing company. */
+/**
+ * Provision + invite an additional portal user under an existing company. If
+ * the email already belongs to an unlinked (companyId=null) customer — left
+ * behind by an earlier failed link — adopt it into this company instead of
+ * hard-failing.
+ */
 export async function addCompanyUser(
   _prev: CompanyActionState,
   formData: FormData,
@@ -139,6 +154,31 @@ export async function addCompanyUser(
   const company = await db.company.findUnique({ where: { id: companyId }, select: { id: true } });
   if (!company) return { error: "Company not found." };
 
+  const existing = await db.user.findUnique({
+    where: { email },
+    select: { id: true, role: true, companyId: true, activatedAt: true },
+  });
+  if (existing) {
+    if (existing.role !== "customer" || existing.companyId !== null) {
+      return { error: "An account with that email already exists." };
+    }
+    // Adopt the unlinked customer into this company.
+    await db.user.update({
+      where: { id: existing.id },
+      data: {
+        companyId,
+        name,
+        phone: phone || null,
+        whatsapp: whatsapp || null,
+      },
+    });
+    if (!existing.activatedAt) {
+      await sendInvite(email, INVITE_REDIRECT.customer);
+    }
+    revalidatePath(`/portal/customers/${companyId}`);
+    return {};
+  }
+
   const result = await provisionUser({
     email,
     name,
@@ -148,7 +188,13 @@ export async function addCompanyUser(
   });
   if (!result.ok) return { error: result.error };
 
-  await db.user.update({ where: { id: result.userId }, data: { companyId } });
+  try {
+    await db.user.update({ where: { id: result.userId }, data: { companyId } });
+  } catch {
+    return {
+      error: `${email} was invited, but linking them to the company failed. Add them again to finish linking.`,
+    };
+  }
 
   revalidatePath(`/portal/customers/${companyId}`);
   return {};
@@ -172,7 +218,7 @@ export async function updateCompanyUser(
 
   try {
     const { count } = await db.user.updateMany({
-      where: { id, role: "customer" },
+      where: { id, role: "customer", companyId },
       data: {
         name,
         email,

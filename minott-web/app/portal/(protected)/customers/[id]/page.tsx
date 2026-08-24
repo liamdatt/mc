@@ -1,5 +1,4 @@
-import { redirect } from "next/navigation";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getPortalSession } from "@/lib/portal";
 import { getSalesSession } from "@/lib/sales";
 import { AdminCompanyView } from "./AdminCompanyView";

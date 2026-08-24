@@ -43,7 +43,7 @@ const QUICK_LINKS = [
   {
     href: "/portal/history",
     label: "View history",
-    description: "See every quote and request you've submitted.",
+    description: "See every quote and request from your company.",
     icon: FileText,
   },
 ];
