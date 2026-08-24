@@ -48,5 +48,7 @@ next-env.d.ts
 # env
 .env
 
-# Admin-uploaded image overrides (persist via a mounted volume in prod)
+# Persisted app data: SQLite DB + admin-uploaded images (mounted volume in prod)
+/data/
+# Legacy location for admin-uploaded images (pre data-volume move)
 /public/images/uploads/

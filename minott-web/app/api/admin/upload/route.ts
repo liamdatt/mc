@@ -7,10 +7,12 @@ import { db } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-// Uploaded images live in a dir SEPARATE from the git-committed product images
-// (public/images/products), so a deploy can mount a persistent volume here
-// without masking the committed catalog images.
-const UPLOAD_DIR = path.join(process.cwd(), "public/images/uploads");
+// Uploaded images go on the persisted data volume (alongside the SQLite file),
+// NOT under public/ — `next start` only serves public/ assets that existed at
+// build time, and the container filesystem is wiped on every redeploy. The
+// route handler at app/images/uploads/[name] serves them back under the same
+// public URL prefix, so imagePath values in the DB stay valid.
+const UPLOAD_DIR = path.join(process.cwd(), "data/uploads");
 const PUBLIC_PREFIX = "/images/uploads";
 const MAX_BYTES = 6 * 1024 * 1024;
 const EXT: Record<string, string> = {
@@ -63,7 +65,7 @@ export async function POST(req: Request) {
     return Response.json({ error: "Target not found." }, { status: 404 });
   }
 
-  revalidatePath("/admin/products");
+  revalidatePath("/portal/products");
   revalidatePath("/products");
   return Response.json({ path: imagePath });
 }

@@ -40,6 +40,10 @@ const MODULES: { categorySlug: string; listings: SeedListing[] }[] = [
 ];
 
 const PLACEHOLDER = "/images/product-placeholder.png";
+// Admin-uploaded images (stored on the data volume, served by the
+// app/images/uploads route). This importer runs on every prod container start,
+// so it must NOT clobber these back to the catalog/placeholder image.
+const UPLOAD_PREFIX = "/images/uploads/";
 
 const dbUrl =
   process.env.DATABASE_URL?.replace("file:", "") ??
@@ -103,9 +107,14 @@ async function main() {
         active: true,
         sortOrder: sort,
       };
+      const existing = await db.product.findUnique({
+        where: { slug },
+        select: { imagePath: true },
+      });
+      const keepImage = existing?.imagePath.startsWith(UPLOAD_PREFIX) ?? false;
       const listing = await db.product.upsert({
         where: { slug },
-        update: listingData,
+        update: keepImage ? { ...listingData, imagePath: undefined } : listingData,
         create: { slug, ...listingData },
       });
       sort += 1;
@@ -133,9 +142,17 @@ async function main() {
           active: true,
           sortOrder: vsort,
         };
+        const existingVariant = await db.productVariant.findUnique({
+          where: { sku: V.sku },
+          select: { imagePath: true },
+        });
+        const keepVariantImage =
+          existingVariant?.imagePath?.startsWith(UPLOAD_PREFIX) ?? false;
         await db.productVariant.upsert({
           where: { sku: V.sku },
-          update: variantData,
+          update: keepVariantImage
+            ? { ...variantData, imagePath: undefined }
+            : variantData,
           create: { sku: V.sku, ...variantData },
         });
         vsort += 1;
