@@ -37,7 +37,10 @@ export async function requireAdminSession() {
 
 /**
  * Customer inquiry reads are company-scoped: every user at a company shares
- * the same history. Users without a company fall back to their own userId.
+ * the same history, PLUS any inquiries the user personally authored before
+ * joining (or outside) that company — so pre-company history and company
+ * reassignment never orphan a user's own submissions. Users without a
+ * company fall back to their own userId only.
  */
 export type CustomerScope = { userId: string; companyId: number | null };
 
@@ -58,11 +61,17 @@ export async function getUserCompany(userId: string) {
   return u?.company ?? null;
 }
 
+/**
+ * The scope's ownership predicate: a company user matches their company's
+ * inquiries OR any inquiry they personally authored (covers inquiries
+ * submitted before joining the company, or after a reassignment). A user
+ * with no company matches only their own inquiries.
+ */
 function ownerWhere(
   scope: CustomerScope,
 ): import("@prisma/client").Prisma.InquiryWhereInput {
   return scope.companyId != null
-    ? { companyId: scope.companyId }
+    ? { OR: [{ companyId: scope.companyId }, { userId: scope.userId }] }
     : { userId: scope.userId };
 }
 
@@ -105,7 +114,13 @@ export type HistoryFilters = {
 };
 
 function buildHistoryWhere(scope: CustomerScope, filters: HistoryFilters) {
-  const where: import("@prisma/client").Prisma.InquiryWhereInput = { ...ownerWhere(scope) };
+  // ownerWhere may itself be an OR (company scope). The category filter below
+  // is also an OR. Both are kept in a top-level AND array so neither clobbers
+  // the other — the final predicate is (owner-scope) AND (other filters).
+  const and: import("@prisma/client").Prisma.InquiryWhereInput[] = [
+    ownerWhere(scope),
+  ];
+  const where: import("@prisma/client").Prisma.InquiryWhereInput = { AND: and };
 
   if (filters.type) where.type = filters.type;
   if (filters.status) where.status = filters.status;
@@ -126,10 +141,12 @@ function buildHistoryWhere(scope: CustomerScope, filters: HistoryFilters) {
   if (filters.categorySlug) {
     // Match a quote whose line items reference a product in the category, or a
     // sample request whose product is in the category.
-    where.OR = [
-      { items: { some: { product: { category: { slug: filters.categorySlug } } } } },
-      { product: { category: { slug: filters.categorySlug } } },
-    ];
+    and.push({
+      OR: [
+        { items: { some: { product: { category: { slug: filters.categorySlug } } } } },
+        { product: { category: { slug: filters.categorySlug } } },
+      ],
+    });
   }
 
   return where;
@@ -171,9 +188,8 @@ export async function getUserInquiryById(scope: CustomerScope, id: number) {
   });
   if (!inquiry) return null;
   const owned =
-    scope.companyId != null
-      ? inquiry.companyId === scope.companyId
-      : inquiry.userId === scope.userId;
+    (scope.companyId != null && inquiry.companyId === scope.companyId) ||
+    inquiry.userId === scope.userId;
   return owned ? inquiry : null;
 }
 
