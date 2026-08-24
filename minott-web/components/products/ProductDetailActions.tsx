@@ -4,6 +4,7 @@ import { useState } from "react";
 import { FileText } from "lucide-react";
 import {
   VariantSelector,
+  type ProductDealBadge,
   type SelectableVariant,
 } from "./VariantSelector";
 import { SampleRequestForm } from "./SampleRequestForm";
@@ -13,6 +14,7 @@ export function ProductDetailActions({
   variants,
   selected,
   onSelect,
+  dealBadges = [],
 }: {
   product: {
     id: number;
@@ -28,6 +30,8 @@ export function ProductDetailActions({
   variants: SelectableVariant[];
   selected: SelectableVariant;
   onSelect: (variant: SelectableVariant) => void;
+  /** Live deal badges for this product (pre-filtered by the server page). */
+  dealBadges?: ProductDealBadge[];
 }) {
   const [showSample, setShowSample] = useState(false);
 
@@ -45,6 +49,7 @@ export function ProductDetailActions({
         optionLabel={product.optionLabel}
         selected={selected}
         onSelect={onSelect}
+        dealBadges={dealBadges}
       />
 
       <div className="mt-5 flex flex-wrap gap-3">

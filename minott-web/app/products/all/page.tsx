@@ -13,6 +13,7 @@ import {
 import { Section } from "@/components/primitives/Section";
 import { Container } from "@/components/primitives/Container";
 import { Eyebrow } from "@/components/primitives/Eyebrow";
+import { getLiveDealBadges, pickBadge, type DealBadge } from "@/lib/deals";
 import { ProductCard, type ProductCardData } from "@/components/products/ProductCard";
 import { ProductSubsection } from "@/components/products/ProductSubsection";
 import { ProductFilterSidebar } from "@/components/products/ProductFilterSidebar";
@@ -32,7 +33,7 @@ type ProductWithCategory = Awaited<
 >[number];
 
 /** Map a Prisma product (with category) to the shape ProductCard expects. */
-function toRow(p: ProductWithCategory): ProductCardData {
+function toRow(p: ProductWithCategory, badges: DealBadge[]): ProductCardData {
   const variantCount = p.variants.length;
   const first = p.variants[0] ?? null;
   const onlyVariant =
@@ -60,6 +61,11 @@ function toRow(p: ProductWithCategory): ProductCardData {
     categoryName: p.category.name,
     variantCount,
     onlyVariant,
+    dealLabel: pickBadge(
+      badges,
+      p.id,
+      p.variants.map((v) => v.id),
+    ),
   };
 }
 
@@ -82,13 +88,15 @@ export default async function AllProductsPage({
 
   // Filter-option pools are scoped to the active category when one is set, so
   // e.g. Volume/Colour only surface values that actually exist for Chemicals.
-  const [categories, forms, industries, volumes, colors] = await Promise.all([
-    getCategoriesWithCounts(),
-    getFormOptions(),
-    getIndustryOptions(sp.category),
-    getVolumeOptions(sp.category),
-    getColorOptions(sp.category),
-  ]);
+  const [categories, forms, industries, volumes, colors, dealBadges] =
+    await Promise.all([
+      getCategoriesWithCounts(),
+      getFormOptions(),
+      getIndustryOptions(sp.category),
+      getVolumeOptions(sp.category),
+      getColorOptions(sp.category),
+      getLiveDealBadges(),
+    ]);
 
   const activeCategory = categories.find((c) => c.slug === sp.category);
 
@@ -136,11 +144,13 @@ export default async function AllProductsPage({
       slug: c.slug,
       name: c.name,
       description: c.description,
-      rows: products.filter((p) => p.category.slug === c.slug).map(toRow),
+      rows: products
+        .filter((p) => p.category.slug === c.slug)
+        .map((p) => toRow(p, dealBadges)),
     }));
     ungrouped = products
       .filter((p) => !childSlugs.has(p.category.slug))
-      .map(toRow);
+      .map((p) => toRow(p, dealBadges));
   }
 
   return (
@@ -250,7 +260,7 @@ export default async function AllProductsPage({
             ) : (
               <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
                 {products.map((p) => (
-                  <ProductCard key={p.id} product={toRow(p)} />
+                  <ProductCard key={p.id} product={toRow(p, dealBadges)} />
                 ))}
               </div>
             )}

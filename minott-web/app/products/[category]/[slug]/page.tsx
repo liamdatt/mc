@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getProductBySlugInCategory } from "@/lib/products";
+import { getLiveDealBadges } from "@/lib/deals";
 import { Section } from "@/components/primitives/Section";
 import { Container } from "@/components/primitives/Container";
 import { ProductDetailView } from "@/components/products/ProductDetailView";
@@ -28,8 +29,16 @@ export default async function ProductDetailPage({
   params: Promise<{ category: string; slug: string }>;
 }) {
   const { category, slug } = await params;
-  const product = await getProductBySlugInCategory(category, slug);
+  const [product, badges] = await Promise.all([
+    getProductBySlugInCategory(category, slug),
+    getLiveDealBadges(),
+  ]);
   if (!product) notFound();
+
+  // Pre-filtered to this product so the client selector never imports lib/deals.
+  const productBadges = badges
+    .filter((b) => b.productId === product.id && b.label)
+    .map((b) => ({ variantId: b.variantId, label: b.label }));
 
   return (
     <>
@@ -73,6 +82,7 @@ export default async function ProductDetailPage({
             label: v.label,
             imagePath: v.imagePath,
           }))}
+          dealBadges={productBadges}
         />
       </Container>
     </Section>

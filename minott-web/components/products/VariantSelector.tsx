@@ -3,6 +3,10 @@
 import { useMemo } from "react";
 import { AddToQuoteButton } from "@/components/quote/AddToQuoteButton";
 
+/** A live deal badge already filtered down to one product by the server page.
+ *  `variantId: null` means the badge applies to the whole product. */
+export type ProductDealBadge = { variantId: number | null; label: string };
+
 export type SelectableVariant = {
   id: number;
   sku: string;
@@ -27,6 +31,8 @@ type Props = {
    *  hero image and other UI can react to the same selection). */
   selected: SelectableVariant;
   onSelect: (variant: SelectableVariant) => void;
+  /** Live deal badges for this product (pre-filtered by the server page). */
+  dealBadges?: ProductDealBadge[];
 };
 
 const pill =
@@ -36,7 +42,14 @@ const pillOff = "border-mec-mist text-mec-ink hover:border-mec-ink";
 const groupLabel =
   "mb-2 font-mono text-xs uppercase tracking-[0.12em] text-mec-graphite";
 
-export function VariantSelector({ listing, variants, optionLabel, selected, onSelect }: Props) {
+export function VariantSelector({
+  listing,
+  variants,
+  optionLabel,
+  selected,
+  onSelect,
+  dealBadges = [],
+}: Props) {
   const sizeHeading = optionLabel?.trim() || "Size";
   const sizes = useMemo(
     () => [...new Set(variants.map((v) => v.size).filter((s): s is string => !!s))],
@@ -53,6 +66,19 @@ export function VariantSelector({ listing, variants, optionLabel, selected, onSe
   const variantFor = (s: string | null, p: string) =>
     variants.find((v) => (v.size ?? null) === s && v.packType === p);
   const comboExists = (s: string | null, p: string) => !!variantFor(s, p);
+
+  // A size pill is marked when ANY SKU of that size carries a variant-scoped deal.
+  const sizeHasDeal = (s: string) =>
+    dealBadges.some(
+      (b) =>
+        b.variantId != null &&
+        variants.some((v) => (v.size ?? null) === s && v.id === b.variantId),
+    );
+
+  // Next to the SKU line we only surface the SKU-scoped badge — the
+  // product-level one already sits beside the title.
+  const selectedSkuBadge =
+    dealBadges.find((b) => b.variantId === selected.id) ?? null;
 
   function pickSize(s: string) {
     // Keep the current pack type if this size offers it, else snap to the first
@@ -84,6 +110,15 @@ export function VariantSelector({ listing, variants, optionLabel, selected, onSe
                 className={`${pill} ${size === s ? pillOn : pillOff}`}
               >
                 {s}
+                {sizeHasDeal(s) && (
+                  <span
+                    className={`ml-1.5 rounded-pill px-1.5 text-[9px] font-bold ${
+                      size === s ? "bg-mec-pure/20" : "bg-mec-red/10 text-mec-red"
+                    }`}
+                  >
+                    DEAL
+                  </span>
+                )}
               </button>
             ))}
           </div>
@@ -113,9 +148,16 @@ export function VariantSelector({ listing, variants, optionLabel, selected, onSe
         </div>
       )}
 
-      <p className="font-mono text-sm text-mec-ink/50">
-        SKU: {selected.sku}
-        {selected.label ? ` · ${selected.label}` : ""}
+      <p className="flex flex-wrap items-center gap-2 font-mono text-sm text-mec-ink/50">
+        <span>
+          SKU: {selected.sku}
+          {selected.label ? ` · ${selected.label}` : ""}
+        </span>
+        {selectedSkuBadge && (
+          <span className="inline-flex items-center rounded-pill bg-mec-red px-2.5 py-1 font-body text-[10px] font-semibold uppercase tracking-[0.12em] text-mec-pure">
+            {selectedSkuBadge.label}
+          </span>
+        )}
       </p>
 
       <AddToQuoteButton

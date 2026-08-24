@@ -24,6 +24,8 @@ export type ProductCardData = {
   categoryName: string;
   variantCount: number;
   onlyVariant: { id: number; sku: string; label: string } | null;
+  /** Live deal badge text for this card (variant-scoped deals count too). */
+  dealLabel: string | null;
 };
 
 export function ProductCard({ product }: { product: ProductCardData }) {
@@ -45,6 +47,11 @@ export function ProductCard({ product }: { product: ProductCardData }) {
         {product.isChemical && (
           <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-pill bg-mec-ink/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-mec-pure">
             <FileText className="h-3 w-3" aria-hidden /> SDS
+          </span>
+        )}
+        {product.dealLabel && (
+          <span className="absolute right-3 top-3 inline-flex items-center rounded-pill bg-mec-red px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-mec-pure">
+            {product.dealLabel}
           </span>
         )}
       </Link>
