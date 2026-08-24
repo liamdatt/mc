@@ -120,8 +120,8 @@ export async function updateSalesRep(
 
 /**
  * Delete a rep: removes the directory record AND its login account (their
- * clients are un-assigned via User.salesRepId SetNull; the rep-account FK is
- * SetNull, so we delete the login explicitly).
+ * companies are un-assigned via Company.salesRepId SetNull; the rep-account FK
+ * is SetNull, so we delete the login explicitly).
  */
 export async function deleteSalesRep(
   _prev: SalesRepFormState,

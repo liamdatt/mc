@@ -124,6 +124,7 @@ function fetchInquiries(where: { createdAt?: { gte: Date; lt?: Date } }) {
       createdAt: true,
       name: true,
       company: true,
+      companyRef: { select: { name: true } },
       email: true,
       product: {
         select: { name: true, category: { select: { name: true } } },
@@ -290,7 +291,11 @@ export async function getAdminAnalytics(
   const companies = new Map<string, CompanyStat>();
   for (const inq of inquiries) {
     if (inq.type !== INQUIRY_TYPE.QUOTE) continue;
-    const name = inq.company?.trim() || inq.name.trim() || inq.email;
+    const name =
+      inq.companyRef?.name?.trim() ||
+      inq.company?.trim() ||
+      inq.name.trim() ||
+      inq.email;
     let stat = companies.get(name.toLowerCase());
     if (!stat) {
       stat = { name, quotes: 0, units: 0, lastAt: inq.createdAt };

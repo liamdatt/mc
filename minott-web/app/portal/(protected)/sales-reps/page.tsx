@@ -8,7 +8,7 @@ export default async function AdminSalesRepsPage() {
   const reps = await db.salesRep.findMany({
     orderBy: { name: "asc" },
     include: {
-      _count: { select: { clients: true } },
+      _count: { select: { companies: true } },
       user: { select: { activatedAt: true } },
     },
   });
@@ -27,7 +27,7 @@ export default async function AdminSalesRepsPage() {
 
       <p className="mt-3 max-w-2xl text-sm text-mec-ink/60">
         Reps can be assigned to portal customers from the customer&apos;s edit
-        page. Inactive reps keep their existing clients but are hidden from
+        page. Inactive reps keep their existing companies but are hidden from
         the assignment dropdown.
       </p>
 
@@ -38,7 +38,7 @@ export default async function AdminSalesRepsPage() {
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">Email</th>
               <th className="px-4 py-3">Phone</th>
-              <th className="px-4 py-3">Clients</th>
+              <th className="px-4 py-3">Companies</th>
               <th className="px-4 py-3">Portal</th>
               <th className="px-4 py-3">
                 <span className="sr-only">Actions</span>
@@ -74,7 +74,7 @@ export default async function AdminSalesRepsPage() {
                 </td>
                 <td className="px-4 py-3 text-mec-ink/70">{r.phone ?? "—"}</td>
                 <td className="px-4 py-3 text-mec-ink/70">
-                  {r._count.clients}
+                  {r._count.companies}
                 </td>
                 <td className="px-4 py-3">
                   {!r.user ? (
@@ -94,7 +94,7 @@ export default async function AdminSalesRepsPage() {
                   </Link>
                   <DeleteSalesRepButton
                     id={r.id}
-                    clientCount={r._count.clients}
+                    clientCount={r._count.companies}
                   />
                 </td>
               </tr>
