@@ -97,15 +97,13 @@ export function ProductForm({
 
       <div>
         <span className={label}>Listing image</span>
-        {p.id != null && (
-          <div className="mt-2">
-            <ImageUpload
-              current={imagePath}
-              productId={p.id}
-              onUploaded={setImagePath}
-            />
-          </div>
-        )}
+        <div className="mt-2">
+          <ImageUpload
+            current={imagePath}
+            productId={p.id}
+            onUploaded={setImagePath}
+          />
+        </div>
         <input
           name="imagePath"
           value={imagePath}
@@ -114,8 +112,11 @@ export function ProductForm({
           placeholder="/images/products/…"
         />
         <p className="mt-1 text-xs text-mec-ink/50">
-          Uploading replaces the image immediately. The path field is for manual
-          overrides (e.g. an existing catalog image).
+          {p.id != null
+            ? "Uploading replaces the image immediately."
+            : "The uploaded image is saved with the product when you create it."}{" "}
+          The path field is for manual overrides (e.g. an existing catalog
+          image).
         </p>
       </div>
 

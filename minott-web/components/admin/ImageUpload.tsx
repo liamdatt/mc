@@ -9,7 +9,9 @@ const PLACEHOLDER = "/images/product-placeholder.png";
 /**
  * Shows the current image and an "Upload / replace" control. Posts the file to
  * /api/admin/upload with the target (productId OR variantId); the route stores
- * the image and updates the DB, then we refresh to reflect it.
+ * the image and updates the DB, then we refresh to reflect it. With no target
+ * (create-product form) the file is only stored — the caller receives the path
+ * via onUploaded and is responsible for saving it.
  */
 export function ImageUpload({
   current,

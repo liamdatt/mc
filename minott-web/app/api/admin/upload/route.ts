@@ -44,11 +44,11 @@ export async function POST(req: Request) {
     return Response.json({ error: "Image must be under 6 MB." }, { status: 400 });
   }
 
+  // Target is optional: with no productId/variantId the file is stored and its
+  // path returned for the caller to save itself (the create-product form, where
+  // no row exists yet to attach the image to).
   const productId = Number(form.get("productId")) || null;
   const variantId = Number(form.get("variantId")) || null;
-  if (!productId && !variantId) {
-    return Response.json({ error: "Missing upload target." }, { status: 400 });
-  }
 
   const name = `${randomUUID()}.${ext}`;
   await mkdir(UPLOAD_DIR, { recursive: true });
