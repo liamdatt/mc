@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { resendInvite, type ResendInviteState } from "@/lib/actions/customers";
+import { resendInvite, type ResendInviteState } from "@/lib/actions/companies";
 
 /**
  * Re-sends the set-password invite for a provisioned user. Shown on the customer

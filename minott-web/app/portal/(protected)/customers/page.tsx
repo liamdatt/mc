@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getPortalSession } from "@/lib/portal";
 import { getSalesSession } from "@/lib/sales";
-import { AdminCustomersView } from "./AdminCustomersView";
+import { AdminCompaniesView } from "./AdminCompaniesView";
 import { RepCustomersView } from "./RepCustomersView";
 
 /**
@@ -11,7 +11,7 @@ import { RepCustomersView } from "./RepCustomersView";
  */
 export default async function PortalCustomersPage() {
   const session = await getPortalSession();
-  if (session?.user.role === "admin") return <AdminCustomersView />;
+  if (session?.user.role === "admin") return <AdminCompaniesView />;
   if (session?.user.role === "rep") {
     const sales = await getSalesSession();
     if (sales) return <RepCustomersView repId={sales.rep.id} />;

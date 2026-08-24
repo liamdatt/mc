@@ -1,25 +1,29 @@
 import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { getPortalSession } from "@/lib/portal";
 import { getSalesSession } from "@/lib/sales";
-import { AdminCustomerEditView } from "./AdminCustomerEditView";
+import { AdminCompanyView } from "./AdminCompanyView";
 import { RepCustomerDetailView } from "./RepCustomerDetailView";
 
 /**
- * Same role branch as the customers list: admins edit any portal customer,
- * reps view/edit one of their own (ownership-checked, notFound() if not
- * theirs). Everyone else goes to their dashboard.
+ * Same role branch as the companies list: admins manage any company, reps
+ * view/edit one of their own (ownership-checked, notFound() if not theirs).
+ * The [id] segment is the numeric Company.id.
  */
-export default async function PortalCustomerDetailPage({
+export default async function PortalCompanyDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const companyId = Number(id);
+  if (!Number.isInteger(companyId)) notFound();
+
   const session = await getPortalSession();
-  if (session?.user.role === "admin") return <AdminCustomerEditView id={id} />;
+  if (session?.user.role === "admin") return <AdminCompanyView id={companyId} />;
   if (session?.user.role === "rep") {
     const sales = await getSalesSession();
-    if (sales) return <RepCustomerDetailView repId={sales.rep.id} id={id} />;
+    if (sales) return <RepCustomerDetailView repId={sales.rep.id} id={String(companyId)} />;
   }
   redirect("/portal");
 }
