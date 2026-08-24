@@ -33,11 +33,15 @@ export function ProductDetailView({
 }: Props) {
   const [selected, setSelected] = useState<SelectableVariant>(variants[0]);
 
-  // The SKU-scoped badge wins when its variant is selected; otherwise the
-  // product-level badge shows (mirrors pickBadgeForVariant server-side).
+  // The SKU-scoped badge wins when its variant is selected, then the
+  // product-level badge. The last-resort any-variant fallback keeps the header
+  // in step with the listing card, which advertises a deal on ANY of the
+  // product's SKUs — without it a pack-scoped deal on a non-default variant
+  // (single-size product: no pills, no DEAL marker) would vanish here.
   const badge =
     dealBadges.find((b) => b.variantId === selected?.id) ??
     dealBadges.find((b) => b.variantId == null) ??
+    dealBadges.find((b) => b.variantId != null) ??
     null;
 
   // The hero image follows the chosen variant, falling back to the listing image.
