@@ -12,6 +12,7 @@ const NAV_BY_ROLE: Record<string, NavItem[]> = {
     { href: "/portal/analytics", label: "Analytics" },
     { href: "/portal/products", label: "Products" },
     { href: "/portal/categories", label: "Categories" },
+    { href: "/portal/deals", label: "Deals" },
     { href: "/portal/requests", label: "Requests" },
     { href: "/portal/customers", label: "Customers" },
     { href: "/portal/sales-reps", label: "Sales Reps" },
