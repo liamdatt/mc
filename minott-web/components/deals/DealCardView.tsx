@@ -15,9 +15,6 @@ export function DealCardView({ deal }: { deal: DealCard }) {
   return (
     <div className="flex flex-col overflow-hidden rounded-md border border-white/10 bg-white/[0.03]">
       <div className="relative aspect-square bg-white/5">
-        <span className="absolute left-3 top-3 rounded-pill bg-mec-red px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-mec-pure">
-          {dealLabel(deal)}
-        </span>
         <Image
           src={imagePath}
           alt={deal.product.name}
@@ -25,6 +22,9 @@ export function DealCardView({ deal }: { deal: DealCard }) {
           sizes="(min-width:1280px) 20vw, (min-width:768px) 30vw, 50vw"
           className="object-contain p-4"
         />
+        <span className="absolute left-3 top-3 z-10 rounded-pill bg-mec-red px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-mec-pure">
+          {dealLabel(deal)}
+        </span>
       </div>
       <div className="flex flex-1 flex-col p-5">
         <p className="eyebrow inline-flex items-center text-mec-red">
