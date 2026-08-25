@@ -75,6 +75,14 @@ export function VariantSelector({
         variants.some((v) => (v.size ?? null) === s && v.id === b.variantId),
     );
 
+  // A pack-type pill is marked when ANY SKU of that pack type carries a variant-scoped deal.
+  const packHasDeal = (p: string) =>
+    dealBadges.some(
+      (b) =>
+        b.variantId != null &&
+        variants.some((v) => v.packType === p && v.id === b.variantId),
+    );
+
   // Next to the SKU line we only surface the SKU-scoped badge — the
   // product-level one already sits beside the title.
   const selectedSkuBadge =
@@ -141,6 +149,15 @@ export function VariantSelector({
                   className={`${pill} ${packType === p ? pillOn : pillOff}`}
                 >
                   {p}
+                  {packHasDeal(p) && (
+                    <span
+                      className={`ml-1.5 rounded-pill px-1.5 text-[9px] font-bold ${
+                        packType === p ? "bg-mec-pure/20" : "bg-mec-red/10 text-mec-red"
+                      }`}
+                    >
+                      DEAL
+                    </span>
+                  )}
                 </button>
               );
             })}

@@ -50,7 +50,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
           </span>
         )}
         {product.dealLabel && (
-          <span className="absolute right-3 top-3 inline-flex items-center rounded-pill bg-mec-red px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-mec-pure">
+          <span className="absolute right-3 top-3 z-10 inline-flex items-center rounded-pill bg-mec-red px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-mec-pure">
             {product.dealLabel}
           </span>
         )}

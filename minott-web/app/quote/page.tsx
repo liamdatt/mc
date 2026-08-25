@@ -28,8 +28,9 @@ export default async function QuotePage() {
 
   // Live deal chips for the cart. Nothing is stored client-side: the cart
   // holds ids only, and the labels are looked up fresh on every render.
-  // Empty CUSTOM labels are filtered out so we never render a blank chip.
-  const badges = (await getLiveDealBadges()).filter((b) => b.label);
+  // getLiveDealBadges() already filters out empty CUSTOM labels, so we never
+  // render a blank chip.
+  const badges = await getLiveDealBadges();
   // Rows arrive sorted by sortOrder asc and the lowest sortOrder wins, so
   // build the maps in reverse: earlier rows overwrite later ones.
   const reversed = [...badges].reverse();

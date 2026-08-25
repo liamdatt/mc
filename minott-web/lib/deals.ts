@@ -44,12 +44,13 @@ export async function getFeaturedDeals(): Promise<{
   const where: Prisma.DealWhereInput = {
     ...liveDealWhere(),
     product: { is: { active: true } },
+    AND: [{ OR: [{ variantId: null }, { variant: { is: { active: true } } }] }],
   };
   const [deals, total] = await Promise.all([
     db.deal.findMany({
       where,
       include: cardInclude,
-      orderBy: { sortOrder: "asc" },
+      orderBy: [{ sortOrder: "asc" }, { id: "asc" }],
       take: 4,
     }),
     db.deal.count({ where }),
@@ -60,9 +61,13 @@ export async function getFeaturedDeals(): Promise<{
 /** Every live deal (active products only), for the /deals page. */
 export function getAllLiveDeals(): Promise<DealCard[]> {
   return db.deal.findMany({
-    where: { ...liveDealWhere(), product: { is: { active: true } } },
+    where: {
+      ...liveDealWhere(),
+      product: { is: { active: true } },
+      AND: [{ OR: [{ variantId: null }, { variant: { is: { active: true } } }] }],
+    },
     include: cardInclude,
-    orderBy: { sortOrder: "asc" },
+    orderBy: [{ sortOrder: "asc" }, { id: "asc" }],
   });
 }
 
@@ -78,14 +83,16 @@ export async function getLiveDealBadges(): Promise<DealBadge[]> {
       badgeText: true,
       sortOrder: true,
     },
-    orderBy: { sortOrder: "asc" },
+    orderBy: [{ sortOrder: "asc" }, { id: "asc" }],
   });
-  return rows.map((d) => ({
-    productId: d.productId,
-    variantId: d.variantId,
-    label: dealLabel(d),
-    sortOrder: d.sortOrder,
-  }));
+  return rows
+    .map((d) => ({
+      productId: d.productId,
+      variantId: d.variantId,
+      label: dealLabel(d),
+      sortOrder: d.sortOrder,
+    }))
+    .filter((b) => b.label);
 }
 
 /**
