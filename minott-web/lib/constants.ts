@@ -28,3 +28,29 @@ export const INQUIRY_TYPE_LABELS: Record<string, string> = {
 export const WHATSAPP_URL = "https://wa.me/18760000000";
 
 export const SHOWROOM_ADDRESS = "14½ Retirement Rd";
+
+export const MATCH_STATUS = {
+  VERIFIED: "VERIFIED",
+  POTENTIAL_MATCH: "POTENTIAL_MATCH",
+  NO_MATCH: "NO_MATCH",
+} as const;
+
+export const MATCH_STATUS_LABELS: Record<string, string> = {
+  VERIFIED: "Verified",
+  POTENTIAL_MATCH: "Potential match",
+  NO_MATCH: "New customer",
+};
+
+export const APPLICATION_STATUS = {
+  SUBMITTED: "SUBMITTED",
+  INFO_REQUESTED: "INFO_REQUESTED",
+  APPROVED: "APPROVED",
+  REJECTED: "REJECTED",
+} as const;
+
+export const APPLICATION_STATUS_LABELS: Record<string, string> = {
+  SUBMITTED: "Submitted",
+  INFO_REQUESTED: "Info requested",
+  APPROVED: "Approved",
+  REJECTED: "Rejected",
+};

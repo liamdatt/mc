@@ -1,7 +1,8 @@
 import type { NextRequest } from "next/server";
 
 /**
- * Tiny in-memory fixed-window rate limiter. Acceptable because the site is
+ * Tiny in-memory fixed-window rate limiter keyed by an arbitrary string (IP, or
+ * `bucket:ip` for per-feature limits). Acceptable because the site is
  * deployed as a single long-running Node server (`next start`), so this Map is
  * shared across all requests in the one process. Not suitable for multi-instance
  * deployments — revisit if the app is ever horizontally scaled.
@@ -20,17 +21,22 @@ function prune(now: number): void {
   }
 }
 
-export function checkRateLimit(ip: string): { ok: boolean; retryAfter?: number } {
+export function checkRateLimit(
+  key: string,
+  opts: { max?: number; windowMs?: number } = {},
+): { ok: boolean; retryAfter?: number } {
+  const max = opts.max ?? MAX_REQUESTS;
+  const windowMs = opts.windowMs ?? WINDOW_MS;
   const now = Date.now();
-  const existing = buckets.get(ip);
+  const existing = buckets.get(key);
 
   if (!existing || now >= existing.resetAt) {
     if (buckets.size >= MAX_BUCKETS) prune(now);
-    buckets.set(ip, { count: 1, resetAt: now + WINDOW_MS });
+    buckets.set(key, { count: 1, resetAt: now + windowMs });
     return { ok: true };
   }
 
-  if (existing.count >= MAX_REQUESTS) {
+  if (existing.count >= max) {
     return { ok: false, retryAfter: Math.ceil((existing.resetAt - now) / 1000) };
   }
 
