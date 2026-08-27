@@ -6,6 +6,7 @@ import { Prisma } from "@prisma/client";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { db } from "@/lib/db";
 import { provisionUser, sendInvite, INVITE_REDIRECT } from "@/lib/auth/provision";
+import { normalizeAccountNumber } from "@/lib/customer-match";
 
 export type CompanyActionState = { error?: string };
 
@@ -26,9 +27,10 @@ function isUniqueViolation(e: unknown): boolean {
 }
 
 function companyFields(formData: FormData) {
+  const acct = str(formData, "mecAccountNumber");
   return {
     name: str(formData, "name"),
-    mecAccountNumber: str(formData, "mecAccountNumber") || null,
+    mecAccountNumber: acct ? normalizeAccountNumber(acct) : null,
     industry: str(formData, "industry") || null,
     location: str(formData, "location") || null,
   };

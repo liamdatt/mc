@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import Link from "next/link";
 import { updateRepCompany, type RepCompanyState } from "@/lib/actions/sales";
+import { INDUSTRIES } from "@/lib/industries";
 
 const field = "mt-1 w-full rounded-sm border border-black/15 bg-mec-pure px-3 py-2 text-mec-ink outline-none focus:border-mec-red";
 const label = "block text-xs font-semibold uppercase tracking-[0.1em] text-mec-ink/70";
@@ -26,7 +27,15 @@ export function RepCompanyForm({ company }: { company: RepCompanyFormData }) {
       </label>
       <label className={label}>
         Industry
-        <input name="industry" defaultValue={company.industry ?? ""} className={field} />
+        <select name="industry" defaultValue={company.industry ?? ""} className={field}>
+          <option value="">— Select —</option>
+          {company.industry && !(INDUSTRIES as readonly string[]).includes(company.industry) && (
+            <option value={company.industry}>{company.industry} (legacy)</option>
+          )}
+          {INDUSTRIES.map((i) => (
+            <option key={i} value={i}>{i}</option>
+          ))}
+        </select>
       </label>
       <label className={label}>
         Location

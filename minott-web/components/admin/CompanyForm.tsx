@@ -7,6 +7,7 @@ import {
   updateCompany,
   type CompanyActionState,
 } from "@/lib/actions/companies";
+import { INDUSTRIES } from "@/lib/industries";
 
 const field =
   "mt-1 w-full rounded-sm border border-black/15 bg-mec-pure px-3 py-2 text-mec-ink outline-none focus:border-mec-red";
@@ -59,7 +60,15 @@ export function CompanyForm({
       </label>
       <label className={label}>
         Industry
-        <input name="industry" defaultValue={company?.industry ?? ""} className={field} />
+        <select name="industry" defaultValue={company?.industry ?? ""} className={field}>
+          <option value="">— Select —</option>
+          {company?.industry && !(INDUSTRIES as readonly string[]).includes(company.industry) && (
+            <option value={company.industry}>{company.industry} (legacy)</option>
+          )}
+          {INDUSTRIES.map((i) => (
+            <option key={i} value={i}>{i}</option>
+          ))}
+        </select>
       </label>
       <label className={label}>
         Location
