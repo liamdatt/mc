@@ -8,8 +8,20 @@ export type AccountInviteProps = {
   url: string;
   /** Which portal they're being onboarded to. */
   portal: "customer" | "sales" | "admin";
-  /** First-time activation vs. a later password reset — changes the copy. */
-  isInvite: boolean;
+  /** First-time activation, a later password reset, or an approved application — changes the copy. */
+  variant: "invite" | "reset" | "approved";
+};
+
+const salesInvite = {
+  heading: "Set up your MEC sales portal access",
+  body: "You've been added as a sales representative for Minott Equipment & Chemicals. Set your password to access your sales portal, where you can see your customers and their quotes.",
+  cta: "Set your password",
+};
+
+const adminInvite = {
+  heading: "Set up your MEC admin access",
+  body: "You've been added as an administrator for Minott Equipment & Chemicals. Set your password to access the Accounts Portal, where you can manage products, requests, customers and the team.",
+  cta: "Set your password",
 };
 
 const COPY = {
@@ -24,35 +36,34 @@ const COPY = {
       body: "We received a request to reset the password for your Minott customer portal account. Choose a new password below.",
       cta: "Choose a new password",
     },
-  },
-  sales: {
-    invite: {
-      heading: "Set up your MEC sales portal access",
-      body: "You've been added as a sales representative for Minott Equipment & Chemicals. Set your password to access your sales portal, where you can see your customers and their quotes.",
+    approved: {
+      heading: "Your MEC account has been approved",
+      body: "Your Minott Equipment & Chemicals account application has been approved. Set your password to activate your account — the quote you submitted is already waiting in your history.",
       cta: "Set your password",
     },
+  },
+  sales: {
+    invite: salesInvite,
     reset: {
       heading: "Reset your sales portal password",
       body: "We received a request to reset the password for your MEC sales portal account. Choose a new password below.",
       cta: "Choose a new password",
     },
+    approved: { ...salesInvite },
   },
   admin: {
-    invite: {
-      heading: "Set up your MEC admin access",
-      body: "You've been added as an administrator for Minott Equipment & Chemicals. Set your password to access the Accounts Portal, where you can manage products, requests, customers and the team.",
-      cta: "Set your password",
-    },
+    invite: adminInvite,
     reset: {
       heading: "Reset your MEC admin password",
       body: "We received a request to reset the password for your MEC admin account. Choose a new password below.",
       cta: "Choose a new password",
     },
+    approved: { ...adminInvite },
   },
 } as const;
 
-export function AccountInvite({ name, url, portal, isInvite }: AccountInviteProps) {
-  const copy = COPY[portal][isInvite ? "invite" : "reset"];
+export function AccountInvite({ name, url, portal, variant }: AccountInviteProps) {
+  const copy = COPY[portal][variant];
   return (
     <EmailLayout preview={copy.heading}>
       <Heading as="h1" style={{ color: emailColors.ink, fontSize: 22, margin: "0 0 8px" }}>
@@ -81,9 +92,9 @@ export function AccountInvite({ name, url, portal, isInvite }: AccountInviteProp
       </Button>
       <Hr style={{ borderColor: "rgba(0,0,0,0.08)", margin: "20px 0" }} />
       <Text style={{ color: emailColors.graphite, fontSize: 13, margin: 0 }}>
-        This link expires in 72 hours. If it lapses, ask a MEC administrator to
-        resend your invitation. If you weren&apos;t expecting this email, you can
-        safely ignore it.
+        This link expires in 72 hours. If it lapses, request a new one from the
+        sign-in page or ask a MEC administrator to resend it. If you weren&apos;t
+        expecting this email, you can safely ignore it.
       </Text>
     </EmailLayout>
   );

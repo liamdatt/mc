@@ -35,8 +35,15 @@ export async function sendAccountInvite(
     }
 
     const portal =
-      user.role === "rep" ? "sales" : user.role === "admin" ? "admin" : "customer";
-    const isInvite = user.activatedAt === null;
+      user.role === "rep" ? "sales" : user.role === "admin" || user.role === "ar" ? "admin" : "customer";
+    const approvedApp =
+      user.activatedAt === null && user.role === "customer"
+        ? await db.customerApplication.findFirst({
+            where: { userId, status: "APPROVED" },
+            select: { id: true },
+          })
+        : null;
+    const variant = approvedApp ? "approved" : user.activatedAt === null ? "invite" : "reset";
     const from = settings.fromName
       ? `${settings.fromName} <${settings.fromEmail}>`
       : settings.fromEmail;
@@ -46,7 +53,7 @@ export async function sendAccountInvite(
     // which is only a nested dependency of `@react-email/components` and is not
     // resolvable from Resend's own module path in the production build.
     const email = (
-      <AccountInvite name={user.name} url={url} portal={portal} isInvite={isInvite} />
+      <AccountInvite name={user.name} url={url} portal={portal} variant={variant} />
     );
     const [html, text] = await Promise.all([
       render(email),
@@ -57,13 +64,18 @@ export async function sendAccountInvite(
       from,
       to: [user.email],
       replyTo: settings.generalInboxEmail ?? undefined,
-      subject: isInvite
-        ? portal === "sales"
-          ? "Set up your MEC sales portal access"
-          : portal === "admin"
-            ? "Set up your MEC admin access"
-            : "Activate your Minott account"
-        : "Reset your Minott password",
+      subject:
+        variant === "approved"
+          ? "Your MEC account has been approved"
+          : variant === "invite"
+            ? portal === "sales"
+              ? "Set up your MEC sales portal access"
+              : portal === "admin"
+                ? user.role === "ar"
+                  ? "Set up your MEC accounts access"
+                  : "Set up your MEC admin access"
+                : "Activate your Minott account"
+            : "Reset your Minott password",
       html,
       text,
     });

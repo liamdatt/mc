@@ -41,6 +41,12 @@ export default async function PortalSignInPage({
 
           <SignInForm next={safeNext} />
 
+          <p className="mt-4 text-sm">
+            <Link href="/portal/forgot-password" className="font-semibold text-mec-red hover:underline">
+              Forgot your password?
+            </Link>
+          </p>
+
           <p className="mt-8 border-t border-mec-ink/10 pt-6 text-sm text-mec-ink/65">
             Need access? Portal accounts are set up by our team.{" "}
             <a

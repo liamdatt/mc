@@ -27,8 +27,8 @@ export function SetPasswordForm({
   if (!token) {
     return (
       <p className="mt-6 rounded-sm border border-mec-red/30 bg-mec-red/5 px-4 py-3 text-sm text-mec-red">
-        This link is invalid or has expired. Ask a MEC administrator to resend
-        your invitation.
+        This link is invalid or has expired. Request a new one from the
+        sign-in page, or ask a MEC administrator to resend your invitation.
       </p>
     );
   }
@@ -56,7 +56,7 @@ export function SetPasswordForm({
       setPending(false);
       setError(
         authError.code === "INVALID_TOKEN"
-          ? "This link is invalid or has expired. Ask a MEC administrator to resend your invitation."
+          ? "This link is invalid or has expired. Request a new one from the sign-in page, or ask a MEC administrator to resend your invitation."
           : authError.message || "We couldn't set your password. Please try again.",
       );
       return;

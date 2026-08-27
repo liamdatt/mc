@@ -10,10 +10,11 @@ export const metadata: Metadata = {
 export default async function SetPasswordPage({
   searchParams,
 }: {
-  searchParams: Promise<{ token?: string; portal?: string; error?: string }>;
+  searchParams: Promise<{ token?: string; portal?: string; error?: string; mode?: string }>;
 }) {
-  const { token, portal, error } = await searchParams;
+  const { token, portal, error, mode } = await searchParams;
   const portalKind = portal === "sales" ? "sales" : portal === "admin" ? "admin" : "customer";
+  const isReset = mode === "reset";
   // BetterAuth redirects here with ?error=INVALID_TOKEN when the link is bad.
   const validToken = error ? null : token ?? null;
 
@@ -25,11 +26,12 @@ export default async function SetPasswordPage({
             {portalKind === "sales" ? "Sales Portal" : portalKind === "admin" ? "Admin" : "Customer Portal"}
           </Eyebrow>
           <h1 className="mt-4 font-display-tight text-4xl leading-none tracking-tight md:text-5xl">
-            Set your password
+            {isReset ? "Reset your password" : "Set your password"}
           </h1>
           <p className="mt-3 text-sm text-mec-ink/65">
-            Choose a password to activate your Minott Equipment &amp; Chemicals
-            account.
+            {isReset
+              ? "Choose a new password for your Minott Equipment & Chemicals account."
+              : "Choose a password to activate your Minott Equipment & Chemicals account."}
           </p>
           <SetPasswordForm token={validToken} portal={portalKind} />
         </div>

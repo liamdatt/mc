@@ -6,6 +6,8 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth/portal";
 import { db } from "@/lib/db";
 import { getPortalSession } from "@/lib/portal";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { currentRequestIp } from "@/lib/request-ip";
 
 /**
  * Sign the current portal user out and return them to the sign-in page.
@@ -54,4 +56,35 @@ export async function updatePortalProfile(
   revalidatePath("/portal/profile");
   revalidatePath("/portal");
   return { success: true };
+}
+
+export type ForgotState = { done?: boolean; error?: string };
+
+/**
+ * Self-service password reset for every portal role. Always resolves to the
+ * same `done` state whether or not the email exists (no account enumeration).
+ * Per-IP limited: 5 requests / 15 min.
+ */
+export async function requestPasswordResetEmail(
+  _prev: ForgotState,
+  formData: FormData,
+): Promise<ForgotState> {
+  const ip = await currentRequestIp();
+  const limit = checkRateLimit(`forgot:${ip}`, { max: 5, windowMs: 15 * 60_000 });
+  if (!limit.ok) return { error: "Too many attempts. Please try again later." };
+
+  const email = str(formData, "email").toLowerCase();
+  if (!email) return { error: "Email is required." };
+
+  const user = await db.user.findUnique({ where: { email }, select: { role: true } });
+  const portal =
+    user?.role === "rep" ? "sales" : user?.role === "admin" || user?.role === "ar" ? "admin" : "customer";
+  try {
+    await auth.api.requestPasswordReset({
+      body: { email, redirectTo: `/set-password?portal=${portal}&mode=reset` },
+    });
+  } catch (e) {
+    console.error("[forgot] requestPasswordReset failed:", e);
+  }
+  return { done: true };
 }
