@@ -81,15 +81,15 @@ export async function sendInquiryEmails(
     const typeLabel = INQUIRY_TYPE_LABELS[inquiry.type] ?? "Inquiry";
     const baseUrl = process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
     const classification =
-      inquiry.type === "QUOTE" && !inquiry.userId
-        ? inquiry.matchStatus === "POTENTIAL_MATCH"
-          ? "Potential existing customer — unverified (verification required before linking)"
-          : inquiry.matchStatus === "NO_MATCH"
-            ? "New customer — New Customer Form pending"
-            : opts.verifiedNow
-              ? "Existing customer — verified"
+      inquiry.type === "QUOTE" && opts.verifiedNow
+        ? "Existing customer — verified"
+        : inquiry.type === "QUOTE" && !inquiry.userId
+          ? inquiry.matchStatus === "POTENTIAL_MATCH"
+            ? "Potential existing customer — unverified (verification required before linking)"
+            : inquiry.matchStatus === "NO_MATCH"
+              ? "New customer — New Customer Form pending"
               : null
-        : null;
+          : null;
     const registerUrl =
       inquiry.type === "QUOTE" && inquiry.matchStatus === "NO_MATCH" && inquiry.ref
         ? `${baseUrl}/register?ref=${inquiry.ref}`
