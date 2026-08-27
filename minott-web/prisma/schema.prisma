@@ -93,25 +93,33 @@ model Deal {
 }
 
 model Inquiry {
-  id         Int             @id @default(autoincrement())
-  type       String // "QUOTE" | "SAMPLE" | "CONTACT"
-  status     String          @default("NEW") // "NEW" | "IN_PROGRESS" | "CLOSED"
-  name       String
-  company    String?
-  email      String
-  phone      String?
-  message    String?
-  product    Product?        @relation("SampleInquiryProduct", fields: [productId], references: [id], onDelete: SetNull)
-  productId  Int?
-  variant    ProductVariant? @relation("SampleInquiryVariant", fields: [variantId], references: [id], onDelete: SetNull)
-  variantId  Int?
-  user       User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
-  userId     String?
-  companyRef Company?        @relation(fields: [companyId], references: [id], onDelete: SetNull)
-  companyId  Int?
-  items      InquiryItem[]
-  notes      InquiryNote[]
-  createdAt  DateTime        @default(now())
+  id               Int                  @id @default(autoincrement())
+  type             String // "QUOTE" | "SAMPLE" | "CONTACT"
+  status           String               @default("NEW") // "NEW" | "IN_PROGRESS" | "CLOSED"
+  name             String
+  company          String?
+  email            String
+  phone            String?
+  message          String?
+  product          Product?             @relation("SampleInquiryProduct", fields: [productId], references: [id], onDelete: SetNull)
+  productId        Int?
+  variant          ProductVariant?      @relation("SampleInquiryVariant", fields: [variantId], references: [id], onDelete: SetNull)
+  variantId        Int?
+  user             User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId           String?
+  companyRef       Company?             @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  companyId        Int?
+  // --- guest funnel (spec §3) ---
+  industry         String? // guest quotes only; validated against lib/industries.ts
+  location         String? // guest quotes only
+  ref              String?              @unique // opaque token; guest QUOTE rows only
+  matchStatus      String? // "VERIFIED" | "POTENTIAL_MATCH" | "NO_MATCH"; null for CONTACT/SAMPLE + legacy rows
+  matchedCompany   Company?             @relation("InquiryMatchHint", fields: [matchedCompanyId], references: [id], onDelete: SetNull)
+  matchedCompanyId Int? // admin-only hint from the matcher; NEVER rendered to guests
+  application      CustomerApplication?
+  items            InquiryItem[]
+  notes            InquiryNote[]
+  createdAt        DateTime             @default(now())
 }
 
 model InquiryItem {
@@ -140,6 +148,32 @@ model InquiryNote {
   @@index([inquiryId])
 }
 
+model CustomerApplication {
+  id              Int       @id @default(autoincrement())
+  inquiry         Inquiry   @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+  inquiryId       Int       @unique
+  companyName     String
+  industry        String
+  location        String
+  contactName     String
+  email           String
+  phone           String
+  notes           String?
+  status          String    @default("SUBMITTED") // "SUBMITTED" | "INFO_REQUESTED" | "APPROVED" | "REJECTED"
+  decisionNote    String? // rejection reason, or the info request
+  decidedAt       DateTime?
+  decidedBy       User?     @relation("ApplicationDecider", fields: [decidedByUserId], references: [id], onDelete: SetNull)
+  decidedByUserId String?
+  company         Company?  @relation(fields: [companyId], references: [id], onDelete: SetNull) // created on approval
+  companyId       Int?
+  user            User?     @relation("ApplicationContact", fields: [userId], references: [id], onDelete: SetNull) // provisioned on approval
+  userId          String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([status])
+}
+
 model SalesRep {
   id        Int       @id @default(autoincrement())
   name      String
@@ -155,17 +189,19 @@ model SalesRep {
 }
 
 model Company {
-  id               Int       @id @default(autoincrement())
+  id               Int                   @id @default(autoincrement())
   name             String
-  mecAccountNumber String?   @unique
+  mecAccountNumber String?               @unique
   industry         String?
   location         String?
-  salesRep         SalesRep? @relation(fields: [salesRepId], references: [id], onDelete: SetNull)
+  salesRep         SalesRep?             @relation(fields: [salesRepId], references: [id], onDelete: SetNull)
   salesRepId       Int?
   users            User[]
   inquiries        Inquiry[]
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  matchHints       Inquiry[]             @relation("InquiryMatchHint")
+  applications     CustomerApplication[]
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
 
   @@index([salesRepId])
 }
@@ -177,30 +213,32 @@ model Company {
 // ---------------------------------------------------------------------------
 
 model User {
-  id            String    @id
-  name          String
-  email         String    @unique
-  emailVerified Boolean   @default(false)
-  image         String?
+  id                  String                @id
+  name                String
+  email               String                @unique
+  emailVerified       Boolean               @default(false)
+  image               String?
   // admin-plugin fields
-  role          String    @default("customer")
-  banned        Boolean?  @default(false)
-  banReason     String?
-  banExpires    DateTime?
+  role                String                @default("customer")
+  banned              Boolean?              @default(false)
+  banReason           String?
+  banExpires          DateTime?
   // portal / B2B profile fields
-  phone         String?
-  whatsapp      String?
-  company       Company?  @relation(fields: [companyId], references: [id], onDelete: SetNull)
-  companyId     Int?
+  phone               String?
+  whatsapp            String?
+  company             Company?              @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  companyId           Int?
   // If this user IS a sales rep, the SalesRep record they log in as.
-  repAccount    SalesRep? @relation("RepAccount")
+  repAccount          SalesRep?             @relation("RepAccount")
   // Null until the invitee sets their password; stamped on first password set.
-  activatedAt   DateTime?
-  sessions      Session[]
-  accounts      Account[]
-  inquiries     Inquiry[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  activatedAt         DateTime?
+  sessions            Session[]
+  accounts            Account[]
+  inquiries           Inquiry[]
+  decidedApplications CustomerApplication[] @relation("ApplicationDecider")
+  contactApplications CustomerApplication[] @relation("ApplicationContact")
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
 
   @@map("user")
 }
