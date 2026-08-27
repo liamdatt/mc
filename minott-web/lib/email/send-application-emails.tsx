@@ -5,6 +5,8 @@ import { getEmailSettings } from "@/lib/settings";
 import { db } from "@/lib/db";
 import { ApplicationReceived } from "@/emails/application-received";
 import { ApplicationNotification } from "@/emails/application-notification";
+import { ApplicationInfoRequested } from "@/emails/application-info-requested";
+import { ApplicationRejected } from "@/emails/application-rejected";
 
 export type ApplicationEmailKind = "received" | "info_requested" | "rejected";
 
@@ -52,8 +54,19 @@ export async function sendApplicationEmails(
         />, app.email);
       return;
     }
-    // "info_requested" | "rejected" — implemented in the decisions task.
-    console.warn(`[email] ${kind} email not implemented yet for application ${applicationId}`);
+    if (kind === "info_requested") {
+      const ref = await db.inquiry.findUnique({ where: { id: app.inquiryId }, select: { ref: true } });
+      await send([app.email], "We need a little more information for your MEC account application",
+        <ApplicationInfoRequested name={app.contactName} note={app.decisionNote ?? ""} url={`${baseUrl}/register?ref=${ref?.ref ?? ""}`} />, settings.generalInboxEmail);
+      return;
+    }
+    if (kind === "rejected") {
+      await send([app.email], "An update on your MEC account application",
+        <ApplicationRejected name={app.contactName} reason={app.decisionNote ?? ""} />, settings.generalInboxEmail);
+      await send([settings.generalInboxEmail], `Application rejected — ${app.companyName}`,
+        <ApplicationRejected name="team" reason={`${app.companyName} (${app.email}) was rejected: ${app.decisionNote ?? ""}`} />);
+      return;
+    }
   } catch (e) {
     console.error(`[email] unexpected failure (${kind}) for application ${applicationId}:`, e);
   }

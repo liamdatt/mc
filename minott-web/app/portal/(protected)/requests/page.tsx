@@ -3,6 +3,8 @@ import { db } from "@/lib/db";
 import {
   INQUIRY_TYPE,
   INQUIRY_TYPE_LABELS,
+  MATCH_STATUS_LABELS,
+  APPLICATION_STATUS_LABELS,
 } from "@/lib/constants";
 import { InquiryStatusSelect } from "@/components/admin/InquiryStatusSelect";
 import { requireAdminSession } from "@/lib/portal";
@@ -31,6 +33,8 @@ export default async function AdminRequestsPage({
       product: true,
       notes: { orderBy: { createdAt: "desc" } },
       companyRef: { select: { name: true } },
+      matchedCompany: { select: { name: true } },
+      application: { select: { id: true, status: true } },
     },
   });
 
@@ -70,6 +74,11 @@ export default async function AdminRequestsPage({
                   <span className="inline-block rounded-pill bg-mec-mist px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-mec-ink/70">
                     {INQUIRY_TYPE_LABELS[inq.type] ?? inq.type}
                   </span>
+                  {inq.type === INQUIRY_TYPE.QUOTE && inq.matchStatus && (
+                    <span className={`ml-2 inline-block rounded-pill px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] ${inq.matchStatus === "VERIFIED" ? "bg-mec-ink/10 text-mec-ink/70" : "bg-mec-red/10 text-mec-red"}`}>
+                      {MATCH_STATUS_LABELS[inq.matchStatus] ?? inq.matchStatus}
+                    </span>
+                  )}
                   <p className="mt-2 font-semibold">
                     {inq.name}
                     {companyLabel ? ` · ${companyLabel}` : ""}
@@ -80,6 +89,15 @@ export default async function AdminRequestsPage({
                     </a>
                     {inq.phone ? ` · ${inq.phone}` : ""}
                   </p>
+                  {inq.matchedCompany && (
+                    <p className="mt-1 text-xs text-mec-ink/60">Possible match: <strong>{inq.matchedCompany.name}</strong> (unverified)</p>
+                  )}
+                  {inq.application && (
+                    <p className="mt-1 text-xs text-mec-ink/60">
+                      Application: {APPLICATION_STATUS_LABELS[inq.application.status] ?? inq.application.status}{" "}
+                      <Link href={`/portal/applications/${inq.application.id}`} className="font-semibold text-mec-red hover:underline">→</Link>
+                    </p>
+                  )}
                 </div>
                 <InquiryStatusSelect id={inq.id} status={inq.status} />
               </div>

@@ -1,6 +1,7 @@
 "use server";
 
 import { after } from "next/server";
+import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { isIndustry } from "@/lib/industries";
 import { APPLICATION_STATUS, MATCH_STATUS } from "@/lib/constants";
@@ -8,6 +9,10 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { currentRequestIp } from "@/lib/request-ip";
 import { getInquiryByRef } from "@/lib/applications";
 import { sendApplicationEmails } from "@/lib/email/send-application-emails";
+import { requireRole } from "@/lib/auth/require-admin";
+import { getPortalSession } from "@/lib/portal";
+import { provisionUser, sendInvite, INVITE_REDIRECT } from "@/lib/auth/provision";
+import { sendInquiryEmails } from "@/lib/email/send-inquiry-emails";
 
 export type ApplicationFormState = { done?: boolean; error?: string };
 
@@ -60,4 +65,143 @@ export async function submitApplication(
 
   after(() => sendApplicationEmails(app.id, "received", { resubmitted: Boolean(existing) }));
   return { done: true };
+}
+
+export type DecisionState = { error?: string; success?: boolean };
+
+const STAFF = ["admin", "ar"];
+
+async function loadOpenApplication(id: number) {
+  const app = await db.customerApplication.findUnique({ where: { id } });
+  if (!app) return { error: "Application not found." } as const;
+  if (app.status === APPLICATION_STATUS.APPROVED || app.status === APPLICATION_STATUS.REJECTED)
+    return { error: "This application has already been decided." } as const;
+  return { app } as const;
+}
+
+function revalidateAll(id: number) {
+  revalidatePath("/portal/applications");
+  revalidatePath(`/portal/applications/${id}`);
+  revalidatePath("/portal/requests");
+  revalidatePath("/portal/customers");
+  revalidatePath("/portal");
+}
+
+/**
+ * Approve: create the Company, provision the contact (invite = "approved"
+ * email), link the original quote, mark APPROVED, notify the rep (spec §9).
+ * Ordered writes with a compensating delete — no dangling company.
+ */
+export async function approveApplication(
+  _prev: DecisionState,
+  formData: FormData,
+): Promise<DecisionState> {
+  await requireRole(STAFF);
+  const session = await getPortalSession();
+  const id = Number(formData.get("id"));
+  if (!Number.isInteger(id)) return { error: "Missing application id." };
+  const loaded = await loadOpenApplication(id);
+  if ("error" in loaded) return { error: loaded.error };
+  const app = loaded.app;
+
+  const repRaw = str(formData, "salesRepId");
+  const salesRepId = repRaw ? Number(repRaw) : null;
+  if (salesRepId !== null && !(Number.isInteger(salesRepId) && salesRepId > 0))
+    return { error: "Invalid sales rep." };
+
+  const existingUser = await db.user.findUnique({ where: { email: app.email }, select: { id: true } });
+  if (existingUser)
+    return { error: "An account with this email already exists — link it from Customers instead." };
+
+  const company = await db.company.create({
+    data: { name: app.companyName, industry: app.industry, location: app.location, salesRepId },
+  });
+
+  const result = await provisionUser({
+    email: app.email,
+    name: app.contactName,
+    role: "customer",
+    redirectTo: INVITE_REDIRECT.customer,
+    data: { phone: app.phone },
+    skipInvite: true,
+  });
+  if (!result.ok) {
+    await db.company.delete({ where: { id: company.id } }).catch((e) =>
+      console.error(`[applications] failed to roll back company ${company.id}:`, e),
+    );
+    return { error: result.error };
+  }
+
+  await db.user.update({ where: { id: result.userId }, data: { companyId: company.id } });
+  await db.inquiry.update({
+    where: { id: app.inquiryId },
+    data: { companyId: company.id, userId: result.userId, matchStatus: MATCH_STATUS.VERIFIED, matchedCompanyId: null },
+  });
+  await db.customerApplication.update({
+    where: { id },
+    data: {
+      status: APPLICATION_STATUS.APPROVED,
+      companyId: company.id,
+      userId: result.userId,
+      decidedAt: new Date(),
+      decidedByUserId: session?.user.id ?? null,
+      decisionNote: null,
+    },
+  });
+
+  // Now that the application row is APPROVED + linked, the invite hook picks
+  // the "approved" copy (see lib/email/send-account-invite.tsx).
+  await sendInvite(app.email, INVITE_REDIRECT.customer);
+  after(() => sendInquiryEmails(app.inquiryId, { verifiedNow: true }));
+
+  revalidateAll(id);
+  return { success: true };
+}
+
+export async function requestApplicationInfo(
+  _prev: DecisionState,
+  formData: FormData,
+): Promise<DecisionState> {
+  await requireRole(STAFF);
+  const id = Number(formData.get("id"));
+  const note = str(formData, "note");
+  if (!Number.isInteger(id)) return { error: "Missing application id." };
+  if (!note) return { error: "Tell the applicant what you need." };
+  const loaded = await loadOpenApplication(id);
+  if ("error" in loaded) return { error: loaded.error };
+
+  await db.customerApplication.update({
+    where: { id },
+    data: { status: APPLICATION_STATUS.INFO_REQUESTED, decisionNote: note },
+  });
+  after(() => sendApplicationEmails(id, "info_requested"));
+  revalidateAll(id);
+  return { success: true };
+}
+
+export async function rejectApplication(
+  _prev: DecisionState,
+  formData: FormData,
+): Promise<DecisionState> {
+  await requireRole(STAFF);
+  const session = await getPortalSession();
+  const id = Number(formData.get("id"));
+  const reason = str(formData, "reason");
+  if (!Number.isInteger(id)) return { error: "Missing application id." };
+  if (!reason) return { error: "A reason is required." };
+  const loaded = await loadOpenApplication(id);
+  if ("error" in loaded) return { error: loaded.error };
+
+  await db.customerApplication.update({
+    where: { id },
+    data: {
+      status: APPLICATION_STATUS.REJECTED,
+      decisionNote: reason,
+      decidedAt: new Date(),
+      decidedByUserId: session?.user.id ?? null,
+    },
+  });
+  after(() => sendApplicationEmails(id, "rejected"));
+  revalidateAll(id);
+  return { success: true };
 }
