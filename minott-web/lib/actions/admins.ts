@@ -24,11 +24,12 @@ export async function createAdmin(
   if (!email) return { error: "Email is required." };
   if (!name) return { error: "Name is required." };
 
+  const role = str(formData, "role") === "ar" ? "ar" : "admin";
   const result = await provisionUser({
     email,
     name,
-    role: "admin",
-    redirectTo: INVITE_REDIRECT.admin,
+    role,
+    redirectTo: role === "ar" ? INVITE_REDIRECT.ar : INVITE_REDIRECT.admin,
   });
   if (!result.ok) return { error: result.error };
 
@@ -67,16 +68,18 @@ export async function setAdminActive(formData: FormData): Promise<void> {
     where: { id: userId },
     select: { role: true, banned: true, activatedAt: true },
   });
-  if (!target || target.role !== "admin") return;
+  if (!target || (target.role !== "admin" && target.role !== "ar")) return;
 
   if (!makeActive) {
     const session = await getPortalSession();
     if (session?.user.id === userId) return; // never deactivate yourself
-    const activeAdmins = await db.user.count({
-      where: { role: "admin", NOT: { banned: true }, activatedAt: { not: null } },
-    });
-    const targetIsActive = !target.banned && target.activatedAt !== null;
-    if (targetIsActive && activeAdmins <= 1) return; // keep at least one
+    if (target.role === "admin") {
+      const activeAdmins = await db.user.count({
+        where: { role: "admin", NOT: { banned: true }, activatedAt: { not: null } },
+      });
+      const targetIsActive = !target.banned && target.activatedAt !== null;
+      if (targetIsActive && activeAdmins <= 1) return; // keep at least one
+    }
   }
 
   await db.user.update({

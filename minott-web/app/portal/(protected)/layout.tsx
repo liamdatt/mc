@@ -24,6 +24,10 @@ const NAV_BY_ROLE: Record<string, NavItem[]> = {
     { href: "/portal/customers", label: "My customers" },
     { href: "/portal/quotes", label: "Quotes" },
   ],
+  ar: [
+    { href: "/portal", label: "Dashboard" },
+    { href: "/portal/applications", label: "Applications" },
+  ],
   customer: [
     { href: "/portal", label: "Dashboard" },
     { href: "/portal/history", label: "History" },

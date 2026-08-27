@@ -1,4 +1,4 @@
-import { requireAdminSession, getAdminUsers } from "@/lib/portal";
+import { requireAdminSession, getStaffUsers } from "@/lib/portal";
 import { resendAdminInvite, setAdminActive } from "@/lib/actions/admins";
 import { AdminAccountForm } from "@/components/admin/AdminAccountForm";
 
@@ -17,14 +17,15 @@ function statusLabel(admin: { banned: boolean | null; activatedAt: Date | null }
 
 export default async function AdminAdminsPage() {
   const session = await requireAdminSession();
-  const admins = await getAdminUsers();
+  const admins = await getStaffUsers();
 
   return (
     <div>
       <h1 className="font-display-tight text-3xl">Admins</h1>
       <p className="mt-3 max-w-2xl text-sm text-mec-ink/60">
-        Admin accounts are provisioned here — public sign-up is disabled. New
-        admins are invited by email to set their own password.
+        Admin and Accounts Receivable accounts are provisioned here — public
+        sign-up is disabled. New staff are invited by email to set their own
+        password.
       </p>
 
       <div className="mt-6 overflow-hidden rounded-md border border-black/10 bg-mec-pure">
@@ -33,6 +34,7 @@ export default async function AdminAdminsPage() {
             <tr>
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">Email</th>
+              <th className="px-4 py-3">Role</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Created</th>
               <th className="px-4 py-3">
@@ -43,7 +45,7 @@ export default async function AdminAdminsPage() {
           <tbody>
             {admins.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-mec-ink/60">
+                <td colSpan={6} className="px-4 py-6 text-mec-ink/60">
                   No admin accounts yet.
                 </td>
               </tr>
@@ -65,6 +67,11 @@ export default async function AdminAdminsPage() {
                     <a href={`mailto:${a.email}`} className="hover:text-mec-red">
                       {a.email}
                     </a>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="rounded-pill bg-mec-mist px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-mec-ink/70">
+                      {a.role === "ar" ? "Accounts Receivable" : "Admin"}
+                    </span>
                   </td>
                   <td className="px-4 py-3">
                     {status === "Active" && (
@@ -134,7 +141,7 @@ export default async function AdminAdminsPage() {
       </div>
 
       <div className="mt-10">
-        <h2 className="font-display-tight text-xl">Invite a new admin</h2>
+        <h2 className="font-display-tight text-xl">Invite a staff member</h2>
         <div className="mt-4">
           <AdminAccountForm />
         </div>

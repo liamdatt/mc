@@ -25,6 +25,13 @@ export function AdminAccountForm() {
         Email
         <input name="email" type="email" required className={field} />
       </label>
+      <label className={label}>
+        Role
+        <select name="role" defaultValue="admin" className={field}>
+          <option value="admin">Administrator</option>
+          <option value="ar">Accounts Receivable</option>
+        </select>
+      </label>
 
       {state.error && <p className="text-sm text-mec-red">{state.error}</p>}
 

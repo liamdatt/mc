@@ -12,3 +12,9 @@ export async function requireAdmin(): Promise<void> {
   const session = await getPortalSession();
   if (!session || session.user.role !== "admin") redirect("/portal/sign-in");
 }
+
+/** Server-Action guard for actions shared by several staff roles. */
+export async function requireRole(roles: string[]): Promise<void> {
+  const session = await getPortalSession();
+  if (!session || !roles.includes(session.user.role ?? "")) redirect("/portal/sign-in");
+}

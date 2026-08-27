@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getPortalSession, getUserCompany } from "@/lib/portal";
 import { getSalesSession } from "@/lib/sales";
 import { AdminDashboard } from "@/components/portal/dashboards/AdminDashboard";
+import { ArDashboard } from "@/components/portal/dashboards/ArDashboard";
 import { RepDashboard } from "@/components/portal/dashboards/RepDashboard";
 import { CustomerDashboard } from "@/components/portal/dashboards/CustomerDashboard";
 
@@ -17,6 +18,8 @@ export default async function PortalDashboardPage() {
   if (!session) return null;
 
   if (session.user.role === "admin") return <AdminDashboard />;
+
+  if (session.user.role === "ar") return <ArDashboard />;
 
   if (session.user.role === "rep") {
     const sales = await getSalesSession();

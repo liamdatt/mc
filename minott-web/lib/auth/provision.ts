@@ -21,11 +21,12 @@ export type ProvisionResult =
 export async function provisionUser(opts: {
   email: string;
   name: string;
-  role: "customer" | "rep" | "admin";
+  role: "customer" | "rep" | "admin" | "ar";
   redirectTo: string;
+  skipInvite?: boolean;
   data?: { phone?: string; whatsapp?: string };
 }): Promise<ProvisionResult> {
-  const { email, name, role, redirectTo, data } = opts;
+  const { email, name, role, redirectTo, skipInvite, data } = opts;
   try {
     await auth.api.createUser({
       body: { email, password: randomPassword(), name, data: data ?? {} },
@@ -48,7 +49,7 @@ export async function provisionUser(opts: {
     await db.user.update({ where: { id: user.id }, data: { role } });
   }
 
-  await sendInvite(email, redirectTo);
+  if (!skipInvite) await sendInvite(email, redirectTo);
   return { ok: true, userId: user.id };
 }
 
@@ -71,4 +72,5 @@ export const INVITE_REDIRECT = {
   customer: "/set-password?portal=customer",
   sales: "/set-password?portal=sales",
   admin: "/set-password?portal=admin",
+  ar: "/set-password?portal=admin",
 } as const;

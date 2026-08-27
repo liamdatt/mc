@@ -156,6 +156,21 @@ export async function seedAdmin() {
   }
 }
 
+/**
+ * Local-dev Accounts Receivable login. Skipped in production (NODE_ENV) —
+ * real AR staff are invited from /portal/admins.
+ */
+export async function seedArUser() {
+  if (process.env.NODE_ENV === "production") return;
+  const email = "ar@example.com";
+  const existing = await db.user.findUnique({ where: { email } });
+  if (existing) return;
+  const { auth } = await import("../lib/auth/portal");
+  await auth.api.createUser({ body: { email, password: "test123", name: "MEC Accounts", data: {} } });
+  await db.user.update({ where: { email }, data: { role: "ar", activatedAt: new Date() } });
+  console.log(`Seeded AR user ${email}.`);
+}
+
 // ---------------------------------------------------------------------------
 // Seed runner — categories only. Idempotent upsert + prune of stale-empty
 // categories. Products are owned by scripts/import-catalog.ts.
@@ -209,6 +224,7 @@ export async function seedCategories() {
 async function main() {
   await seedCategories();
   await seedAdmin();
+  await seedArUser();
 }
 
 if (require.main === module) {

@@ -227,18 +227,26 @@ export function getPortalCompanies() {
   });
 }
 
-/** List admin accounts for the /portal/admins management screen. */
-export function getAdminUsers() {
+/** List admin + Accounts Receivable accounts for the /portal/admins management screen. */
+export function getStaffUsers() {
   return db.user.findMany({
-    where: { role: "admin" },
+    where: { role: { in: ["admin", "ar"] } },
     orderBy: { createdAt: "asc" },
     select: {
       id: true,
       name: true,
       email: true,
+      role: true,
       activatedAt: true,
       banned: true,
       createdAt: true,
     },
   });
+}
+
+/** Page gate for routes shared by several staff roles (e.g. admin + ar). */
+export async function requireRoleSession(roles: string[]) {
+  const session = await getPortalSession();
+  if (!session || !roles.includes(session.user.role ?? "")) redirect("/portal");
+  return session;
 }
