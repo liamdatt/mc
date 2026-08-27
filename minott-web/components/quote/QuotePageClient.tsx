@@ -5,9 +5,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { Trash2 } from "lucide-react";
 import { useQuoteCart } from "@/components/quote/QuoteCartProvider";
-import { submitQuote, type InquiryResult } from "@/lib/actions/inquiries";
+import { submitQuote, type QuoteResult } from "@/lib/actions/inquiries";
+import { INDUSTRIES } from "@/lib/industries";
 
-const initial: InquiryResult = { ok: false };
+const initial: QuoteResult = { ok: false };
 const inputCls =
   "mt-1 w-full rounded-sm border border-black/15 bg-mec-pure px-4 py-3 text-mec-ink outline-none focus:border-mec-red";
 
@@ -44,28 +45,51 @@ export function QuotePageClient({
   }, [state.ok, clear]);
 
   if (state.ok) {
+    const panel = "rounded-md border border-mec-red/30 bg-mec-red/5 p-8";
+    const primary =
+      "mt-6 inline-block bg-mec-red px-6 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-mec-pure hover:bg-mec-red-hover";
+    const secondary =
+      "ml-4 mt-6 inline-block border border-mec-ink/20 px-6 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-mec-ink transition-colors hover:border-mec-red hover:text-mec-red";
+
+    if (state.outcome === "POTENTIAL_MATCH") {
+      return (
+        <div className={panel}>
+          <h2 className="font-display-tight text-h2 text-mec-ink">Quote request received.</h2>
+          <p className="mt-3 max-w-xl text-mec-ink/75">
+            Our records suggest an MEC account may already be associated with the
+            details you provided. Sign in to attach this quote to your account, or
+            recover access using the MEC account number shown on your invoices.
+          </p>
+          <Link href="/portal/sign-in?next=/portal" className={primary}>Sign in</Link>
+          <Link href={`/portal/recover?ref=${state.ref ?? ""}`} className={secondary}>Recover account</Link>
+        </div>
+      );
+    }
+
+    if (state.outcome === "NO_MATCH") {
+      return (
+        <div className={panel}>
+          <h2 className="font-display-tight text-h2 text-mec-ink">Quote request received.</h2>
+          <p className="mt-3 max-w-xl text-mec-ink/75">
+            To open an MEC account, complete the short New Customer Form — we&apos;ve
+            prefilled it from your request. Your quote stays attached while your
+            application is reviewed.
+          </p>
+          <Link href={`/register?ref=${state.ref ?? ""}`} className={primary}>Complete New Customer Form</Link>
+        </div>
+      );
+    }
+
     return (
-      <div className="rounded-md border border-mec-red/30 bg-mec-red/5 p-8">
-        <h2 className="font-display-tight text-h2 text-mec-ink">
-          Quote request sent.
-        </h2>
+      <div className={panel}>
+        <h2 className="font-display-tight text-h2 text-mec-ink">Quote request sent.</h2>
         <p className="mt-3 max-w-xl text-mec-ink/75">
           Thanks — a sales consultant will price your list and respond within one
           business day.
         </p>
-        <Link
-          href="/products"
-          className="mt-6 inline-block bg-mec-red px-6 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-mec-pure hover:bg-mec-red-hover"
-        >
-          Back to Products
-        </Link>
+        <Link href="/products" className={primary}>Back to Products</Link>
         {portalUser && (
-          <Link
-            href="/portal/history"
-            className="ml-4 mt-6 inline-block border border-mec-ink/20 px-6 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-mec-ink transition-colors hover:border-mec-red hover:text-mec-red"
-          >
-            View Quote History
-          </Link>
+          <Link href="/portal/history" className={secondary}>View Quote History</Link>
         )}
       </div>
     );
@@ -191,7 +215,12 @@ export function QuotePageClient({
           </label>
           <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.12em] text-mec-ink/70">
             Company
-            <input name="company" defaultValue={portalUser?.companyName ?? undefined} className={inputCls} />
+            <input
+              name="company"
+              required={!portalUser}
+              defaultValue={portalUser?.companyName ?? undefined}
+              className={inputCls}
+            />
           </label>
           <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.12em] text-mec-ink/70">
             Email *
@@ -199,8 +228,30 @@ export function QuotePageClient({
           </label>
           <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.12em] text-mec-ink/70">
             Phone
-            <input name="phone" defaultValue={portalUser?.phone ?? undefined} className={inputCls} />
+            <input
+              name="phone"
+              required={!portalUser}
+              defaultValue={portalUser?.phone ?? undefined}
+              className={inputCls}
+            />
           </label>
+          {!portalUser && (
+            <>
+              <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.12em] text-mec-ink/70">
+                Industry *
+                <select name="industry" required defaultValue="" className={inputCls}>
+                  <option value="" disabled>Select your industry</option>
+                  {INDUSTRIES.map((i) => (
+                    <option key={i} value={i}>{i}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.12em] text-mec-ink/70">
+                Location *
+                <input name="location" required placeholder="e.g. Kingston" className={inputCls} />
+              </label>
+            </>
+          )}
           <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.12em] text-mec-ink/70">
             Notes
             <textarea name="message" rows={3} className={`${inputCls} resize-none`} />
