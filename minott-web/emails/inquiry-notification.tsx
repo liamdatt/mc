@@ -20,6 +20,8 @@ export type InquiryNotificationProps = {
   items: NotificationItem[];
   /** Assigned rep name when routed to a rep, else null. */
   repName: string | null;
+  /** Guest-quote classification line for internal recipients (spec §5), or null. */
+  classification: string | null;
   /** Absolute CTA link: sales-portal quote page when rep-routed, else /admin/requests. */
   ctaUrl: string;
   ctaLabel: string;
@@ -73,6 +75,11 @@ export function InquiryNotification(props: InquiryNotificationProps) {
       {props.repName && (
         <Text style={{ color: emailColors.graphite, fontSize: 13, margin: 0 }}>
           Routed to {props.repName} (assigned sales rep).
+        </Text>
+      )}
+      {props.classification && (
+        <Text style={{ color: emailColors.red, fontSize: 13, fontWeight: 700, margin: "4px 0 0" }}>
+          {props.classification}
         </Text>
       )}
 

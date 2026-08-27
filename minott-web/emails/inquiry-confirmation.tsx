@@ -1,4 +1,4 @@
-import { Heading, Hr, Text } from "@react-email/components";
+import { Heading, Hr, Link, Text } from "@react-email/components";
 import { EmailLayout, emailColors } from "./components/EmailLayout";
 import type { NotificationItem } from "./inquiry-notification";
 
@@ -6,6 +6,7 @@ export type InquiryConfirmationProps = {
   type: "QUOTE" | "SAMPLE" | "CONTACT";
   name: string;
   items: NotificationItem[];
+  registerUrl: string | null;
 };
 
 const COPY: Record<
@@ -69,6 +70,19 @@ export function InquiryConfirmation(props: InquiryConfirmationProps) {
               ) : null}
             </Text>
           ))}
+        </>
+      )}
+
+      {props.registerUrl && (
+        <>
+          <Hr style={{ borderColor: "rgba(0,0,0,0.08)", margin: "20px 0" }} />
+          <Text style={{ color: emailColors.ink, fontSize: 14, margin: 0 }}>
+            To open an MEC account, complete the short New Customer Form — we&apos;ve
+            prefilled it from your request:{" "}
+            <Link href={props.registerUrl} style={{ color: emailColors.red }}>
+              Complete New Customer Form →
+            </Link>
+          </Text>
         </>
       )}
 

@@ -14,7 +14,10 @@ import { InquiryConfirmation } from "@/emails/inquiry-confirmation";
  * the inquiry server actions — must never throw. The DB row is the source of
  * truth; failures only log.
  */
-export async function sendInquiryEmails(inquiryId: number): Promise<void> {
+export async function sendInquiryEmails(
+  inquiryId: number,
+  opts: { verifiedNow?: boolean } = {},
+): Promise<void> {
   try {
     const resend = getResend();
     if (!resend) {
@@ -77,6 +80,20 @@ export async function sendInquiryEmails(inquiryId: number): Promise<void> {
 
     const typeLabel = INQUIRY_TYPE_LABELS[inquiry.type] ?? "Inquiry";
     const baseUrl = process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
+    const classification =
+      inquiry.type === "QUOTE" && !inquiry.userId
+        ? inquiry.matchStatus === "POTENTIAL_MATCH"
+          ? "Potential existing customer — unverified (verification required before linking)"
+          : inquiry.matchStatus === "NO_MATCH"
+            ? "New customer — New Customer Form pending"
+            : opts.verifiedNow
+              ? "Existing customer — verified"
+              : null
+        : null;
+    const registerUrl =
+      inquiry.type === "QUOTE" && inquiry.matchStatus === "NO_MATCH" && inquiry.ref
+        ? `${baseUrl}/register?ref=${inquiry.ref}`
+        : null;
 
     // 1) Internal notification (rep + CC inbox, or inbox alone). Both rep and
     // admin recipients land in the unified portal, just at different routes.
@@ -100,6 +117,7 @@ export async function sendInquiryEmails(inquiryId: number): Promise<void> {
           message={inquiry.message}
           items={items}
           repName={repRouted ? rep!.name : null}
+          classification={classification}
           ctaUrl={ctaUrl}
           ctaLabel={ctaLabel}
         />
@@ -113,7 +131,7 @@ export async function sendInquiryEmails(inquiryId: number): Promise<void> {
         to: repRouted ? [rep!.email!] : [settings.generalInboxEmail],
         cc: repRouted ? [settings.generalInboxEmail] : undefined,
         replyTo: inquiry.email,
-        subject: `New ${typeLabel.toLowerCase()} from ${inquiry.name}${companyName ? ` (${companyName})` : ""}`,
+        subject: `${opts.verifiedNow ? "Verified: " : ""}New ${typeLabel.toLowerCase()} from ${inquiry.name}${companyName ? ` (${companyName})` : ""}`,
         html,
         text,
       });
@@ -130,6 +148,8 @@ export async function sendInquiryEmails(inquiryId: number): Promise<void> {
       );
     }
 
+    if (opts.verifiedNow) return;
+
     // 2) Customer confirmation.
     try {
       const confirmation = (
@@ -137,6 +157,7 @@ export async function sendInquiryEmails(inquiryId: number): Promise<void> {
           type={inquiry.type as "QUOTE" | "SAMPLE" | "CONTACT"}
           name={inquiry.name}
           items={items}
+          registerUrl={registerUrl}
         />
       );
       const [html, text] = await Promise.all([

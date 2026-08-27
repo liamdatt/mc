@@ -1,19 +1,28 @@
 "use server";
 
+import { randomBytes } from "crypto";
 import { db } from "@/lib/db";
-import { INQUIRY_TYPE } from "@/lib/constants";
+import { INQUIRY_TYPE, MATCH_STATUS } from "@/lib/constants";
 import { getPortalSession, getCustomerScope } from "@/lib/portal";
 import { after } from "next/server";
 import { sendInquiryEmails } from "@/lib/email/send-inquiry-emails";
 import { getLiveDealBadges, pickBadgeForVariant } from "@/lib/deals";
+import { matchGuest, type MatchStatus } from "@/lib/customer-match";
+import { isIndustry } from "@/lib/industries";
 
 export type InquiryResult = { ok: boolean; error?: string };
+
+export type QuoteResult =
+  | { ok: false; error?: string }
+  | { ok: true; outcome: MatchStatus; ref?: string };
 
 function field(formData: FormData, key: string): string {
   return String(formData.get(key) ?? "").trim();
 }
 
-function requireContact(formData: FormData): InquiryResult | null {
+function requireContact(
+  formData: FormData,
+): { ok: false; error: string } | null {
   if (!field(formData, "name")) return { ok: false, error: "Name is required." };
   if (!field(formData, "email"))
     return { ok: false, error: "Email is required." };
@@ -72,9 +81,9 @@ type CartLine = {
 };
 
 export async function submitQuote(
-  _prev: InquiryResult,
+  _prev: QuoteResult,
   formData: FormData,
-): Promise<InquiryResult> {
+): Promise<QuoteResult> {
   const bad = requireContact(formData);
   if (bad) return bad;
 
@@ -88,14 +97,41 @@ export async function submitQuote(
     return { ok: false, error: "Your quote list is empty." };
   }
 
-  // Attach the quote to the signed-in portal account AND its company, if any.
-  // Both ids are derived from the session cookie server-side — never from
-  // form data.
+  // Signed-in: attach to the account + company from the session (never the
+  // form) and skip matching — a known account is VERIFIED by definition.
   const session = await getPortalSession();
   const scope = session ? await getCustomerScope(session.user.id) : null;
 
-  // Snapshot the deal that was live at submission time onto each line item;
-  // portal and email views read that snapshot, never the live deal.
+  const name = field(formData, "name");
+  const email = field(formData, "email");
+  const company = field(formData, "company") || null;
+  const phone = field(formData, "phone") || null;
+  const message = field(formData, "message") || null;
+
+  // Guest-only fields (spec §5).
+  let industry: string | null = null;
+  let location: string | null = null;
+  let ref: string | null = null;
+  let matchStatus: MatchStatus = MATCH_STATUS.VERIFIED;
+  let matchedCompanyId: number | null = null;
+
+  if (!session) {
+    industry = field(formData, "industry");
+    location = field(formData, "location");
+    if (!isIndustry(industry)) return { ok: false, error: "Please choose your industry." };
+    if (!location) return { ok: false, error: "Location is required." };
+    ref = randomBytes(24).toString("base64url");
+    try {
+      const m = await matchGuest({ email, phone: phone ?? "", company: company ?? "" });
+      matchStatus = m.status;
+      matchedCompanyId = m.matchedCompanyId;
+    } catch (e) {
+      // Never lose a quote because the matcher failed.
+      console.error("[match] matcher threw — treating as NO_MATCH:", e);
+      matchStatus = MATCH_STATUS.NO_MATCH;
+    }
+  }
+
   const badges = await getLiveDealBadges();
 
   const inquiry = await db.inquiry.create({
@@ -103,22 +139,23 @@ export async function submitQuote(
       type: INQUIRY_TYPE.QUOTE,
       userId: session?.user.id ?? null,
       companyId: scope?.companyId ?? null,
-      name: field(formData, "name"),
-      email: field(formData, "email"),
-      company: field(formData, "company") || null,
-      phone: field(formData, "phone") || null,
-      message: field(formData, "message") || null,
+      name,
+      email,
+      company,
+      phone,
+      message,
+      industry,
+      location,
+      ref,
+      matchStatus,
+      matchedCompanyId,
       items: {
         create: items.map((i) => ({
-          productId:
-            typeof i.productId === "number" ? i.productId : null,
-          variantId:
-            typeof i.variantId === "number" ? i.variantId : null,
+          productId: typeof i.productId === "number" ? i.productId : null,
+          variantId: typeof i.variantId === "number" ? i.variantId : null,
           productName: String(i.productName).slice(0, 200),
           quantity:
-            Number.isFinite(i.quantity) && i.quantity > 0
-              ? Math.floor(i.quantity)
-              : 1,
+            Number.isFinite(i.quantity) && i.quantity > 0 ? Math.floor(i.quantity) : 1,
           dealLabel: pickBadgeForVariant(
             badges,
             typeof i.productId === "number" ? i.productId : -1,
@@ -129,5 +166,7 @@ export async function submitQuote(
     },
   });
   after(() => sendInquiryEmails(inquiry.id));
-  return { ok: true };
+  return session
+    ? { ok: true, outcome: MATCH_STATUS.VERIFIED }
+    : { ok: true, outcome: matchStatus, ref: ref ?? undefined };
 }
