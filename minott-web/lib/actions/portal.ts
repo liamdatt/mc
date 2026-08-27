@@ -1,6 +1,7 @@
 "use server";
 
 import { headers } from "next/headers";
+import { after } from "next/server";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth/portal";
@@ -76,15 +77,23 @@ export async function requestPasswordResetEmail(
   const email = str(formData, "email").toLowerCase();
   if (!email) return { error: "Email is required." };
 
-  const user = await db.user.findUnique({ where: { email }, select: { role: true } });
-  const portal =
-    user?.role === "rep" ? "sales" : user?.role === "admin" || user?.role === "ar" ? "admin" : "customer";
-  try {
-    await auth.api.requestPasswordReset({
-      body: { email, redirectTo: `/set-password?portal=${portal}&mode=reset` },
-    });
-  } catch (e) {
-    console.error("[forgot] requestPasswordReset failed:", e);
-  }
+  // The role lookup and the reset send both run after the response, so a
+  // known address and an unknown one take the same time to answer.
+  after(async () => {
+    try {
+      const user = await db.user.findUnique({ where: { email }, select: { role: true } });
+      const portal =
+        user?.role === "rep"
+          ? "sales"
+          : user?.role === "admin" || user?.role === "ar"
+            ? "admin"
+            : "customer";
+      await auth.api.requestPasswordReset({
+        body: { email, redirectTo: `/set-password?portal=${portal}&mode=reset` },
+      });
+    } catch (e) {
+      console.error("[forgot] requestPasswordReset failed:", e);
+    }
+  });
   return { done: true };
 }

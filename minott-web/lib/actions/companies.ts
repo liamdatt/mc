@@ -30,7 +30,7 @@ function companyFields(formData: FormData) {
   const acct = str(formData, "mecAccountNumber");
   return {
     name: str(formData, "name"),
-    mecAccountNumber: acct ? normalizeAccountNumber(acct) : null,
+    mecAccountNumber: acct ? normalizeAccountNumber(acct) || null : null,
     industry: str(formData, "industry") || null,
     location: str(formData, "location") || null,
   };

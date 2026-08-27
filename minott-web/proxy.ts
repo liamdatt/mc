@@ -15,6 +15,7 @@ import { verifySession, PREVIEW_COOKIE } from "@/lib/auth/session";
 // branded 404 with full nav/footer to unauthenticated visitors).
 const PREVIEW_EXEMPT_PREFIXES = [
   "/portal",
+  "/register",
   "/set-password",
   "/api/auth",
   "/api/admin",

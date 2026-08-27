@@ -214,7 +214,7 @@ export function QuotePageClient({
             <input name="name" required defaultValue={portalUser?.name} className={inputCls} />
           </label>
           <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.12em] text-mec-ink/70">
-            Company
+            Company{!portalUser && " *"}
             <input
               name="company"
               required={!portalUser}
@@ -227,7 +227,7 @@ export function QuotePageClient({
             <input name="email" type="email" required defaultValue={portalUser?.email} className={inputCls} />
           </label>
           <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.12em] text-mec-ink/70">
-            Phone
+            Phone{!portalUser && " *"}
             <input
               name="phone"
               required={!portalUser}

@@ -31,8 +31,16 @@ export default async function RegisterPage({
 }) {
   const { ref } = await searchParams;
   const inquiry = await getInquiryByRef(typeof ref === "string" ? ref : undefined);
+  // Resolve the application first: an approved application flips the inquiry's
+  // matchStatus to VERIFIED, so the link must stay valid once an application
+  // exists — the status branch below then shows the right copy.
+  const app = inquiry?.application ?? null;
 
-  if (!inquiry || inquiry.type !== "QUOTE" || inquiry.matchStatus !== MATCH_STATUS.NO_MATCH) {
+  if (
+    !inquiry ||
+    inquiry.type !== "QUOTE" ||
+    (inquiry.matchStatus !== MATCH_STATUS.NO_MATCH && !app)
+  ) {
     return (
       <Shell title="This link isn't valid.">
         <p className="max-w-2xl text-lede text-mec-ink/80">
@@ -43,7 +51,6 @@ export default async function RegisterPage({
     );
   }
 
-  const app = inquiry.application;
   if (app && app.status !== APPLICATION_STATUS.INFO_REQUESTED) {
     const copy =
       app.status === APPLICATION_STATUS.APPROVED

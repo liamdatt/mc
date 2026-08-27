@@ -56,14 +56,23 @@ export async function submitApplication(
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) return { error: "A valid email is required." };
   if (!data.phone) return { error: "Phone is required." };
 
-  const app = existing
-    ? await db.customerApplication.update({
-        where: { id: existing.id },
-        data: { ...data, status: APPLICATION_STATUS.SUBMITTED, decisionNote: null },
-      })
-    : await db.customerApplication.create({ data: { ...data, inquiryId: inquiry.id } });
+  let appId: number;
+  if (existing) {
+    // Status-guarded so two concurrent resubmits can't both go through.
+    const claimed = await db.customerApplication.updateMany({
+      where: { id: existing.id, status: APPLICATION_STATUS.INFO_REQUESTED },
+      data: { ...data, status: APPLICATION_STATUS.SUBMITTED, decisionNote: null },
+    });
+    if (claimed.count === 0) return { error: "This application has already been submitted." };
+    appId = existing.id;
+  } else {
+    const created = await db.customerApplication.create({
+      data: { ...data, inquiryId: inquiry.id },
+    });
+    appId = created.id;
+  }
 
-  after(() => sendApplicationEmails(app.id, "received", { resubmitted: Boolean(existing) }));
+  after(() => sendApplicationEmails(appId, "received", { resubmitted: Boolean(existing) }));
   return { done: true };
 }
 
@@ -132,22 +141,55 @@ export async function approveApplication(
     return { error: result.error };
   }
 
-  await db.user.update({ where: { id: result.userId }, data: { companyId: company.id } });
-  await db.inquiry.update({
-    where: { id: app.inquiryId },
-    data: { companyId: company.id, userId: result.userId, matchStatus: MATCH_STATUS.VERIFIED, matchedCompanyId: null },
-  });
-  await db.customerApplication.update({
-    where: { id },
-    data: {
-      status: APPLICATION_STATUS.APPROVED,
-      companyId: company.id,
-      userId: result.userId,
-      decidedAt: new Date(),
-      decidedByUserId: session?.user.id ?? null,
-      decisionNote: null,
-    },
-  });
+  // Compensating cleanup for a half-finished approval: the provisioned user
+  // and the company are both brand new here, so deleting them is safe.
+  const rollback = async () => {
+    await db.user
+      .delete({ where: { id: result.userId } })
+      .catch((e) => console.error(`[applications] failed to roll back user ${result.userId}:`, e));
+    await db.company
+      .delete({ where: { id: company.id } })
+      .catch((e) => console.error(`[applications] failed to roll back company ${company.id}:`, e));
+  };
+
+  try {
+    await db.$transaction([
+      db.user.update({ where: { id: result.userId }, data: { companyId: company.id } }),
+      db.inquiry.update({
+        where: { id: app.inquiryId },
+        data: { companyId: company.id, userId: result.userId, matchStatus: MATCH_STATUS.VERIFIED, matchedCompanyId: null },
+      }),
+      // Status-guarded: a concurrent decide/reject leaves count 0 and the
+      // re-read below catches it.
+      db.customerApplication.updateMany({
+        where: {
+          id,
+          status: { in: [APPLICATION_STATUS.SUBMITTED, APPLICATION_STATUS.INFO_REQUESTED] },
+        },
+        data: {
+          status: APPLICATION_STATUS.APPROVED,
+          companyId: company.id,
+          userId: result.userId,
+          decidedAt: new Date(),
+          decidedByUserId: session?.user.id ?? null,
+          decisionNote: null,
+        },
+      }),
+    ]);
+  } catch (e) {
+    console.error(`[applications] approval transaction failed for application ${id}:`, e);
+    await rollback();
+    return {
+      error:
+        "Approval failed while linking the new account — nothing was created. Please try again.",
+    };
+  }
+
+  const decided = await db.customerApplication.findUnique({ where: { id }, select: { status: true } });
+  if (decided?.status !== APPLICATION_STATUS.APPROVED) {
+    await rollback();
+    return { error: "This application was decided by someone else moments ago." };
+  }
 
   // Now that the application row is APPROVED + linked, the invite hook picks
   // the "approved" copy (see lib/email/send-account-invite.tsx).
@@ -170,10 +212,14 @@ export async function requestApplicationInfo(
   const loaded = await loadOpenApplication(id);
   if ("error" in loaded) return { error: loaded.error };
 
-  await db.customerApplication.update({
-    where: { id },
+  const claimed = await db.customerApplication.updateMany({
+    where: {
+      id,
+      status: { in: [APPLICATION_STATUS.SUBMITTED, APPLICATION_STATUS.INFO_REQUESTED] },
+    },
     data: { status: APPLICATION_STATUS.INFO_REQUESTED, decisionNote: note },
   });
+  if (claimed.count === 0) return { error: "This application has already been decided." };
   after(() => sendApplicationEmails(id, "info_requested"));
   revalidateAll(id);
   return { success: true };
@@ -192,8 +238,11 @@ export async function rejectApplication(
   const loaded = await loadOpenApplication(id);
   if ("error" in loaded) return { error: loaded.error };
 
-  await db.customerApplication.update({
-    where: { id },
+  const claimed = await db.customerApplication.updateMany({
+    where: {
+      id,
+      status: { in: [APPLICATION_STATUS.SUBMITTED, APPLICATION_STATUS.INFO_REQUESTED] },
+    },
     data: {
       status: APPLICATION_STATUS.REJECTED,
       decisionNote: reason,
@@ -201,6 +250,7 @@ export async function rejectApplication(
       decidedByUserId: session?.user.id ?? null,
     },
   });
+  if (claimed.count === 0) return { error: "This application has already been decided." };
   after(() => sendApplicationEmails(id, "rejected"));
   revalidateAll(id);
   return { success: true };

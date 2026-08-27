@@ -116,6 +116,8 @@ export async function submitQuote(
   let matchedCompanyId: number | null = null;
 
   if (!session) {
+    if (!company) return { ok: false, error: "Company is required." };
+    if (!phone) return { ok: false, error: "Phone is required." };
     industry = field(formData, "industry");
     location = field(formData, "location");
     if (!isIndustry(industry)) return { ok: false, error: "Please choose your industry." };

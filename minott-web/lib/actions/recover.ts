@@ -49,33 +49,51 @@ export async function recoverAccount(
     return { done: true };
   }
 
-  const users = await db.user.findMany({
-    where: { companyId: company.id, role: "customer", NOT: { banned: true } },
-    orderBy: { createdAt: "asc" },
-    take: 10,
-    select: { email: true },
-  });
-  for (const u of users) {
-    await sendInvite(u.email, "/set-password?portal=customer&mode=reset");
-  }
-
-  if (ref) {
-    const quote = await db.inquiry.findUnique({
-      where: { ref },
-      select: { id: true, type: true, companyId: true },
-    });
-    if (quote && quote.type === "QUOTE" && quote.companyId === null) {
-      await db.inquiry.update({
-        where: { id: quote.id },
-        data: {
-          companyId: company.id,
-          matchStatus: MATCH_STATUS.VERIFIED,
-          matchedCompanyId: null,
-        },
+  // Everything slow (email fan-out, quote stamping) runs after the response
+  // so a hit and a miss are indistinguishable by timing (spec §7).
+  after(async () => {
+    try {
+      const cooldown = checkRateLimit(`recover-co:${company.id}`, {
+        max: 1,
+        windowMs: 60 * 60_000,
       });
-      after(() => sendInquiryEmails(quote.id, { verifiedNow: true }));
+      if (!cooldown.ok) {
+        console.warn(
+          `[recover] company ${company.id} is within its 1/hour cooldown — skipping invite fan-out`,
+        );
+      } else {
+        const users = await db.user.findMany({
+          where: { companyId: company.id, role: "customer", NOT: { banned: true } },
+          orderBy: { createdAt: "asc" },
+          take: 10,
+          select: { email: true },
+        });
+        for (const u of users) {
+          await sendInvite(u.email, "/set-password?portal=customer&mode=reset");
+        }
+      }
+
+      if (ref) {
+        const quote = await db.inquiry.findUnique({
+          where: { ref },
+          select: { id: true, type: true, companyId: true },
+        });
+        if (quote && quote.type === "QUOTE" && quote.companyId === null) {
+          await db.inquiry.update({
+            where: { id: quote.id },
+            data: {
+              companyId: company.id,
+              matchStatus: MATCH_STATUS.VERIFIED,
+              matchedCompanyId: null,
+            },
+          });
+          await sendInquiryEmails(quote.id, { verifiedNow: true });
+        }
+      }
+    } catch (e) {
+      console.error("[recover] post-response work failed:", e);
     }
-  }
+  });
 
   return { done: true };
 }

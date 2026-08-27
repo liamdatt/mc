@@ -56,8 +56,12 @@ export async function sendApplicationEmails(
     }
     if (kind === "info_requested") {
       const ref = await db.inquiry.findUnique({ where: { id: app.inquiryId }, select: { ref: true } });
+      if (!ref?.ref) {
+        console.error(`[email] inquiry ${app.inquiryId} has no ref — skipping info_requested email for application ${applicationId}`);
+        return;
+      }
       await send([app.email], "We need a little more information for your MEC account application",
-        <ApplicationInfoRequested name={app.contactName} note={app.decisionNote ?? ""} url={`${baseUrl}/register?ref=${ref?.ref ?? ""}`} />, settings.generalInboxEmail);
+        <ApplicationInfoRequested name={app.contactName} note={app.decisionNote ?? ""} url={`${baseUrl}/register?ref=${ref.ref}`} />, settings.generalInboxEmail);
       return;
     }
     if (kind === "rejected") {
