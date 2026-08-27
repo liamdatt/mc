@@ -64,7 +64,22 @@ CREATE UNIQUE INDEX "CustomerApplication_inquiryId_key" ON "CustomerApplication"
 -- CreateIndex
 CREATE INDEX "CustomerApplication_status_idx" ON "CustomerApplication"("status");
 
--- Normalise existing MEC account numbers (spec §3): trim, uppercase, strip spaces and dashes.
+-- Empty-string account numbers are "no account number" — NULL them so they
+-- can't collide on the unique index.
+UPDATE "Company" SET "mecAccountNumber" = NULL
+WHERE "mecAccountNumber" IS NOT NULL AND TRIM("mecAccountNumber") = '';
+
+-- Normalise existing MEC account numbers (spec §3): trim, uppercase, strip
+-- spaces and dashes. Rows whose normalised value would collide with another
+-- row are skipped (they keep their raw value) so the migration can never
+-- fail on the unique index.
 UPDATE "Company"
 SET "mecAccountNumber" = UPPER(REPLACE(REPLACE(TRIM("mecAccountNumber"), ' ', ''), '-', ''))
-WHERE "mecAccountNumber" IS NOT NULL;
+WHERE "mecAccountNumber" IS NOT NULL
+  AND NOT EXISTS (
+    SELECT 1 FROM "Company" c2
+    WHERE c2."id" <> "Company"."id"
+      AND c2."mecAccountNumber" IS NOT NULL
+      AND UPPER(REPLACE(REPLACE(TRIM(c2."mecAccountNumber"), ' ', ''), '-', ''))
+        = UPPER(REPLACE(REPLACE(TRIM("Company"."mecAccountNumber"), ' ', ''), '-', ''))
+  );
