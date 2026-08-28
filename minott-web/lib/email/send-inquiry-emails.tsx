@@ -130,7 +130,7 @@ export async function sendInquiryEmails(
         from,
         to: repRouted ? [rep!.email!] : [settings.generalInboxEmail],
         cc: repRouted ? [settings.generalInboxEmail] : undefined,
-        replyTo: inquiry.email,
+        replyTo: inquiry.email || undefined,
         subject: `${opts.verifiedNow ? "Verified: " : ""}New ${typeLabel.toLowerCase()} from ${inquiry.name}${companyName ? ` (${companyName})` : ""}`,
         html,
         text,
@@ -149,6 +149,7 @@ export async function sendInquiryEmails(
     }
 
     if (opts.verifiedNow) return;
+    if (!inquiry.email) return; // no customer address (e.g. a voice-call quote) — internal notice only
 
     // 2) Customer confirmation.
     try {
