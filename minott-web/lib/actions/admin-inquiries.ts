@@ -50,12 +50,18 @@ export async function attachInquiryToCompany(
 
   const inquiry = await db.inquiry.findUnique({
     where: { id },
-    select: { id: true, type: true },
+    select: { id: true, type: true, companyId: true },
   });
   if (!inquiry) return { error: "Request not found." };
   if (inquiry.type !== INQUIRY_TYPE.QUOTE) {
     return { error: "Only quote requests can be attached." };
   }
+
+  // Already attached to this exact company — no-op. Otherwise a
+  // re-submission of the same selection (e.g. a double click, or a stale
+  // form re-posted) would re-write the row and re-send the rep
+  // notification for no reason.
+  if (inquiry.companyId === companyId) return { success: true };
 
   const company = await db.company.findUnique({
     where: { id: companyId },

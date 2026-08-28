@@ -30,8 +30,8 @@ export default async function AdminRequestDetailPage({
 }) {
   await requireAdminSession();
   const { id } = await params;
+  if (!/^\d+$/.test(id)) notFound();
   const inquiryId = Number(id);
-  if (!Number.isInteger(inquiryId)) notFound();
 
   const inquiry = await db.inquiry.findUnique({
     where: { id: inquiryId },

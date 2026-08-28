@@ -93,13 +93,16 @@ export function AttachInquiryForm({
           >
             {detachPending ? "Detaching…" : "Detach"}
           </button>
-          {detachState.success && (
-            <span className="text-sm text-mec-ink/60">Detached.</span>
-          )}
-          {detachState.error && (
-            <span className="text-sm text-mec-red">{detachState.error}</span>
-          )}
         </form>
+      )}
+      {/* Rendered outside the `attached` form so the confirmation survives
+          the revalidated re-render that flips `attached` to false (and
+          would otherwise unmount this alongside the form that produced it). */}
+      {detachState.success && (
+        <p className="mt-3 text-sm text-mec-ink/60">Detached.</p>
+      )}
+      {detachState.error && (
+        <p className="mt-3 text-sm text-mec-red">{detachState.error}</p>
       )}
     </div>
   );
