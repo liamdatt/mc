@@ -42,7 +42,9 @@ const MAX_ITEMS = 50;
  */
 export async function createQuote(input: CreateQuoteInput): Promise<CreateQuoteResult> {
   if (!input.contactName) return { ok: false, error: "bad_request", message: "contactName is required." };
-  if (!input.email && !input.phone)
+  // A verified account already carries contacts on file; only guest quotes must
+  // supply a way to reach the requester.
+  if (!input.mecAccountNumber && !input.email && !input.phone)
     return { ok: false, error: "bad_request", message: "At least one of email or phone is required." };
   if (input.items.length === 0) return { ok: false, error: "bad_request", message: "items must not be empty." };
   if (input.items.length > MAX_ITEMS)
