@@ -4,6 +4,8 @@ import {
   jsonError,
   enforceRateLimit,
   enforceVerifyBucket,
+  enforceVerifyMissGuard,
+  recordVerifyMiss,
   requireIntegrationKey,
   readJson,
   isResponse,
@@ -66,6 +68,8 @@ export async function POST(req: NextRequest) {
   if (accountNumber) {
     const bucketed = enforceVerifyBucket(req, accountNumber);
     if (bucketed) return bucketed;
+    const enumerating = enforceVerifyMissGuard(req);
+    if (enumerating) return enumerating;
   }
 
   let result: Awaited<ReturnType<typeof createQuote>>;
@@ -88,6 +92,9 @@ export async function POST(req: NextRequest) {
   }
 
   if (!result.ok) {
+    // A failed verification here counts against the same per-IP enumeration
+    // guard the verify endpoint uses, so this route isn't a way around it.
+    if (result.error === "verification_failed") recordVerifyMiss(req);
     const status = result.error === "unknown_product" ? 404 : 400;
     return jsonError(result.error, result.message, status);
   }

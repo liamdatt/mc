@@ -65,8 +65,7 @@ export async function createQuote(input: CreateQuoteInput): Promise<CreateQuoteR
   let salesRepName: string | null = null;
 
   if (input.mecAccountNumber) {
-    if (!input.companyName)
-      return { ok: false, error: "bad_request", message: "companyName is required with mecAccountNumber." };
+    // The account number alone verifies; a supplied companyName must still match.
     const verified = await verifyAccount({
       mecAccountNumber: input.mecAccountNumber,
       companyName: input.companyName,
@@ -75,7 +74,7 @@ export async function createQuote(input: CreateQuoteInput): Promise<CreateQuoteR
       return {
         ok: false,
         error: "verification_failed",
-        message: "Account number and company name did not match an MEC account.",
+        message: "Account number did not match an MEC account.",
       };
     matchStatus = MATCH_STATUS.VERIFIED;
     companyId = verified.id;

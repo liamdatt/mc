@@ -1,6 +1,6 @@
 import { timingSafeEqual } from "crypto";
 import { NextResponse, type NextRequest } from "next/server";
-import { checkRateLimit, clientIp } from "@/lib/rate-limit";
+import { checkRateLimit, peekRateLimit, clientIp } from "@/lib/rate-limit";
 import { normalizeAccountNumber } from "@/lib/customer-match-normalize";
 
 /** Success envelope: `{ data: ... }`. */
@@ -37,6 +37,35 @@ export function enforceVerifyBucket(req: NextRequest, accountNumber: string): Ne
     { error: "rate_limited", message: "Too many verification attempts. Please try again later." },
     { status: 429, headers: retryAfter ? { "Retry-After": String(retryAfter) } : undefined },
   );
+}
+
+const MISS_MAX = 30;
+const MISS_WINDOW_MS = 15 * 60_000;
+
+function missKey(req: NextRequest): string {
+  return `verifymiss:${clientIp(req)}`;
+}
+
+/**
+ * Enumeration guard: 429 once an IP has accumulated 30 failed verifications in
+ * 15 min. Successful verifies never count. Peeks the bucket WITHOUT
+ * incrementing — only `recordVerifyMiss` moves the counter.
+ */
+export function enforceVerifyMissGuard(req: NextRequest): NextResponse | null {
+  const { ok, retryAfter } = peekRateLimit(missKey(req), {
+    max: MISS_MAX,
+    windowMs: MISS_WINDOW_MS,
+  });
+  if (ok) return null;
+  return NextResponse.json(
+    { error: "rate_limited", message: "Too many verification attempts. Please try again later." },
+    { status: 429, headers: retryAfter ? { "Retry-After": String(retryAfter) } : undefined },
+  );
+}
+
+/** Counts one failed verification against the caller's IP. */
+export function recordVerifyMiss(req: NextRequest): void {
+  checkRateLimit(missKey(req), { max: MISS_MAX, windowMs: MISS_WINDOW_MS });
 }
 
 /**

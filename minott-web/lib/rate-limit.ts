@@ -44,6 +44,25 @@ export function checkRateLimit(
   return { ok: true };
 }
 
+/**
+ * Read-only companion to `checkRateLimit`: same fixed-window semantics, but it
+ * never creates or increments a bucket. Use when the decision to count is made
+ * separately from the decision to allow (e.g. only failed attempts count).
+ */
+export function peekRateLimit(
+  key: string,
+  opts: { max?: number; windowMs?: number } = {},
+): { ok: boolean; retryAfter?: number } {
+  const max = opts.max ?? MAX_REQUESTS;
+  const now = Date.now();
+  const existing = buckets.get(key);
+  if (!existing || now >= existing.resetAt) return { ok: true };
+  if (existing.count >= max) {
+    return { ok: false, retryAfter: Math.ceil((existing.resetAt - now) / 1000) };
+  }
+  return { ok: true };
+}
+
 /** Best-effort client IP from proxy headers; falls back to a constant. */
 export function clientIp(req: NextRequest): string {
   const fwd = req.headers.get("x-forwarded-for");
