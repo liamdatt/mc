@@ -7,9 +7,10 @@ products, categories, and detail pages so it can answer customer questions and
 link back into the site.
 
 All endpoints live under `/api/*` in the Next.js app (`minott-web/`) and are
-served by the same Node process as the site (`next start`). They are **public,
-unauthenticated, and `GET`-only**. Mutations (quotes, samples, contact) are not
-exposed over this API — they go through Server Actions on the site itself.
+served by the same Node process as the site (`next start`). The catalogue
+endpoints are **public, unauthenticated, and `GET`-only**. A separate set of
+**integration endpoints** (below) is bearer-authenticated and can create quote
+requests.
 
 ## Base URL
 
@@ -234,6 +235,76 @@ curl "https://<your-domain>/api/categories"
 
 ---
 
+## Integration endpoints (authenticated)
+
+Used by the OneChat WhatsApp and voice agents. Every request must carry
+`Authorization: Bearer <INTEGRATION_API_KEY>`; a wrong/missing key returns `401`
+`{ "error": "unauthorized" }`. When `INTEGRATION_API_KEY` is unset on the server every
+integration endpoint returns `503 { "error": "integration_disabled" }`. The per-IP
+limiter above still applies.
+
+### `POST /api/customers/verify`
+
+Body `{ "mecAccountNumber": string, "companyName": string }` — both required. The
+account number is normalised (uppercase, spaces/dashes removed) and the company name
+must match the account's company (same rule as portal account recovery).
+
+`200 { "data": { "verified": true, "companyName": "…", "salesRep": { "name": "…" } | null } }`
+or `200 { "data": { "verified": false } }`. A miss never says which field failed. Only
+the company display name and the rep's name are ever returned. Extra limiter:
+10 attempts per (IP, account number) per 15 min → `429`. The same bucket also applies
+to `POST /api/quotes` whenever `mecAccountNumber` is sent, so the two doors cannot be
+used to work around each other.
+
+### `POST /api/quotes`
+
+```json
+{
+  "source": "whatsapp" | "voice",
+  "contactName": "Andre Brown",
+  "phone": "+18765551234",
+  "email": "andre@example.com",
+  "mecAccountNumber": "MEC-10442",
+  "companyName": "Blue Mountain Hotels Ltd",
+  "industry": "Hospitality & Tourism",
+  "location": "Kingston",
+  "items": [ { "slug": "industrial-degreaser", "quantity": 4, "note": "5 gal" } ],
+  "notes": "Needs delivery before Friday"
+}
+```
+
+- `contactName`, `items` (1–50, each `slug` must be an active product) and at least one
+  of `email`/`phone` are required.
+- Per-item `quantity` must be a positive integer ≤ 100000; larger or non-numeric values
+  return `400 bad_request`.
+- With `mecAccountNumber` (+ `companyName`): verified as above → the quote is linked to
+  the company (`matchStatus: "VERIFIED"`). A mismatch returns
+  `400 { "error": "verification_failed" }` — resubmit without the account number to
+  file it as a guest quote.
+- Without it (guest): `companyName`, `phone`, `industry` (approved list) and `location`
+  are required; the existing customer matcher sets `POTENTIAL_MATCH` / `NO_MATCH`.
+- `contactName`, `companyName`, `location`, `phone` and `email` are truncated to
+  200 characters; over-long values are accepted and stored capped, not rejected.
+- Sending `mecAccountNumber` also consumes the verification bucket described under
+  `POST /api/customers/verify` (10 attempts per IP + account number per 15 min → `429`).
+- Per-item `note` is appended to the product name in the portal. `notes` and the
+  channel land in the inquiry message as `[via whatsapp] …`.
+- A `ref` is issued on every quote (including verified ones) and is the capability
+  used to fetch it via `GET /api/quotes/{ref}`; only a `NO_MATCH` quote's `ref` opens
+  the New Customer Form.
+
+`201 { "data": { "ref", "matchStatus", "itemCount", "salesRep"?: { "name" } | null, "newCustomerFormUrl"? } }`
+— `salesRep` is present only when `VERIFIED`, and is then `{ "name" }` or `null` when the
+company has no active rep (same shape as `GET /api/quotes/{ref}`); the key is absent
+otherwise. `newCustomerFormUrl` only when `NO_MATCH`, and is always an absolute URL.
+Errors: `400 bad_request` / `400 verification_failed` / `404 unknown_product` /
+`500 internal_error`.
+
+### `GET /api/quotes/{ref}`
+
+`200 { "data": { "status": "NEW"|"IN_PROGRESS"|"CLOSED", "matchStatus", "submittedAt", "itemCount", "salesRep": { "name" } | null } }`
+or `404 not_found`. No items, contact details or company name are returned.
+
 ## Not part of the widget integration
 
 These endpoints exist in the app but are **not** general integration surfaces:
@@ -246,8 +317,9 @@ These endpoints exist in the app but are **not** general integration surfaces:
 
 ## Notes & limitations
 
-- **Read-only.** There is no public API to create quotes, sample requests, or
-  contact submissions; those run through on-site Server Actions.
+- **Catalogue is read-only.** Quote creation is only available through the
+  authenticated integration endpoints; sample requests and contact submissions
+  still run through on-site Server Actions.
 - Only **active** products and their categories are exposed; inactive products
   return `404` and don't appear in lists or counts.
 - The `form` filter is a convenience over the single key spec field

@@ -84,11 +84,13 @@ export async function sendInquiryEmails(
       inquiry.type === "QUOTE" && opts.verifiedNow
         ? "Existing customer — verified"
         : inquiry.type === "QUOTE" && !inquiry.userId
-          ? inquiry.matchStatus === "POTENTIAL_MATCH"
-            ? "Potential existing customer — unverified (verification required before linking)"
-            : inquiry.matchStatus === "NO_MATCH"
-              ? "New customer — New Customer Form pending"
-              : null
+          ? inquiry.matchStatus === "VERIFIED"
+            ? "Existing customer — verified"
+            : inquiry.matchStatus === "POTENTIAL_MATCH"
+              ? "Potential existing customer — unverified (verification required before linking)"
+              : inquiry.matchStatus === "NO_MATCH"
+                ? "New customer — New Customer Form pending"
+                : null
           : null;
     const registerUrl =
       inquiry.type === "QUOTE" && inquiry.matchStatus === "NO_MATCH" && inquiry.ref
@@ -130,7 +132,7 @@ export async function sendInquiryEmails(
         from,
         to: repRouted ? [rep!.email!] : [settings.generalInboxEmail],
         cc: repRouted ? [settings.generalInboxEmail] : undefined,
-        replyTo: inquiry.email,
+        replyTo: inquiry.email || undefined,
         subject: `${opts.verifiedNow ? "Verified: " : ""}New ${typeLabel.toLowerCase()} from ${inquiry.name}${companyName ? ` (${companyName})` : ""}`,
         html,
         text,
@@ -149,6 +151,7 @@ export async function sendInquiryEmails(
     }
 
     if (opts.verifiedNow) return;
+    if (!inquiry.email) return; // no customer address (e.g. a voice-call quote) — internal notice only
 
     // 2) Customer confirmation.
     try {

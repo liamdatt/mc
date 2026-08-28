@@ -84,10 +84,12 @@ export default async function AdminRequestsPage({
                     {companyLabel ? ` · ${companyLabel}` : ""}
                   </p>
                   <p className="text-sm text-mec-ink/70">
-                    <a href={`mailto:${inq.email}`} className="hover:text-mec-red">
-                      {inq.email}
-                    </a>
-                    {inq.phone ? ` · ${inq.phone}` : ""}
+                    {inq.email ? (
+                      <a href={`mailto:${inq.email}`} className="hover:text-mec-red">
+                        {inq.email}
+                      </a>
+                    ) : null}
+                    {inq.phone ? `${inq.email ? " · " : ""}${inq.phone}` : ""}
                   </p>
                   {inq.matchedCompany && (
                     <p className="mt-1 text-xs text-mec-ink/60">Possible match: <strong>{inq.matchedCompany.name}</strong> (unverified)</p>
