@@ -245,16 +245,36 @@ limiter above still applies.
 
 ### `POST /api/customers/verify`
 
-Body `{ "mecAccountNumber": string, "companyName": string }` — both required. The
-account number is normalised (uppercase, spaces/dashes removed) and the company name
-must match the account's company (same rule as portal account recovery).
+Body `{ "mecAccountNumber": string, "companyName"?: string }` — only
+`mecAccountNumber` is required (otherwise `400 bad_request`). The account number is
+the credential (it is printed on every MEC invoice) and is normalised (uppercase,
+spaces/dashes removed): **a correct account number alone verifies.** `companyName` is
+optional — speech-to-text mangles company names on voice calls — but when it IS
+supplied it must match the account's company (same normalised comparison as portal
+account recovery), otherwise the result is `verified: false`.
 
 `200 { "data": { "verified": true, "companyName": "…", "salesRep": { "name": "…" } | null } }`
 or `200 { "data": { "verified": false } }`. A miss never says which field failed. Only
-the company display name and the rep's name are ever returned. Extra limiter:
-10 attempts per (IP, account number) per 15 min → `429`. The same bucket also applies
-to `POST /api/quotes` whenever `mecAccountNumber` is sent, so the two doors cannot be
-used to work around each other.
+the company display name and the rep's name are ever returned.
+
+Extra limiters (both on top of the global per-IP limiter):
+
+- **10 attempts per (IP, account number) per 15 min** → `429`. The same bucket also
+  applies to `POST /api/quotes` whenever `mecAccountNumber` is sent, so the two doors
+  cannot be used to work around each other.
+- **100 failed verifications per IP per 15 min** → `429` (enumeration guard, checked
+  before the lookup). Only misses count, and **any successful verification clears the
+  caller's accumulated misses**, restarting the counter — a real customer verifying
+  proves the caller is the legitimate agent rather than an enumerator. A
+  `verification_failed` result from `POST /api/quotes` counts against the same bucket,
+  and a `VERIFIED` quote clears it. The ceiling is high, and resets on success, because
+  agent traffic arrives from a single egress IP: a per-IP counter is effectively a
+  per-fleet counter, so a low cap would let one caller's mistyped account numbers `429`
+  every other customer.
+
+Both return the standard `429` envelope
+(`{ "error": "rate_limited", "message": "Too many verification attempts. Please try again later." }`)
+with a `Retry-After` header.
 
 ### `POST /api/quotes`
 
@@ -277,16 +297,19 @@ used to work around each other.
   of `email`/`phone` are required.
 - Per-item `quantity` must be a positive integer ≤ 100000; larger or non-numeric values
   return `400 bad_request`.
-- With `mecAccountNumber` (+ `companyName`): verified as above → the quote is linked to
-  the company (`matchStatus: "VERIFIED"`). A mismatch returns
-  `400 { "error": "verification_failed" }` — resubmit without the account number to
-  file it as a guest quote.
+- With `mecAccountNumber`: verified as above → the quote is linked to the company
+  (`matchStatus: "VERIFIED"`) and the company's canonical name is stored. `companyName`
+  is **optional** on this path; when supplied it must match. A miss returns
+  `400 { "error": "verification_failed", "message": "Account number did not match an MEC account." }`
+  — resubmit without the account number to file it as a guest quote.
 - Without it (guest): `companyName`, `phone`, `industry` (approved list) and `location`
   are required; the existing customer matcher sets `POTENTIAL_MATCH` / `NO_MATCH`.
 - `contactName`, `companyName`, `location`, `phone` and `email` are truncated to
   200 characters; over-long values are accepted and stored capped, not rejected.
-- Sending `mecAccountNumber` also consumes the verification bucket described under
-  `POST /api/customers/verify` (10 attempts per IP + account number per 15 min → `429`).
+- Sending `mecAccountNumber` also consumes the verification limiters described under
+  `POST /api/customers/verify` (10 attempts per IP + account number per 15 min, and the
+  100-misses-per-IP-per-15-min enumeration guard → `429`); a `verification_failed`
+  result records a miss, and a `VERIFIED` result clears the caller's miss counter.
 - Per-item `note` is appended to the product name in the portal. `notes` and the
   channel land in the inquiry message as `[via whatsapp] …`.
 - A `ref` is issued on every quote (including verified ones) and is the capability

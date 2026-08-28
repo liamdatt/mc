@@ -4,6 +4,9 @@ import {
   jsonError,
   enforceRateLimit,
   enforceVerifyBucket,
+  enforceVerifyMissGuard,
+  recordVerifyMiss,
+  clearVerifyMisses,
   requireIntegrationKey,
   readJson,
   isResponse,
@@ -66,6 +69,8 @@ export async function POST(req: NextRequest) {
   if (accountNumber) {
     const bucketed = enforceVerifyBucket(req, accountNumber);
     if (bucketed) return bucketed;
+    const enumerating = enforceVerifyMissGuard(req);
+    if (enumerating) return enumerating;
   }
 
   let result: Awaited<ReturnType<typeof createQuote>>;
@@ -88,6 +93,9 @@ export async function POST(req: NextRequest) {
   }
 
   if (!result.ok) {
+    // A failed verification here counts against the same per-IP enumeration
+    // guard the verify endpoint uses, so this route isn't a way around it.
+    if (result.error === "verification_failed") recordVerifyMiss(req);
     const status = result.error === "unknown_product" ? 404 : 400;
     return jsonError(result.error, result.message, status);
   }
@@ -101,8 +109,12 @@ export async function POST(req: NextRequest) {
     itemCount: result.itemCount,
   };
   // Uniform with GET /api/quotes/{ref}: VERIFIED always carries the key.
-  if (result.matchStatus === "VERIFIED")
+  if (result.matchStatus === "VERIFIED") {
     data.salesRep = result.salesRepName ? { name: result.salesRepName } : null;
+    // Same reset as the verify endpoint: a successful verification clears the
+    // caller's enumeration counter.
+    clearVerifyMisses(req);
+  }
   if (result.matchStatus === "NO_MATCH") {
     data.newCustomerFormUrl = `${origin}/register?ref=${encodeURIComponent(result.ref)}`;
   }

@@ -5,14 +5,17 @@ import { normalizeAccountNumber, normalizeCompanyName } from "@/lib/customer-mat
 export type VerifiedCompany = { id: number; name: string; salesRepName: string | null };
 
 /**
- * Same rule as `recoverAccount` (SOP §D): the MEC account number AND the company
- * name must both match. Returns null on any miss. Only the display name and the
- * rep's name leave this function — never the account number, rep contact
- * details, industry, location or users.
+ * The MEC account number (printed on every invoice) is the credential: on its
+ * own it verifies the account. `companyName` is optional — speech-to-text
+ * mangles company names on voice calls, so agents may omit it — but when it IS
+ * supplied it must still match (unchanged strictness for callers that send a
+ * name). Returns null on any miss. Only the display name and the rep's name
+ * leave this function — never the account number, rep contact details,
+ * industry, location or users.
  */
 export async function verifyAccount(input: {
   mecAccountNumber: string;
-  companyName: string;
+  companyName?: string | null;
 }): Promise<VerifiedCompany | null> {
   const accountNumber = normalizeAccountNumber(input.mecAccountNumber);
   if (!accountNumber) return null;
@@ -20,8 +23,10 @@ export async function verifyAccount(input: {
     where: { mecAccountNumber: accountNumber },
     select: { id: true, name: true, salesRep: { select: { name: true, active: true } } },
   });
+  const claimedName = input.companyName?.trim() ?? "";
   const matched =
-    company && normalizeCompanyName(company.name) === normalizeCompanyName(input.companyName);
+    company &&
+    (!claimedName || normalizeCompanyName(company.name) === normalizeCompanyName(claimedName));
   if (!matched) {
     console.warn(`[integration] verify miss for ${accountNumber}`);
     return null;

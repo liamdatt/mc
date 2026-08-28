@@ -4,6 +4,9 @@ import {
   jsonError,
   enforceRateLimit,
   enforceVerifyBucket,
+  enforceVerifyMissGuard,
+  recordVerifyMiss,
+  clearVerifyMisses,
   requireIntegrationKey,
   readJson,
   isResponse,
@@ -28,15 +31,24 @@ export async function POST(req: NextRequest) {
   const mecAccountNumber = str(body.mecAccountNumber);
   const companyName = str(body.companyName);
   if (!mecAccountNumber) return jsonError("bad_request", "mecAccountNumber is required.", 400);
-  if (!companyName) return jsonError("bad_request", "companyName is required.", 400);
 
   // Brute-force guard on top of the global limiter (same shape as /portal/recover),
   // keyed per account number so one attacker can't lock out other callers.
   const bucketed = enforceVerifyBucket(req, mecAccountNumber);
   if (bucketed) return bucketed;
+  // Enumeration guard: the per-account bucket alone would let one IP walk the
+  // whole account-number space 10 tries at a time.
+  const enumerating = enforceVerifyMissGuard(req);
+  if (enumerating) return enumerating;
 
-  const company = await verifyAccount({ mecAccountNumber, companyName });
-  if (!company) return jsonData({ verified: false });
+  const company = await verifyAccount({ mecAccountNumber, companyName: companyName || null });
+  if (!company) {
+    recordVerifyMiss(req);
+    return jsonData({ verified: false });
+  }
+  // A real customer verified — this caller is the legitimate agent, not an
+  // enumerator, so its accumulated misses are forgiven.
+  clearVerifyMisses(req);
   return jsonData({
     verified: true,
     companyName: company.name,
