@@ -12,6 +12,8 @@ import { createQuote, type CreateQuoteInput } from "@/lib/integration/create-quo
 
 export const dynamic = "force-dynamic";
 
+const MAX_QUANTITY = 100_000;
+
 function str(v: unknown): string {
   return typeof v === "string" ? v.trim() : "";
 }
@@ -29,7 +31,9 @@ function parseItems(v: unknown): CreateQuoteInput["items"] | null {
     const slug = str(r.slug);
     if (!slug) return null;
     const q = r.quantity === undefined ? 1 : Number(r.quantity);
-    if (!Number.isFinite(q) || q <= 0) return null;
+    // Upper bound as well as lower: an out-of-range integer would blow up inside
+    // Prisma rather than coming back as a 400.
+    if (!Number.isFinite(q) || q <= 0 || q > MAX_QUANTITY) return null;
     out.push({ slug, quantity: Math.floor(q), note: opt(r.note)?.slice(0, 120) ?? null });
   }
   return out;
@@ -50,18 +54,24 @@ export async function POST(req: NextRequest) {
   const items = parseItems(body.items);
   if (!items) return jsonError("bad_request", "items must be an array of { slug, quantity?, note? }.", 400);
 
-  const result = await createQuote({
-    source,
-    contactName: str(body.contactName),
-    phone: opt(body.phone),
-    email: opt(body.email),
-    mecAccountNumber: opt(body.mecAccountNumber),
-    companyName: opt(body.companyName),
-    industry: opt(body.industry),
-    location: opt(body.location),
-    items,
-    notes: opt(body.notes),
-  });
+  let result: Awaited<ReturnType<typeof createQuote>>;
+  try {
+    result = await createQuote({
+      source,
+      contactName: str(body.contactName),
+      phone: opt(body.phone),
+      email: opt(body.email),
+      mecAccountNumber: opt(body.mecAccountNumber),
+      companyName: opt(body.companyName),
+      industry: opt(body.industry),
+      location: opt(body.location),
+      items,
+      notes: opt(body.notes),
+    });
+  } catch (e) {
+    console.error("[integration] createQuote threw:", e);
+    return jsonError("internal_error", "Could not submit the quote. Please try again.", 500);
+  }
 
   if (!result.ok) {
     const status = result.error === "unknown_product" ? 404 : 400;

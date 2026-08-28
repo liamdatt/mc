@@ -112,7 +112,7 @@ model Inquiry {
   // --- guest funnel (spec §3) ---
   industry         String? // guest quotes only; validated against lib/industries.ts
   location         String? // guest quotes only
-  ref              String?              @unique // opaque token; guest QUOTE rows only
+  ref              String?              @unique // opaque token; guest QUOTE rows and integration-API quotes
   matchStatus      String? // "VERIFIED" | "POTENTIAL_MATCH" | "NO_MATCH"; null for CONTACT/SAMPLE + legacy rows
   matchedCompany   Company?             @relation("InquiryMatchHint", fields: [matchedCompanyId], references: [id], onDelete: SetNull)
   matchedCompanyId Int? // admin-only hint from the matcher; NEVER rendered to guests

@@ -1,13 +1,30 @@
 import "server-only";
 import { db } from "@/lib/db";
+import { MATCH_STATUS } from "@/lib/constants";
 
 const REF_RE = /^[A-Za-z0-9_-]{16,64}$/;
 
-/** A guest quote by its opaque ref, with the quote items and any application. */
+/**
+ * A guest quote by its opaque ref, with the quote items and any application.
+ *
+ * Integration-API quotes (`lib/integration/create-quote.ts`) carry a ref even
+ * when VERIFIED — the WhatsApp/voice channel needs one for status lookups — so
+ * a verified ref must NOT unlock the New Customer Form for an account that
+ * already exists. The application branch keeps the other route to VERIFIED
+ * working: approving an application flips its inquiry to VERIFIED
+ * (`lib/actions/applications.ts`), and /register must still resolve that ref to
+ * show the approved/rejected copy.
+ */
 export async function getInquiryByRef(ref: string | undefined) {
   if (!ref || !REF_RE.test(ref)) return null;
-  return db.inquiry.findUnique({
-    where: { ref },
+  return db.inquiry.findFirst({
+    where: {
+      ref,
+      OR: [
+        { matchStatus: { not: MATCH_STATUS.VERIFIED } },
+        { application: { isNot: null } },
+      ],
+    },
     include: { items: true, application: true },
   });
 }
