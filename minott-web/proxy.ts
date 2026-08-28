@@ -10,9 +10,11 @@ import { verifySession, PREVIEW_COOKIE } from "@/lib/auth/session";
 // in-layout; /set-password is token-gated. /api/products and /api/categories
 // are public rate-limited catalog JSON consumed server-to-server (no cookies)
 // by the OneChat AI widget — gating them would break the assistant during
-// preview. /preview itself is exempted by exact match below — NOT as a
-// prefix, so /preview/anything stays gated (it would otherwise serve the
-// branded 404 with full nav/footer to unauthenticated visitors).
+// preview. /api/customers and /api/quotes are the integration endpoints and
+// carry their own bearer key (INTEGRATION_API_KEY). /preview itself is
+// exempted by exact match below — NOT as a prefix, so /preview/anything
+// stays gated (it would otherwise serve the branded 404 with full
+// nav/footer to unauthenticated visitors).
 const PREVIEW_EXEMPT_PREFIXES = [
   "/portal",
   "/register",
@@ -21,6 +23,8 @@ const PREVIEW_EXEMPT_PREFIXES = [
   "/api/admin",
   "/api/products",
   "/api/categories",
+  "/api/customers",
+  "/api/quotes",
 ];
 
 export async function proxy(req: NextRequest) {
