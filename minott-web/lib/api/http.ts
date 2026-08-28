@@ -1,6 +1,7 @@
 import { timingSafeEqual } from "crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { checkRateLimit, clientIp } from "@/lib/rate-limit";
+import { normalizeAccountNumber } from "@/lib/customer-match-normalize";
 
 /** Success envelope: `{ data: ... }`. */
 export function jsonData(data: unknown): NextResponse {
@@ -23,6 +24,17 @@ export function enforceRateLimit(req: NextRequest): NextResponse | null {
   console.warn(`[api] rate limit exceeded for ${ip}`);
   return NextResponse.json(
     { error: "rate_limited", message: "Too many requests. Please slow down." },
+    { status: 429, headers: retryAfter ? { "Retry-After": String(retryAfter) } : undefined },
+  );
+}
+
+/** Per-(IP, account number) brute-force guard shared by every endpoint that verifies an MEC account. 429 or null. */
+export function enforceVerifyBucket(req: NextRequest, accountNumber: string): NextResponse | null {
+  const key = `verify:${clientIp(req)}:${normalizeAccountNumber(accountNumber)}`;
+  const { ok, retryAfter } = checkRateLimit(key, { max: 10, windowMs: 15 * 60_000 });
+  if (ok) return null;
+  return NextResponse.json(
+    { error: "rate_limited", message: "Too many verification attempts. Please try again later." },
     { status: 429, headers: retryAfter ? { "Retry-After": String(retryAfter) } : undefined },
   );
 }

@@ -84,11 +84,13 @@ export async function sendInquiryEmails(
       inquiry.type === "QUOTE" && opts.verifiedNow
         ? "Existing customer — verified"
         : inquiry.type === "QUOTE" && !inquiry.userId
-          ? inquiry.matchStatus === "POTENTIAL_MATCH"
-            ? "Potential existing customer — unverified (verification required before linking)"
-            : inquiry.matchStatus === "NO_MATCH"
-              ? "New customer — New Customer Form pending"
-              : null
+          ? inquiry.matchStatus === "VERIFIED"
+            ? "Existing customer — verified"
+            : inquiry.matchStatus === "POTENTIAL_MATCH"
+              ? "Potential existing customer — unverified (verification required before linking)"
+              : inquiry.matchStatus === "NO_MATCH"
+                ? "New customer — New Customer Form pending"
+                : null
           : null;
     const registerUrl =
       inquiry.type === "QUOTE" && inquiry.matchStatus === "NO_MATCH" && inquiry.ref

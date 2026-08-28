@@ -1,14 +1,13 @@
 import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
 import {
   jsonData,
   jsonError,
   enforceRateLimit,
+  enforceVerifyBucket,
   requireIntegrationKey,
   readJson,
   isResponse,
 } from "@/lib/api/http";
-import { checkRateLimit, clientIp } from "@/lib/rate-limit";
 import { verifyAccount } from "@/lib/integration/verify-account";
 
 export const dynamic = "force-dynamic";
@@ -23,15 +22,6 @@ export async function POST(req: NextRequest) {
   const denied = requireIntegrationKey(req);
   if (denied) return denied;
 
-  // Brute-force guard on top of the global limiter (same shape as /portal/recover).
-  const guard = checkRateLimit(`verify:${clientIp(req)}`, { max: 10, windowMs: 15 * 60_000 });
-  if (!guard.ok) {
-    return NextResponse.json(
-      { error: "rate_limited", message: "Too many verification attempts. Please try again later." },
-      { status: 429, headers: guard.retryAfter ? { "Retry-After": String(guard.retryAfter) } : undefined },
-    );
-  }
-
   const body = await readJson(req);
   if (isResponse(body)) return body;
 
@@ -39,6 +29,11 @@ export async function POST(req: NextRequest) {
   const companyName = str(body.companyName);
   if (!mecAccountNumber) return jsonError("bad_request", "mecAccountNumber is required.", 400);
   if (!companyName) return jsonError("bad_request", "companyName is required.", 400);
+
+  // Brute-force guard on top of the global limiter (same shape as /portal/recover),
+  // keyed per account number so one attacker can't lock out other callers.
+  const bucketed = enforceVerifyBucket(req, mecAccountNumber);
+  if (bucketed) return bucketed;
 
   const company = await verifyAccount({ mecAccountNumber, companyName });
   if (!company) return jsonData({ verified: false });

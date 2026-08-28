@@ -20,11 +20,9 @@ export async function verifyAccount(input: {
     where: { mecAccountNumber: accountNumber },
     select: { id: true, name: true, salesRep: { select: { name: true, active: true } } },
   });
-  if (!company) {
-    console.warn(`[integration] verify miss for ${accountNumber}`);
-    return null;
-  }
-  if (normalizeCompanyName(company.name) !== normalizeCompanyName(input.companyName)) {
+  const matched =
+    company && normalizeCompanyName(company.name) === normalizeCompanyName(input.companyName);
+  if (!matched) {
     console.warn(`[integration] verify miss for ${accountNumber}`);
     return null;
   }

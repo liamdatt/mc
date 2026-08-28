@@ -21,6 +21,11 @@ export default async function SalesQuoteDetailPage({
   const quote = await getRepQuoteById(sales.rep.id, quoteId);
   if (!quote) notFound();
 
+  // Integration quotes have no linked user and may carry an empty email, but do
+  // carry a phone — fall back rather than rendering an empty `mailto:` link.
+  const email = quote.user?.email || quote.email || null;
+  const phone = quote.user?.phone || quote.phone || null;
+
   return (
     <div>
       <Link href="/portal/quotes" className="text-sm font-semibold text-mec-ink/60 hover:text-mec-red">← Back to quotes</Link>
@@ -76,8 +81,8 @@ export default async function SalesQuoteDetailPage({
             <h2 className="text-xs font-semibold uppercase tracking-[0.1em] text-mec-ink/60">Customer</h2>
             <p className="mt-3 font-semibold">{quote.user?.name ?? quote.name}</p>
             {quote.companyRef?.name ? <p className="text-sm text-mec-ink/60">{quote.companyRef.name}</p> : null}
-            <p className="mt-2 text-sm"><a href={`mailto:${quote.user?.email ?? quote.email}`} className="text-mec-red hover:underline">{quote.user?.email ?? quote.email}</a></p>
-            {quote.user?.phone ? <p className="text-sm text-mec-ink/70">{quote.user.phone}</p> : null}
+            {email ? <p className="mt-2 text-sm"><a href={`mailto:${email}`} className="text-mec-red hover:underline">{email}</a></p> : null}
+            {phone ? <p className="text-sm text-mec-ink/70">{phone}</p> : null}
           </section>
         </aside>
       </div>

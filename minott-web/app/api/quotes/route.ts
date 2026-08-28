@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import {
   jsonError,
   enforceRateLimit,
+  enforceVerifyBucket,
   requireIntegrationKey,
   readJson,
   isResponse,
@@ -20,6 +21,11 @@ function str(v: unknown): string {
 function opt(v: unknown): string | null {
   const s = str(v);
   return s ? s : null;
+}
+/** Identity fields are free-form caller input — cap them before they hit the DB. */
+const MAX_FIELD = 200;
+function optCapped(v: unknown): string | null {
+  return opt(v)?.slice(0, MAX_FIELD) ?? null;
 }
 
 function parseItems(v: unknown): CreateQuoteInput["items"] | null {
@@ -54,17 +60,25 @@ export async function POST(req: NextRequest) {
   const items = parseItems(body.items);
   if (!items) return jsonError("bad_request", "items must be an array of { slug, quantity?, note? }.", 400);
 
+  // Same per-(IP, account number) brute-force bucket the verify endpoint uses:
+  // this route verifies an MEC account too when one is supplied.
+  const accountNumber = opt(body.mecAccountNumber);
+  if (accountNumber) {
+    const bucketed = enforceVerifyBucket(req, accountNumber);
+    if (bucketed) return bucketed;
+  }
+
   let result: Awaited<ReturnType<typeof createQuote>>;
   try {
     result = await createQuote({
       source,
-      contactName: str(body.contactName),
-      phone: opt(body.phone),
-      email: opt(body.email),
-      mecAccountNumber: opt(body.mecAccountNumber),
-      companyName: opt(body.companyName),
+      contactName: str(body.contactName).slice(0, MAX_FIELD),
+      phone: optCapped(body.phone),
+      email: optCapped(body.email),
+      mecAccountNumber: accountNumber,
+      companyName: optCapped(body.companyName),
       industry: opt(body.industry),
-      location: opt(body.location),
+      location: optCapped(body.location),
       items,
       notes: opt(body.notes),
     });
@@ -78,16 +92,19 @@ export async function POST(req: NextRequest) {
     return jsonError(result.error, result.message, status);
   }
 
-  const origin = getOrigin(req);
+  // The form URL is handed to a chat/voice agent, so it must always be absolute.
+  const origin =
+    getOrigin(req) ?? process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
   const data: Record<string, unknown> = {
     ref: result.ref,
     matchStatus: result.matchStatus,
     itemCount: result.itemCount,
   };
-  if (result.matchStatus === "VERIFIED" && result.salesRepName) data.salesRep = { name: result.salesRepName };
+  // Uniform with GET /api/quotes/{ref}: VERIFIED always carries the key.
+  if (result.matchStatus === "VERIFIED")
+    data.salesRep = result.salesRepName ? { name: result.salesRepName } : null;
   if (result.matchStatus === "NO_MATCH") {
-    const path = `/register?ref=${encodeURIComponent(result.ref)}`;
-    data.newCustomerFormUrl = origin ? `${origin}${path}` : path;
+    data.newCustomerFormUrl = `${origin}/register?ref=${encodeURIComponent(result.ref)}`;
   }
   return NextResponse.json({ data }, { status: 201 });
 }

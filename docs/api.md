@@ -252,7 +252,9 @@ must match the account's company (same rule as portal account recovery).
 `200 { "data": { "verified": true, "companyName": "…", "salesRep": { "name": "…" } | null } }`
 or `200 { "data": { "verified": false } }`. A miss never says which field failed. Only
 the company display name and the rep's name are ever returned. Extra limiter:
-10 attempts / IP / 15 min → `429`.
+10 attempts per (IP, account number) per 15 min → `429`. The same bucket also applies
+to `POST /api/quotes` whenever `mecAccountNumber` is sent, so the two doors cannot be
+used to work around each other.
 
 ### `POST /api/quotes`
 
@@ -281,14 +283,20 @@ the company display name and the rep's name are ever returned. Extra limiter:
   file it as a guest quote.
 - Without it (guest): `companyName`, `phone`, `industry` (approved list) and `location`
   are required; the existing customer matcher sets `POTENTIAL_MATCH` / `NO_MATCH`.
+- `contactName`, `companyName`, `location`, `phone` and `email` are truncated to
+  200 characters; over-long values are accepted and stored capped, not rejected.
+- Sending `mecAccountNumber` also consumes the verification bucket described under
+  `POST /api/customers/verify` (10 attempts per IP + account number per 15 min → `429`).
 - Per-item `note` is appended to the product name in the portal. `notes` and the
   channel land in the inquiry message as `[via whatsapp] …`.
 - A `ref` is issued on every quote (including verified ones) and is the capability
   used to fetch it via `GET /api/quotes/{ref}`; only a `NO_MATCH` quote's `ref` opens
   the New Customer Form.
 
-`201 { "data": { "ref", "matchStatus", "itemCount", "salesRep"?: { "name" }, "newCustomerFormUrl"? } }`
-— `salesRep` only when `VERIFIED`; `newCustomerFormUrl` only when `NO_MATCH`.
+`201 { "data": { "ref", "matchStatus", "itemCount", "salesRep"?: { "name" } | null, "newCustomerFormUrl"? } }`
+— `salesRep` is present only when `VERIFIED`, and is then `{ "name" }` or `null` when the
+company has no active rep (same shape as `GET /api/quotes/{ref}`); the key is absent
+otherwise. `newCustomerFormUrl` only when `NO_MATCH`, and is always an absolute URL.
 Errors: `400 bad_request` / `400 verification_failed` / `404 unknown_product` /
 `500 internal_error`.
 
