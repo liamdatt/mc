@@ -60,7 +60,12 @@ export function QuotePageClient({
             details you provided. Sign in to attach this quote to your account, or
             recover access using the MEC account number shown on your invoices.
           </p>
-          <Link href="/portal/sign-in?next=/portal" className={primary}>Sign in</Link>
+          <Link
+            href={`/portal/sign-in?next=${encodeURIComponent(`/portal/claim?ref=${state.ref ?? ""}`)}`}
+            className={primary}
+          >
+            Sign in
+          </Link>
           <Link href={`/portal/recover?ref=${state.ref ?? ""}`} className={secondary}>Recover account</Link>
         </div>
       );

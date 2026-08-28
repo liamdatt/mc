@@ -80,7 +80,9 @@ export default async function AdminRequestsPage({
                     </span>
                   )}
                   <p className="mt-2 font-semibold">
-                    {inq.name}
+                    <Link href={`/portal/requests/${inq.id}`} className="hover:text-mec-red">
+                      {inq.name}
+                    </Link>
                     {companyLabel ? ` · ${companyLabel}` : ""}
                   </p>
                   <p className="text-sm text-mec-ink/70">
@@ -101,7 +103,15 @@ export default async function AdminRequestsPage({
                     </p>
                   )}
                 </div>
-                <InquiryStatusSelect id={inq.id} status={inq.status} />
+                <div className="flex items-center gap-3">
+                  <Link
+                    href={`/portal/requests/${inq.id}`}
+                    className="text-sm font-semibold text-mec-red hover:underline"
+                  >
+                    View →
+                  </Link>
+                  <InquiryStatusSelect id={inq.id} status={inq.status} />
+                </div>
               </div>
 
               {inq.product && (
