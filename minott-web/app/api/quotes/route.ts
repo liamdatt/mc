@@ -6,6 +6,7 @@ import {
   enforceVerifyBucket,
   enforceVerifyMissGuard,
   recordVerifyMiss,
+  clearVerifyMisses,
   requireIntegrationKey,
   readJson,
   isResponse,
@@ -108,8 +109,12 @@ export async function POST(req: NextRequest) {
     itemCount: result.itemCount,
   };
   // Uniform with GET /api/quotes/{ref}: VERIFIED always carries the key.
-  if (result.matchStatus === "VERIFIED")
+  if (result.matchStatus === "VERIFIED") {
     data.salesRep = result.salesRepName ? { name: result.salesRepName } : null;
+    // Same reset as the verify endpoint: a successful verification clears the
+    // caller's enumeration counter.
+    clearVerifyMisses(req);
+  }
   if (result.matchStatus === "NO_MATCH") {
     data.newCustomerFormUrl = `${origin}/register?ref=${encodeURIComponent(result.ref)}`;
   }

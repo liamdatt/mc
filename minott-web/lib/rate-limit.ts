@@ -48,10 +48,12 @@ export function checkRateLimit(
  * Read-only companion to `checkRateLimit`: same fixed-window semantics, but it
  * never creates or increments a bucket. Use when the decision to count is made
  * separately from the decision to allow (e.g. only failed attempts count).
+ * There is no `windowMs` option — a peek never creates a bucket, so there is no
+ * window to set; the window is fixed by whichever `checkRateLimit` call opened it.
  */
 export function peekRateLimit(
   key: string,
-  opts: { max?: number; windowMs?: number } = {},
+  opts: { max?: number } = {},
 ): { ok: boolean; retryAfter?: number } {
   const max = opts.max ?? MAX_REQUESTS;
   const now = Date.now();
@@ -61,6 +63,11 @@ export function peekRateLimit(
     return { ok: false, retryAfter: Math.ceil((existing.resetAt - now) / 1000) };
   }
   return { ok: true };
+}
+
+/** Drops a bucket entirely, so the next `checkRateLimit` for that key starts a fresh window. */
+export function resetRateLimit(key: string): void {
+  buckets.delete(key);
 }
 
 /** Best-effort client IP from proxy headers; falls back to a constant. */

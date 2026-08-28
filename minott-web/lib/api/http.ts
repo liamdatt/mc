@@ -1,6 +1,6 @@
 import { timingSafeEqual } from "crypto";
 import { NextResponse, type NextRequest } from "next/server";
-import { checkRateLimit, peekRateLimit, clientIp } from "@/lib/rate-limit";
+import { checkRateLimit, peekRateLimit, resetRateLimit, clientIp } from "@/lib/rate-limit";
 import { normalizeAccountNumber } from "@/lib/customer-match-normalize";
 
 /** Success envelope: `{ data: ... }`. */
@@ -13,6 +13,16 @@ export function jsonError(code: string, message: string, status: number): NextRe
   return NextResponse.json({ error: code, message }, { status });
 }
 
+/** The one 429 shape every limiter returns: `rate_limited` + an optional `Retry-After`. */
+function rateLimited(message: string, retryAfter?: number): NextResponse {
+  return NextResponse.json(
+    { error: "rate_limited", message },
+    { status: 429, headers: retryAfter ? { "Retry-After": String(retryAfter) } : undefined },
+  );
+}
+
+const VERIFY_LIMIT_MESSAGE = "Too many verification attempts. Please try again later.";
+
 /**
  * Returns a 429 response if the caller is over the limit, otherwise null.
  * Call at the top of every route handler: `const limited = enforceRateLimit(req); if (limited) return limited;`
@@ -22,10 +32,7 @@ export function enforceRateLimit(req: NextRequest): NextResponse | null {
   const { ok, retryAfter } = checkRateLimit(ip);
   if (ok) return null;
   console.warn(`[api] rate limit exceeded for ${ip}`);
-  return NextResponse.json(
-    { error: "rate_limited", message: "Too many requests. Please slow down." },
-    { status: 429, headers: retryAfter ? { "Retry-After": String(retryAfter) } : undefined },
-  );
+  return rateLimited("Too many requests. Please slow down.", retryAfter);
 }
 
 /** Per-(IP, account number) brute-force guard shared by every endpoint that verifies an MEC account. 429 or null. */
@@ -33,13 +40,10 @@ export function enforceVerifyBucket(req: NextRequest, accountNumber: string): Ne
   const key = `verify:${clientIp(req)}:${normalizeAccountNumber(accountNumber)}`;
   const { ok, retryAfter } = checkRateLimit(key, { max: 10, windowMs: 15 * 60_000 });
   if (ok) return null;
-  return NextResponse.json(
-    { error: "rate_limited", message: "Too many verification attempts. Please try again later." },
-    { status: 429, headers: retryAfter ? { "Retry-After": String(retryAfter) } : undefined },
-  );
+  return rateLimited(VERIFY_LIMIT_MESSAGE, retryAfter);
 }
 
-const MISS_MAX = 30;
+const MISS_MAX = 100;
 const MISS_WINDOW_MS = 15 * 60_000;
 
 function missKey(req: NextRequest): string {
@@ -47,25 +51,33 @@ function missKey(req: NextRequest): string {
 }
 
 /**
- * Enumeration guard: 429 once an IP has accumulated 30 failed verifications in
- * 15 min. Successful verifies never count. Peeks the bucket WITHOUT
- * incrementing — only `recordVerifyMiss` moves the counter.
+ * Enumeration guard: 429 once an IP has accumulated 100 failed verifications in
+ * 15 min. Peeks the bucket WITHOUT incrementing — only `recordVerifyMiss` moves
+ * the counter, and only misses count.
+ *
+ * The ceiling is deliberately high and `clearVerifyMisses` resets it on every
+ * successful verification, because in production every OneChat agent call
+ * arrives from a SINGLE egress IP: a per-IP counter is really a per-fleet
+ * counter, so a low cap would let one caller's typos 429 every other customer.
  */
 export function enforceVerifyMissGuard(req: NextRequest): NextResponse | null {
-  const { ok, retryAfter } = peekRateLimit(missKey(req), {
-    max: MISS_MAX,
-    windowMs: MISS_WINDOW_MS,
-  });
+  const { ok, retryAfter } = peekRateLimit(missKey(req), { max: MISS_MAX });
   if (ok) return null;
-  return NextResponse.json(
-    { error: "rate_limited", message: "Too many verification attempts. Please try again later." },
-    { status: 429, headers: retryAfter ? { "Retry-After": String(retryAfter) } : undefined },
-  );
+  return rateLimited(VERIFY_LIMIT_MESSAGE, retryAfter);
 }
 
 /** Counts one failed verification against the caller's IP. */
 export function recordVerifyMiss(req: NextRequest): void {
   checkRateLimit(missKey(req), { max: MISS_MAX, windowMs: MISS_WINDOW_MS });
+}
+
+/**
+ * Clears the caller's accumulated misses. Called on every successful
+ * verification: a real customer verifying proves the caller is the legitimate
+ * agent and not an enumerator, so the counter restarts.
+ */
+export function clearVerifyMisses(req: NextRequest): void {
+  resetRateLimit(missKey(req));
 }
 
 /**

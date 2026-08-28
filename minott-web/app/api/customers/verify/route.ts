@@ -6,6 +6,7 @@ import {
   enforceVerifyBucket,
   enforceVerifyMissGuard,
   recordVerifyMiss,
+  clearVerifyMisses,
   requireIntegrationKey,
   readJson,
   isResponse,
@@ -45,6 +46,9 @@ export async function POST(req: NextRequest) {
     recordVerifyMiss(req);
     return jsonData({ verified: false });
   }
+  // A real customer verified — this caller is the legitimate agent, not an
+  // enumerator, so its accumulated misses are forgiven.
+  clearVerifyMisses(req);
   return jsonData({
     verified: true,
     companyName: company.name,

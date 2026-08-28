@@ -262,9 +262,15 @@ Extra limiters (both on top of the global per-IP limiter):
 - **10 attempts per (IP, account number) per 15 min** → `429`. The same bucket also
   applies to `POST /api/quotes` whenever `mecAccountNumber` is sent, so the two doors
   cannot be used to work around each other.
-- **30 failed verifications per IP per 15 min** → `429` (enumeration guard, checked
-  before the lookup). Only misses count; successful verifies never do. A
-  `verification_failed` result from `POST /api/quotes` counts against the same bucket.
+- **100 failed verifications per IP per 15 min** → `429` (enumeration guard, checked
+  before the lookup). Only misses count, and **any successful verification clears the
+  caller's accumulated misses**, restarting the counter — a real customer verifying
+  proves the caller is the legitimate agent rather than an enumerator. A
+  `verification_failed` result from `POST /api/quotes` counts against the same bucket,
+  and a `VERIFIED` quote clears it. The ceiling is high, and resets on success, because
+  agent traffic arrives from a single egress IP: a per-IP counter is effectively a
+  per-fleet counter, so a low cap would let one caller's mistyped account numbers `429`
+  every other customer.
 
 Both return the standard `429` envelope
 (`{ "error": "rate_limited", "message": "Too many verification attempts. Please try again later." }`)
@@ -302,8 +308,8 @@ with a `Retry-After` header.
   200 characters; over-long values are accepted and stored capped, not rejected.
 - Sending `mecAccountNumber` also consumes the verification limiters described under
   `POST /api/customers/verify` (10 attempts per IP + account number per 15 min, and the
-  30-misses-per-IP-per-15-min enumeration guard → `429`); a `verification_failed`
-  result records a miss.
+  100-misses-per-IP-per-15-min enumeration guard → `429`); a `verification_failed`
+  result records a miss, and a `VERIFIED` result clears the caller's miss counter.
 - Per-item `note` is appended to the product name in the portal. `notes` and the
   channel land in the inquiry message as `[via whatsapp] …`.
 - A `ref` is issued on every quote (including verified ones) and is the capability
