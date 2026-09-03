@@ -149,27 +149,48 @@ model InquiryNote {
 }
 
 model CustomerApplication {
-  id              Int       @id @default(autoincrement())
-  inquiry         Inquiry   @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
-  inquiryId       Int       @unique
-  companyName     String
-  industry        String
-  location        String
-  contactName     String
-  email           String
-  phone           String
-  notes           String?
-  status          String    @default("SUBMITTED") // "SUBMITTED" | "INFO_REQUESTED" | "APPROVED" | "REJECTED"
-  decisionNote    String? // rejection reason, or the info request
-  decidedAt       DateTime?
-  decidedBy       User?     @relation("ApplicationDecider", fields: [decidedByUserId], references: [id], onDelete: SetNull)
-  decidedByUserId String?
-  company         Company?  @relation(fields: [companyId], references: [id], onDelete: SetNull) // created on approval
-  companyId       Int?
-  user            User?     @relation("ApplicationContact", fields: [userId], references: [id], onDelete: SetNull) // provisioned on approval
-  userId          String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id                 Int       @id @default(autoincrement())
+  inquiry            Inquiry   @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+  inquiryId          Int       @unique
+  companyName        String
+  industry           String
+  location           String // "<billingCity>, <billingParish>" — kept for list/match/email display
+  contactName        String // principal name
+  email              String // principal email — becomes the first portal user
+  phone              String // principal tel
+  notes              String?
+  // Paper-form customer fields (nullable: rows predate these columns)
+  businessType       String?
+  inBusinessSince    String?
+  trn                String?
+  taxExemptionNumber String?
+  billingStreet      String?
+  billingCity        String?
+  billingParish      String?
+  billingZip         String?
+  shippingStreet     String? // all four null = "same as billing"
+  shippingCity       String?
+  shippingParish     String?
+  shippingZip        String?
+  principalTitle     String?
+  accountingName     String?
+  accountingPhone    String?
+  accountingEmail    String?
+  status             String    @default("SUBMITTED") // "SUBMITTED" | "INFO_REQUESTED" | "APPROVED" | "ACCOUNT_CREATED" | "REJECTED"
+  decisionNote       String? // rejection reason, the info request, or an internal return-to-review note
+  decidedAt          DateTime?
+  decidedBy          User?     @relation("ApplicationDecider", fields: [decidedByUserId], references: [id], onDelete: SetNull)
+  decidedByUserId    String?
+  // Stamped by the admin who creates the account (paper form: "Customer Account Created By")
+  accountCreatedAt       DateTime?
+  accountCreatedBy       User?   @relation("ApplicationAccountCreator", fields: [accountCreatedByUserId], references: [id], onDelete: SetNull)
+  accountCreatedByUserId String?
+  company            Company?  @relation(fields: [companyId], references: [id], onDelete: SetNull) // set on ACCOUNT_CREATED
+  companyId          Int?
+  user               User?     @relation("ApplicationContact", fields: [userId], references: [id], onDelete: SetNull) // provisioned on ACCOUNT_CREATED
+  userId             String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
   @@index([status])
 }
@@ -194,6 +215,26 @@ model Company {
   mecAccountNumber String?               @unique
   industry         String?
   location         String?
+  businessType       String?
+  inBusinessSince    String?
+  trn                String?
+  taxExemptionNumber String?
+  billingStreet      String?
+  billingCity        String?
+  billingParish      String?
+  billingZip         String?
+  shippingStreet     String? // all four null = "same as billing"
+  shippingCity       String?
+  shippingParish     String?
+  shippingZip        String?
+  accountingName     String?
+  accountingPhone    String?
+  accountingEmail    String?
+  // Admin-only account terms (paper form "Other Information")
+  sector             String?
+  creditTerms        String?
+  creditLimit        Decimal?
+  gctStatus          String?
   salesRep         SalesRep?             @relation(fields: [salesRepId], references: [id], onDelete: SetNull)
   salesRepId       Int?
   users            User[]
@@ -237,6 +278,7 @@ model User {
   inquiries           Inquiry[]
   decidedApplications CustomerApplication[] @relation("ApplicationDecider")
   contactApplications CustomerApplication[] @relation("ApplicationContact")
+  createdApplications CustomerApplication[] @relation("ApplicationAccountCreator")
   createdAt           DateTime              @default(now())
   updatedAt           DateTime              @updatedAt
 
