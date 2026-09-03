@@ -3,7 +3,8 @@ import Link from "next/link";
 import { Section } from "@/components/primitives/Section";
 import { Container } from "@/components/primitives/Container";
 import { Eyebrow } from "@/components/primitives/Eyebrow";
-import { ApplicationForm } from "@/components/register/ApplicationForm";
+import { ApplicationForm, type ApplicationPrefill } from "@/components/register/ApplicationForm";
+import { EMPTY_ADDRESS } from "@/components/forms/AddressFields";
 import { getInquiryByRef } from "@/lib/applications";
 import { APPLICATION_STATUS, MATCH_STATUS } from "@/lib/constants";
 
@@ -53,11 +54,13 @@ export default async function RegisterPage({
 
   if (app && app.status !== APPLICATION_STATUS.INFO_REQUESTED) {
     const copy =
-      app.status === APPLICATION_STATUS.APPROVED
-        ? "Your application has been approved — check your email for the link to set your password."
-        : app.status === APPLICATION_STATUS.REJECTED
-          ? "Your application was not approved. Please check your email for details."
-          : "Your application is under review. Our Accounts Receivable team will respond within one business day.";
+      app.status === APPLICATION_STATUS.ACCOUNT_CREATED
+        ? "Your account is ready — check your email for the link to set your password."
+        : app.status === APPLICATION_STATUS.APPROVED
+          ? "Your application has been approved. We're setting up your account and will email you your login details shortly."
+          : app.status === APPLICATION_STATUS.REJECTED
+            ? "Your application was not approved. Please check your email for details."
+            : "Your application is under review. Our Accounts Receivable team will respond within one business day.";
     return (
       <Shell title="Application status">
         <p className="max-w-2xl text-lede text-mec-ink/80">{copy}</p>
@@ -65,9 +68,46 @@ export default async function RegisterPage({
     );
   }
 
-  const prefill = app
-    ? { companyName: app.companyName, industry: app.industry, location: app.location, contactName: app.contactName, email: app.email, phone: app.phone, notes: app.notes ?? "" }
-    : { companyName: inquiry.company ?? "", industry: inquiry.industry ?? "", location: inquiry.location ?? "", contactName: inquiry.name, email: inquiry.email, phone: inquiry.phone ?? "", notes: "" };
+  const prefill: ApplicationPrefill = app
+    ? {
+        companyName: app.companyName,
+        industry: app.industry,
+        businessType: app.businessType ?? "",
+        inBusinessSince: app.inBusinessSince ?? "",
+        trn: app.trn ?? "",
+        taxExemptionNumber: app.taxExemptionNumber ?? "",
+        billing: { street: app.billingStreet ?? "", city: app.billingCity ?? "", parish: app.billingParish ?? "", zip: app.billingZip ?? "" },
+        shipping:
+          app.shippingStreet || app.shippingCity || app.shippingParish || app.shippingZip
+            ? { street: app.shippingStreet ?? "", city: app.shippingCity ?? "", parish: app.shippingParish ?? "", zip: app.shippingZip ?? "" }
+            : null,
+        contactName: app.contactName,
+        principalTitle: app.principalTitle ?? "",
+        email: app.email,
+        phone: app.phone,
+        accountingName: app.accountingName ?? "",
+        accountingPhone: app.accountingPhone ?? "",
+        accountingEmail: app.accountingEmail ?? "",
+        notes: app.notes ?? "",
+      }
+    : {
+        companyName: inquiry.company ?? "",
+        industry: inquiry.industry ?? "",
+        businessType: "",
+        inBusinessSince: "",
+        trn: "",
+        taxExemptionNumber: "",
+        billing: EMPTY_ADDRESS,
+        shipping: null,
+        contactName: inquiry.name,
+        principalTitle: "",
+        email: inquiry.email,
+        phone: inquiry.phone ?? "",
+        accountingName: "",
+        accountingPhone: "",
+        accountingEmail: "",
+        notes: "",
+      };
 
   return (
     <Shell title="Open an MEC account.">

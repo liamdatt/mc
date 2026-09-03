@@ -4,7 +4,7 @@ import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { isIndustry } from "@/lib/industries";
-import { APPLICATION_STATUS, MATCH_STATUS } from "@/lib/constants";
+import { APPLICATION_STATUS, MATCH_STATUS, isParish } from "@/lib/constants";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { currentRequestIp } from "@/lib/request-ip";
 import { getInquiryByRef } from "@/lib/applications";
@@ -40,21 +40,48 @@ export async function submitApplication(
   if (existing && existing.status !== APPLICATION_STATUS.INFO_REQUESTED)
     return { error: "This application has already been submitted." };
 
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const opt = (key: string) => str(formData, key) || null;
+  const shippingSame = formData.get("shippingSame") === "on";
+  const billingCity = str(formData, "billingCity");
+  const billingParish = str(formData, "billingParish");
+
   const data = {
     companyName: str(formData, "companyName"),
     industry: str(formData, "industry"),
-    location: str(formData, "location"),
+    businessType: str(formData, "businessType"),
+    inBusinessSince: opt("inBusinessSince"),
+    trn: str(formData, "trn"),
+    taxExemptionNumber: opt("taxExemptionNumber"),
+    billingStreet: str(formData, "billingStreet"),
+    billingCity,
+    billingParish,
+    billingZip: opt("billingZip"),
+    shippingStreet: shippingSame ? null : opt("shippingStreet"),
+    shippingCity: shippingSame ? null : opt("shippingCity"),
+    shippingParish: shippingSame ? null : opt("shippingParish"),
+    shippingZip: shippingSame ? null : opt("shippingZip"),
+    location: `${billingCity}, ${billingParish}`,
     contactName: str(formData, "contactName"),
+    principalTitle: opt("principalTitle"),
     email: str(formData, "email").toLowerCase(),
     phone: str(formData, "phone"),
-    notes: str(formData, "notes") || null,
+    accountingName: opt("accountingName"),
+    accountingPhone: opt("accountingPhone"),
+    accountingEmail: str(formData, "accountingEmail").toLowerCase() || null,
+    notes: opt("notes"),
   };
-  if (!data.companyName) return { error: "Company name is required." };
+  if (!data.companyName) return { error: "Business name is required." };
   if (!isIndustry(data.industry)) return { error: "Please choose your industry." };
-  if (!data.location) return { error: "Location is required." };
-  if (!data.contactName) return { error: "Contact name is required." };
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) return { error: "A valid email is required." };
-  if (!data.phone) return { error: "Phone is required." };
+  if (!data.businessType) return { error: "Type of business is required." };
+  if (!data.trn) return { error: "Tax Registration Number (TRN) is required." };
+  if (!data.billingStreet || !data.billingCity) return { error: "Billing street and city are required." };
+  if (!isParish(data.billingParish)) return { error: "Please choose your billing parish." };
+  if (data.shippingParish && !isParish(data.shippingParish)) return { error: "Please choose a valid shipping parish." };
+  if (!data.contactName) return { error: "Principal contact name is required." };
+  if (!EMAIL_RE.test(data.email)) return { error: "A valid principal email is required." };
+  if (!data.phone) return { error: "Principal telephone is required." };
+  if (data.accountingEmail && !EMAIL_RE.test(data.accountingEmail)) return { error: "The accounting contact email is not valid." };
 
   let appId: number;
   if (existing) {
