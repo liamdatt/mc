@@ -21,6 +21,7 @@ export async function AdminCompanyView({ id }: { id: number }) {
           banned: true,
         },
       },
+      applications: { where: { status: "ACCOUNT_CREATED" }, select: { id: true }, take: 1 },
     },
   });
   if (!company) notFound();
@@ -44,6 +45,14 @@ export async function AdminCompanyView({ id }: { id: number }) {
         Account-level details for this company. Portal users below share this
         account&apos;s quote history and sales rep.
       </p>
+      {company.applications[0] && (
+        <p className="mt-2 text-sm text-mec-ink/60">
+          Created from{" "}
+          <Link href={`/portal/applications/${company.applications[0].id}`} className="font-semibold text-mec-red hover:underline">
+            application #{company.applications[0].id}
+          </Link>
+        </p>
+      )}
       <div className="mt-8">
         <CompanyForm
           company={toCompanyFormData(company)}

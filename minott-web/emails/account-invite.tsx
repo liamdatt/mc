@@ -10,6 +10,8 @@ export type AccountInviteProps = {
   portal: "customer" | "sales" | "admin";
   /** First-time activation, a later password reset, or an approved application — changes the copy. */
   variant: "invite" | "reset" | "approved";
+  /** The company's MEC account number, shown for the approved-application variant. */
+  accountNumber?: string | null;
 };
 
 const salesInvite = {
@@ -62,7 +64,7 @@ const COPY = {
   },
 } as const;
 
-export function AccountInvite({ name, url, portal, variant }: AccountInviteProps) {
+export function AccountInvite({ name, url, portal, variant, accountNumber }: AccountInviteProps) {
   const copy = COPY[portal][variant];
   return (
     <EmailLayout preview={copy.heading}>
@@ -72,6 +74,11 @@ export function AccountInvite({ name, url, portal, variant }: AccountInviteProps
       <Text style={{ color: emailColors.graphite, fontSize: 14, margin: 0 }}>
         Hi {name}, {copy.body}
       </Text>
+      {variant === "approved" && accountNumber && (
+        <Text style={{ color: emailColors.ink, fontSize: 14, fontWeight: 700, margin: "12px 0 0" }}>
+          Your MEC account number is {accountNumber}.
+        </Text>
+      )}
       <Button
         href={url}
         style={{

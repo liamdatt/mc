@@ -39,8 +39,8 @@ export async function sendAccountInvite(
     const approvedApp =
       user.activatedAt === null && user.role === "customer"
         ? await db.customerApplication.findFirst({
-            where: { userId, status: "APPROVED" },
-            select: { id: true },
+            where: { userId, status: "ACCOUNT_CREATED" },
+            select: { company: { select: { mecAccountNumber: true } } },
           })
         : null;
     const variant = approvedApp ? "approved" : user.activatedAt === null ? "invite" : "reset";
@@ -53,7 +53,13 @@ export async function sendAccountInvite(
     // which is only a nested dependency of `@react-email/components` and is not
     // resolvable from Resend's own module path in the production build.
     const email = (
-      <AccountInvite name={user.name} url={url} portal={portal} variant={variant} />
+      <AccountInvite
+        name={user.name}
+        url={url}
+        portal={portal}
+        variant={variant}
+        accountNumber={approvedApp?.company?.mecAccountNumber ?? null}
+      />
     );
     const [html, text] = await Promise.all([
       render(email),

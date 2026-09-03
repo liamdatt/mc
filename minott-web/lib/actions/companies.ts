@@ -2,12 +2,15 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import { Prisma } from "@prisma/client";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { db } from "@/lib/db";
 import { provisionUser, sendInvite, INVITE_REDIRECT } from "@/lib/auth/provision";
 import { normalizeAccountNumber } from "@/lib/customer-match";
-import { isParish } from "@/lib/constants";
+import { isParish, APPLICATION_STATUS, MATCH_STATUS } from "@/lib/constants";
+import { getPortalSession } from "@/lib/portal";
+import { sendInquiryEmails } from "@/lib/email/send-inquiry-emails";
 
 export type CompanyActionState = { error?: string };
 
@@ -99,6 +102,17 @@ export async function createCompany(
   if (salesRepId === "invalid") return { error: "Invalid sales rep." };
   if (!fields.name) return { error: "Company name is required." };
 
+  const applicationIdRaw = str(formData, "applicationId");
+  if (applicationIdRaw) {
+    const applicationId = Number(applicationIdRaw);
+    if (!Number.isInteger(applicationId)) return { error: "Invalid application." };
+    return createCompanyFromApplication(applicationId, fields, salesRepId, {
+      contactName: str(formData, "contactName"),
+      contactEmail: str(formData, "contactEmail").toLowerCase(),
+      contactPhone: str(formData, "contactPhone"),
+    });
+  }
+
   const contactName = str(formData, "contactName");
   const contactEmail = str(formData, "contactEmail").toLowerCase();
   const contactPhone = str(formData, "contactPhone");
@@ -145,6 +159,112 @@ export async function createCompany(
   }
 
   revalidatePath("/portal/customers");
+  redirect(`/portal/customers/${company.id}`);
+}
+
+/**
+ * Second step of the two-step approval: an admin turns an APPROVED application
+ * into a Company + invited principal, and links the original quote. Ordered
+ * writes with compensating deletes — no dangling company or user on failure.
+ * Caller has already run requireAdmin() and parsed the form.
+ */
+async function createCompanyFromApplication(
+  applicationId: number,
+  fields: Prisma.CompanyUncheckedCreateInput & { name: string },
+  salesRepId: number | null,
+  contact: { contactName: string; contactEmail: string; contactPhone: string },
+): Promise<CompanyActionState> {
+  const session = await getPortalSession();
+  const app = await db.customerApplication.findUnique({
+    where: { id: applicationId },
+    select: { id: true, status: true, companyId: true, inquiryId: true, email: true },
+  });
+  if (!app || app.status !== APPLICATION_STATUS.APPROVED || app.companyId !== null)
+    return { error: "This application is no longer awaiting account setup." };
+  if (!contact.contactName) return { error: "Principal contact name is required." };
+  if (contact.contactEmail !== app.email)
+    return { error: "The principal's email must match the application. Add other users from the company page afterwards." };
+
+  const existingUser = await db.user.findUnique({ where: { email: app.email }, select: { id: true } });
+  if (existingUser)
+    return { error: "An account with this email already exists — link it from Customers instead." };
+
+  let company;
+  try {
+    company = await db.company.create({ data: { ...fields, salesRepId } });
+  } catch (e) {
+    if (isUniqueViolation(e))
+      return { error: "Another company already uses that MEC account number." };
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2003")
+      return { error: "Selected sales rep no longer exists." };
+    throw e;
+  }
+
+  const provisioned = await provisionUser({
+    email: app.email,
+    name: contact.contactName,
+    role: "customer",
+    redirectTo: INVITE_REDIRECT.customer,
+    data: { phone: contact.contactPhone || undefined },
+    skipInvite: true,
+  });
+  if (!provisioned.ok) {
+    await db.company.delete({ where: { id: company.id } }).catch((e) =>
+      console.error(`[companies] failed to roll back company ${company.id}:`, e),
+    );
+    return { error: provisioned.error };
+  }
+  const userId = provisioned.userId;
+
+  const rollback = async () => {
+    await db.user.delete({ where: { id: userId } }).catch((e) =>
+      console.error(`[companies] failed to roll back user ${userId}:`, e),
+    );
+    await db.company.delete({ where: { id: company.id } }).catch((e) =>
+      console.error(`[companies] failed to roll back company ${company.id}:`, e),
+    );
+  };
+
+  try {
+    await db.$transaction([
+      db.user.update({ where: { id: userId }, data: { companyId: company.id } }),
+      db.inquiry.update({
+        where: { id: app.inquiryId },
+        data: { companyId: company.id, userId, matchStatus: MATCH_STATUS.VERIFIED, matchedCompanyId: null },
+      }),
+      // Status-guarded: a concurrent create/revert leaves count 0; re-read below catches it.
+      db.customerApplication.updateMany({
+        where: { id: applicationId, status: APPLICATION_STATUS.APPROVED, companyId: null },
+        data: {
+          status: APPLICATION_STATUS.ACCOUNT_CREATED,
+          companyId: company.id,
+          userId,
+          accountCreatedAt: new Date(),
+          accountCreatedByUserId: session?.user.id ?? null,
+        },
+      }),
+    ]);
+  } catch (e) {
+    console.error(`[companies] account creation failed for application ${applicationId}:`, e);
+    await rollback();
+    return { error: "Creating the account failed while linking the quote — nothing was created. Please try again." };
+  }
+
+  const done = await db.customerApplication.findUnique({ where: { id: applicationId }, select: { status: true, companyId: true } });
+  if (done?.status !== APPLICATION_STATUS.ACCOUNT_CREATED || done.companyId !== company.id) {
+    await rollback();
+    return { error: "This application was handled by someone else moments ago." };
+  }
+
+  // Application is ACCOUNT_CREATED + linked, so the invite hook picks the "approved" copy.
+  await sendInvite(app.email, INVITE_REDIRECT.customer);
+  after(() => sendInquiryEmails(app.inquiryId, { verifiedNow: true }));
+
+  revalidatePath("/portal/customers");
+  revalidatePath("/portal/applications");
+  revalidatePath(`/portal/applications/${applicationId}`);
+  revalidatePath("/portal/requests");
+  revalidatePath("/portal");
   redirect(`/portal/customers/${company.id}`);
 }
 
