@@ -10,12 +10,13 @@ function decidedSince30Days() {
 
 /** Accounts Receivable dashboard — application queue counts. */
 export async function ArDashboard() {
-  const [submitted, infoRequested, decided] = await Promise.all([
+  const [submitted, infoRequested, awaitingSetup, decided] = await Promise.all([
     db.customerApplication.count({ where: { status: APPLICATION_STATUS.SUBMITTED } }),
     db.customerApplication.count({ where: { status: APPLICATION_STATUS.INFO_REQUESTED } }),
+    db.customerApplication.count({ where: { status: APPLICATION_STATUS.APPROVED } }),
     db.customerApplication.count({
       where: {
-        status: { in: [APPLICATION_STATUS.APPROVED, APPLICATION_STATUS.REJECTED] },
+        status: { in: [APPLICATION_STATUS.ACCOUNT_CREATED, APPLICATION_STATUS.REJECTED] },
         decidedAt: { gte: decidedSince30Days() },
       },
     }),
@@ -23,6 +24,7 @@ export async function ArDashboard() {
   const cards = [
     { label: "Awaiting review", value: submitted, href: "/portal/applications" },
     { label: "Info requested", value: infoRequested, href: "/portal/applications" },
+    { label: "Awaiting account setup", value: awaitingSetup, href: "/portal/applications" },
     { label: "Decided (30 days)", value: decided, href: "/portal/applications" },
   ];
   return (
@@ -31,7 +33,7 @@ export async function ArDashboard() {
       <p className="mt-3 max-w-2xl text-sm text-mec-ink/60">
         Review new customer applications submitted through the website.
       </p>
-      <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-3">
+      <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((c) => (
           <Link key={c.label} href={c.href} className="rounded-md border border-black/10 bg-mec-pure p-6 transition hover:border-mec-red">
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-mec-ink/60">{c.label}</p>

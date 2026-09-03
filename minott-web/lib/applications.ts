@@ -42,11 +42,8 @@ export function getApplicationById(id: number) {
     include: {
       inquiry: { include: { items: true } },
       decidedBy: { select: { name: true } },
-      company: { select: { id: true, name: true } },
+      accountCreatedBy: { select: { name: true } },
+      company: { select: { id: true, name: true, mecAccountNumber: true } },
     },
   });
-}
-
-export function getActiveSalesReps() {
-  return db.salesRep.findMany({ where: { active: true }, orderBy: { name: "asc" }, select: { id: true, name: true } });
 }
