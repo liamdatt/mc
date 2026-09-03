@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { CompanyForm } from "@/components/admin/CompanyForm";
 import { CompanyUserForm } from "@/components/admin/CompanyUserForm";
 import { toCompanyFormData } from "@/lib/company-form";
+import { APPLICATION_STATUS } from "@/lib/constants";
 
 /** Admin management view for one customer company. Caller gates on role. */
 export async function AdminCompanyView({ id }: { id: number }) {
@@ -21,7 +22,11 @@ export async function AdminCompanyView({ id }: { id: number }) {
           banned: true,
         },
       },
-      applications: { where: { status: "ACCOUNT_CREATED" }, select: { id: true }, take: 1 },
+      applications: {
+        where: { status: APPLICATION_STATUS.ACCOUNT_CREATED },
+        select: { id: true },
+        take: 1,
+      },
     },
   });
   if (!company) notFound();

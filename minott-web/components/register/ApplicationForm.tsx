@@ -63,9 +63,8 @@ export function ApplicationForm({
 
   return (
     <form action={formAction} className="rounded-md border border-black/10 bg-mec-pure p-6">
-      <input type="hidden" name="ref" value={refToken} />
-
       <h2 className={h2}>Business</h2>
+      <input type="hidden" name="ref" value={refToken} />
       <label className={labelCls}>Business name *<input name="companyName" required defaultValue={prefill.companyName} className={inputCls} /></label>
       <label className={labelCls}>Industry *
         <select name="industry" required defaultValue={prefill.industry} className={inputCls}>
@@ -102,6 +101,7 @@ export function ApplicationForm({
       <label className={labelCls}>Tel.<input name="accountingPhone" type="tel" defaultValue={prefill.accountingPhone} className={inputCls} /></label>
       <label className={labelCls}>Email<input name="accountingEmail" type="email" defaultValue={prefill.accountingEmail} className={inputCls} /></label>
 
+      <h2 className={h2}>Notes</h2>
       <label className={labelCls}>Notes<textarea name="notes" rows={3} defaultValue={prefill.notes} className={`${inputCls} resize-none`} /></label>
 
       {state.error && <p className="mt-3 text-sm text-mec-red">{state.error}</p>}

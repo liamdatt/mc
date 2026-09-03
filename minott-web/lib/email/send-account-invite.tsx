@@ -3,6 +3,7 @@ import { getResend } from "@/lib/email/resend";
 import { getEmailSettings } from "@/lib/settings";
 import { db } from "@/lib/db";
 import { AccountInvite } from "@/emails/account-invite";
+import { APPLICATION_STATUS } from "@/lib/constants";
 
 /**
  * Best-effort invite/reset email, called from BetterAuth's `sendResetPassword`
@@ -39,7 +40,7 @@ export async function sendAccountInvite(
     const approvedApp =
       user.activatedAt === null && user.role === "customer"
         ? await db.customerApplication.findFirst({
-            where: { userId, status: "ACCOUNT_CREATED" },
+            where: { userId, status: APPLICATION_STATUS.ACCOUNT_CREATED },
             select: { company: { select: { mecAccountNumber: true } } },
           })
         : null;
