@@ -165,8 +165,15 @@ link to set your password" copy.
   `sendApplicationEmails`) goes to the general inbox plus every non-banned `admin` user, with a
   link to `/portal/customers/new?application=<id>`.
 - **Request info** and **Reject** are unchanged. `loadOpenApplication` treats `APPROVED` as
-  decided (so AR cannot request info or reject after approving; an admin who needs to back out
-  uses the existing "decided" path — reversing an approval is out of scope).
+  decided, so request-info and reject are not offered while an application is awaiting account
+  setup.
+- **Return to review** (`revertApplicationApproval`, roles `admin` + `ar`): available only while
+  `status === APPROVED && companyId == null`. Status-guarded `updateMany` `APPROVED → SUBMITTED`
+  clearing `decidedAt` / `decidedByUserId`. No emails. Shown on the application detail page as a
+  secondary button with a confirm step ("Return to review? The application goes back to the
+  Awaiting review queue.") and an optional internal note stored in `decisionNote` (visible on the
+  detail page, never emailed). Once the account is created (`ACCOUNT_CREATED`) there is no
+  revert; the admin edits the company instead.
 - `ApplicationDecisionForms` drops the rep `<select>`; the Approve card copy becomes "Marks the
   application approved. An admin then creates the account and sends the invite."
 - The applications list gets a fourth group between "Info requested" and "Decided":
