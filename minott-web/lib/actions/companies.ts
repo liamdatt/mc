@@ -7,6 +7,7 @@ import { requireAdmin } from "@/lib/auth/require-admin";
 import { db } from "@/lib/db";
 import { provisionUser, sendInvite, INVITE_REDIRECT } from "@/lib/auth/provision";
 import { normalizeAccountNumber } from "@/lib/customer-match";
+import { isParish } from "@/lib/constants";
 
 export type CompanyActionState = { error?: string };
 
@@ -26,13 +27,57 @@ function isUniqueViolation(e: unknown): boolean {
   return e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002";
 }
 
-function companyFields(formData: FormData) {
+type CompanyFieldsResult =
+  | { ok: true; data: Prisma.CompanyUncheckedCreateInput & { name: string } }
+  | { ok: false; error: string };
+
+/** Parse every Company column from the admin form. Shipping is nulled when "same as billing". */
+function companyFields(formData: FormData): CompanyFieldsResult {
+  const opt = (key: string) => str(formData, key) || null;
   const acct = str(formData, "mecAccountNumber");
+  const shippingSame = formData.get("shippingSame") === "on";
+
+  const billingParish = opt("billingParish");
+  const shippingParish = shippingSame ? null : opt("shippingParish");
+  if (billingParish && !isParish(billingParish)) return { ok: false, error: "Invalid billing parish." };
+  if (shippingParish && !isParish(shippingParish)) return { ok: false, error: "Invalid shipping parish." };
+
+  const limitRaw = str(formData, "creditLimit");
+  let creditLimit: Prisma.Decimal | null = null;
+  if (limitRaw) {
+    const n = Number(limitRaw);
+    if (!Number.isFinite(n)) return { ok: false, error: "Credit limit must be a number." };
+    if (n < 0) return { ok: false, error: "Credit limit cannot be negative." };
+    creditLimit = new Prisma.Decimal(limitRaw);
+  }
+
   return {
-    name: str(formData, "name"),
-    mecAccountNumber: acct ? normalizeAccountNumber(acct) || null : null,
-    industry: str(formData, "industry") || null,
-    location: str(formData, "location") || null,
+    ok: true,
+    data: {
+      name: str(formData, "name"),
+      mecAccountNumber: acct ? normalizeAccountNumber(acct) || null : null,
+      industry: opt("industry"),
+      location: opt("location"),
+      businessType: opt("businessType"),
+      inBusinessSince: opt("inBusinessSince"),
+      trn: opt("trn"),
+      taxExemptionNumber: opt("taxExemptionNumber"),
+      billingStreet: opt("billingStreet"),
+      billingCity: opt("billingCity"),
+      billingParish,
+      billingZip: opt("billingZip"),
+      shippingStreet: shippingSame ? null : opt("shippingStreet"),
+      shippingCity: shippingSame ? null : opt("shippingCity"),
+      shippingParish,
+      shippingZip: shippingSame ? null : opt("shippingZip"),
+      accountingName: opt("accountingName"),
+      accountingPhone: opt("accountingPhone"),
+      accountingEmail: str(formData, "accountingEmail").toLowerCase() || null,
+      sector: opt("sector"),
+      creditTerms: opt("creditTerms"),
+      creditLimit,
+      gctStatus: opt("gctStatus"),
+    },
   };
 }
 
@@ -47,7 +92,9 @@ export async function createCompany(
 ): Promise<CompanyActionState> {
   await requireAdmin();
 
-  const fields = companyFields(formData);
+  const parsed = companyFields(formData);
+  if (!parsed.ok) return { error: parsed.error };
+  const fields = parsed.data;
   const salesRepId = parseSalesRepId(formData);
   if (salesRepId === "invalid") return { error: "Invalid sales rep." };
   if (!fields.name) return { error: "Company name is required." };
@@ -109,7 +156,9 @@ export async function updateCompany(
   await requireAdmin();
 
   const id = Number(formData.get("id"));
-  const fields = companyFields(formData);
+  const parsed = companyFields(formData);
+  if (!parsed.ok) return { error: parsed.error };
+  const fields = parsed.data;
   const salesRepId = parseSalesRepId(formData);
   if (!Number.isInteger(id)) return { error: "Missing company id." };
   if (salesRepId === "invalid") return { error: "Invalid sales rep." };

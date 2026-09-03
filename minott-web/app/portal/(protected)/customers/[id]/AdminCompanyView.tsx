@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { CompanyForm } from "@/components/admin/CompanyForm";
 import { CompanyUserForm } from "@/components/admin/CompanyUserForm";
+import { toCompanyFormData } from "@/lib/company-form";
 
 /** Admin management view for one customer company. Caller gates on role. */
 export async function AdminCompanyView({ id }: { id: number }) {
@@ -45,14 +46,7 @@ export async function AdminCompanyView({ id }: { id: number }) {
       </p>
       <div className="mt-8">
         <CompanyForm
-          company={{
-            id: company.id,
-            name: company.name,
-            mecAccountNumber: company.mecAccountNumber,
-            industry: company.industry,
-            location: company.location,
-            salesRepId: company.salesRepId,
-          }}
+          company={toCompanyFormData(company)}
           salesReps={salesReps}
         />
       </div>
