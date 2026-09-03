@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { requireRoleSession } from "@/lib/portal";
-import { getApplicationById, getActiveSalesReps } from "@/lib/applications";
+import { getApplicationById } from "@/lib/applications";
 import { matchGuest } from "@/lib/customer-match";
 import { APPLICATION_STATUS, APPLICATION_STATUS_LABELS } from "@/lib/constants";
 import { ApplicationDecisionForms } from "@/components/admin/ApplicationDecisionForms";
@@ -21,7 +21,6 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
 
   const open = app.status === APPLICATION_STATUS.SUBMITTED || app.status === APPLICATION_STATUS.INFO_REQUESTED;
   const hint = open ? await matchGuest({ email: app.email, phone: app.phone, company: app.companyName }) : null;
-  const salesReps = open ? await getActiveSalesReps() : [];
 
   return (
     <div>
@@ -60,7 +59,7 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
       </div>
 
       {open ? (
-        <div className="mt-8"><ApplicationDecisionForms id={app.id} salesReps={salesReps} /></div>
+        <div className="mt-8"><ApplicationDecisionForms id={app.id} /></div>
       ) : (
         <div className="mt-8 rounded-md border border-black/10 bg-mec-pure p-5 text-sm">
           <p className={dl}>Decision</p>

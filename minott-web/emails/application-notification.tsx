@@ -13,6 +13,10 @@ export type ApplicationNotificationProps = {
   itemCount: number;
   resubmitted: boolean;
   ctaUrl: string;
+  businessType: string | null;
+  trn: string | null;
+  billingAddress: string | null;
+  accountingContact: string | null;
 };
 
 const detailLabel = { color: emailColors.graphite, fontSize: 12, fontWeight: 700 as const, letterSpacing: "0.08em", margin: "12px 0 2px", textTransform: "uppercase" as const };
@@ -27,6 +31,10 @@ export function ApplicationNotification(p: ApplicationNotificationProps) {
       <Text style={detailValue}>{p.companyName} · {p.industry} · {p.location}</Text>
       <Text style={detailLabel}>Contact</Text>
       <Text style={detailValue}>{p.contactName} · <Link href={`mailto:${p.email}`} style={{ color: emailColors.red }}>{p.email}</Link> · {p.phone}</Text>
+      {p.businessType && (<><Text style={detailLabel}>Type of business</Text><Text style={detailValue}>{p.businessType}</Text></>)}
+      {p.trn && (<><Text style={detailLabel}>TRN</Text><Text style={detailValue}>{p.trn}</Text></>)}
+      {p.billingAddress && (<><Text style={detailLabel}>Billing address</Text><Text style={detailValue}>{p.billingAddress}</Text></>)}
+      {p.accountingContact && (<><Text style={detailLabel}>Accounting contact</Text><Text style={detailValue}>{p.accountingContact}</Text></>)}
       {p.notes && (<><Text style={detailLabel}>Notes</Text><Text style={detailValue}>{p.notes}</Text></>)}
       <Text style={detailLabel}>Quote</Text>
       <Text style={detailValue}>{p.itemCount} item{p.itemCount === 1 ? "" : "s"} attached</Text>

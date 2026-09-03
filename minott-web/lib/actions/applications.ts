@@ -11,8 +11,6 @@ import { getInquiryByRef } from "@/lib/applications";
 import { sendApplicationEmails } from "@/lib/email/send-application-emails";
 import { requireRole } from "@/lib/auth/require-admin";
 import { getPortalSession } from "@/lib/portal";
-import { provisionUser, sendInvite, INVITE_REDIRECT } from "@/lib/auth/provision";
-import { sendInquiryEmails } from "@/lib/email/send-inquiry-emails";
 
 export type ApplicationFormState = { done?: boolean; error?: string };
 
@@ -110,7 +108,11 @@ const STAFF = ["admin", "ar"];
 async function loadOpenApplication(id: number) {
   const app = await db.customerApplication.findUnique({ where: { id } });
   if (!app) return { error: "Application not found." } as const;
-  if (app.status === APPLICATION_STATUS.APPROVED || app.status === APPLICATION_STATUS.REJECTED)
+  if (
+    app.status === APPLICATION_STATUS.APPROVED ||
+    app.status === APPLICATION_STATUS.ACCOUNT_CREATED ||
+    app.status === APPLICATION_STATUS.REJECTED
+  )
     return { error: "This application has already been decided." } as const;
   return { app } as const;
 }
@@ -120,13 +122,14 @@ function revalidateAll(id: number) {
   revalidatePath(`/portal/applications/${id}`);
   revalidatePath("/portal/requests");
   revalidatePath("/portal/customers");
+  revalidatePath("/portal/customers/new");
   revalidatePath("/portal");
 }
 
 /**
- * Approve: create the Company, provision the contact (invite = "approved"
- * email), link the original quote, mark APPROVED, notify the rep (spec §9).
- * Ordered writes with a compensating delete — no dangling company.
+ * AR/admin approval. Status-only: marks APPROVED and hands off to an admin,
+ * who creates the company account from /portal/customers/new?application=<id>
+ * (see lib/actions/companies.ts). No applicant email; admins are notified.
  */
 export async function approveApplication(
   _prev: DecisionState,
@@ -138,91 +141,48 @@ export async function approveApplication(
   if (!Number.isInteger(id)) return { error: "Missing application id." };
   const loaded = await loadOpenApplication(id);
   if ("error" in loaded) return { error: loaded.error };
-  const app = loaded.app;
 
-  const repRaw = str(formData, "salesRepId");
-  const salesRepId = repRaw ? Number(repRaw) : null;
-  if (salesRepId !== null && !(Number.isInteger(salesRepId) && salesRepId > 0))
-    return { error: "Invalid sales rep." };
-
-  const existingUser = await db.user.findUnique({ where: { email: app.email }, select: { id: true } });
-  if (existingUser)
-    return { error: "An account with this email already exists — link it from Customers instead." };
-
-  const company = await db.company.create({
-    data: { name: app.companyName, industry: app.industry, location: app.location, salesRepId },
+  const claimed = await db.customerApplication.updateMany({
+    where: {
+      id,
+      status: { in: [APPLICATION_STATUS.SUBMITTED, APPLICATION_STATUS.INFO_REQUESTED] },
+    },
+    data: {
+      status: APPLICATION_STATUS.APPROVED,
+      decidedAt: new Date(),
+      decidedByUserId: session?.user.id ?? null,
+      decisionNote: null,
+    },
   });
+  if (claimed.count === 0) return { error: "This application has already been decided." };
+  after(() => sendApplicationEmails(id, "approved"));
+  revalidateAll(id);
+  return { success: true };
+}
 
-  const result = await provisionUser({
-    email: app.email,
-    name: app.contactName,
-    role: "customer",
-    redirectTo: INVITE_REDIRECT.customer,
-    data: { phone: app.phone },
-    skipInvite: true,
+/**
+ * Undo an approval that has not yet been turned into an account: back to the
+ * "Awaiting review" queue. No emails. The optional note is internal only.
+ */
+export async function revertApplicationApproval(
+  _prev: DecisionState,
+  formData: FormData,
+): Promise<DecisionState> {
+  await requireRole(STAFF);
+  const id = Number(formData.get("id"));
+  if (!Number.isInteger(id)) return { error: "Missing application id." };
+  const note = str(formData, "note");
+
+  const claimed = await db.customerApplication.updateMany({
+    where: { id, status: APPLICATION_STATUS.APPROVED, companyId: null },
+    data: {
+      status: APPLICATION_STATUS.SUBMITTED,
+      decidedAt: null,
+      decidedByUserId: null,
+      decisionNote: note || null,
+    },
   });
-  if (!result.ok) {
-    await db.company.delete({ where: { id: company.id } }).catch((e) =>
-      console.error(`[applications] failed to roll back company ${company.id}:`, e),
-    );
-    return { error: result.error };
-  }
-
-  // Compensating cleanup for a half-finished approval: the provisioned user
-  // and the company are both brand new here, so deleting them is safe.
-  const rollback = async () => {
-    await db.user
-      .delete({ where: { id: result.userId } })
-      .catch((e) => console.error(`[applications] failed to roll back user ${result.userId}:`, e));
-    await db.company
-      .delete({ where: { id: company.id } })
-      .catch((e) => console.error(`[applications] failed to roll back company ${company.id}:`, e));
-  };
-
-  try {
-    await db.$transaction([
-      db.user.update({ where: { id: result.userId }, data: { companyId: company.id } }),
-      db.inquiry.update({
-        where: { id: app.inquiryId },
-        data: { companyId: company.id, userId: result.userId, matchStatus: MATCH_STATUS.VERIFIED, matchedCompanyId: null },
-      }),
-      // Status-guarded: a concurrent decide/reject leaves count 0 and the
-      // re-read below catches it.
-      db.customerApplication.updateMany({
-        where: {
-          id,
-          status: { in: [APPLICATION_STATUS.SUBMITTED, APPLICATION_STATUS.INFO_REQUESTED] },
-        },
-        data: {
-          status: APPLICATION_STATUS.APPROVED,
-          companyId: company.id,
-          userId: result.userId,
-          decidedAt: new Date(),
-          decidedByUserId: session?.user.id ?? null,
-          decisionNote: null,
-        },
-      }),
-    ]);
-  } catch (e) {
-    console.error(`[applications] approval transaction failed for application ${id}:`, e);
-    await rollback();
-    return {
-      error:
-        "Approval failed while linking the new account — nothing was created. Please try again.",
-    };
-  }
-
-  const decided = await db.customerApplication.findUnique({ where: { id }, select: { status: true } });
-  if (decided?.status !== APPLICATION_STATUS.APPROVED) {
-    await rollback();
-    return { error: "This application was decided by someone else moments ago." };
-  }
-
-  // Now that the application row is APPROVED + linked, the invite hook picks
-  // the "approved" copy (see lib/email/send-account-invite.tsx).
-  await sendInvite(app.email, INVITE_REDIRECT.customer);
-  after(() => sendInquiryEmails(app.inquiryId, { verifiedNow: true }));
-
+  if (claimed.count === 0) return { error: "This application is not awaiting account setup." };
   revalidateAll(id);
   return { success: true };
 }

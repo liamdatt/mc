@@ -7,8 +7,9 @@ import { ApplicationReceived } from "@/emails/application-received";
 import { ApplicationNotification } from "@/emails/application-notification";
 import { ApplicationInfoRequested } from "@/emails/application-info-requested";
 import { ApplicationRejected } from "@/emails/application-rejected";
+import { ApplicationApprovedInternal } from "@/emails/application-approved-internal";
 
-export type ApplicationEmailKind = "received" | "info_requested" | "rejected";
+export type ApplicationEmailKind = "received" | "info_requested" | "rejected" | "approved";
 
 /** Best-effort application emails (spec §10). Never throws — called via after(). */
 export async function sendApplicationEmails(
@@ -29,7 +30,10 @@ export async function sendApplicationEmails(
     }
     const app = await db.customerApplication.findUnique({
       where: { id: applicationId },
-      include: { inquiry: { select: { id: true, _count: { select: { items: true } } } } },
+      include: {
+        inquiry: { select: { id: true, _count: { select: { items: true } } } },
+        decidedBy: { select: { name: true } },
+      },
     });
     if (!app) return;
     const from = settings.fromName ? `${settings.fromName} <${settings.fromEmail}>` : settings.fromEmail;
@@ -51,6 +55,10 @@ export async function sendApplicationEmails(
           contactName={app.contactName} email={app.email} phone={app.phone} notes={app.notes}
           itemCount={app.inquiry._count.items} resubmitted={Boolean(opts.resubmitted)}
           ctaUrl={`${baseUrl}/portal/applications/${app.id}`}
+          businessType={app.businessType}
+          trn={app.trn}
+          billingAddress={[app.billingStreet, app.billingCity, app.billingParish, app.billingZip].filter(Boolean).join(", ") || null}
+          accountingContact={app.accountingName ? [app.accountingName, app.accountingPhone, app.accountingEmail].filter(Boolean).join(" · ") : null}
         />, app.email);
       return;
     }
@@ -69,6 +77,18 @@ export async function sendApplicationEmails(
         <ApplicationRejected name={app.contactName} reason={app.decisionNote ?? ""} />, settings.generalInboxEmail);
       await send([settings.generalInboxEmail], `Application rejected — ${app.companyName}`,
         <ApplicationRejected name="team" reason={`${app.companyName} (${app.email}) was rejected: ${app.decisionNote ?? ""}`} />);
+      return;
+    }
+    if (kind === "approved") {
+      const admins = await db.user.findMany({ where: { role: "admin", NOT: { banned: true } }, select: { email: true } });
+      const internal = Array.from(new Set([settings.generalInboxEmail, ...admins.map((u) => u.email)]));
+      await send(internal, `Application approved — set up the account for ${app.companyName}`,
+        <ApplicationApprovedInternal
+          companyName={app.companyName} industry={app.industry} location={app.location}
+          contactName={app.contactName} email={app.email} phone={app.phone}
+          approvedBy={app.decidedBy?.name ?? null}
+          ctaUrl={`${baseUrl}/portal/customers/new?application=${app.id}`}
+        />);
       return;
     }
   } catch (e) {
