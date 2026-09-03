@@ -14,6 +14,9 @@ import { sendInquiryEmails } from "@/lib/email/send-inquiry-emails";
 
 export type CompanyActionState = { error?: string };
 
+/** Sentinel thrown inside createCompanyFromApplication's transaction when the status guard finds nothing to claim. */
+class HandledElsewhere extends Error {}
+
 function str(formData: FormData, key: string): string {
   return String(formData.get(key) ?? "").trim();
 }
@@ -28,6 +31,12 @@ function parseSalesRepId(formData: FormData): number | null | "invalid" {
 
 function isUniqueViolation(e: unknown): boolean {
   return e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002";
+}
+
+/** Case-insensitive duplicate-name check shared by both create paths. */
+async function companyNameTaken(name: string): Promise<boolean> {
+  const names = await db.company.findMany({ select: { name: true } });
+  return names.some((c) => c.name.trim().toLowerCase() === name.toLowerCase());
 }
 
 type CompanyFieldsResult =
@@ -119,8 +128,7 @@ export async function createCompany(
   if (contactEmail && !contactName)
     return { error: "Contact name is required when inviting a first user." };
 
-  const names = await db.company.findMany({ select: { name: true } });
-  if (names.some((c) => c.name.trim().toLowerCase() === fields.name.toLowerCase()))
+  if (await companyNameTaken(fields.name))
     return { error: "A company with that name already exists." };
 
   let company;
@@ -188,6 +196,8 @@ async function createCompanyFromApplication(
   const existingUser = await db.user.findUnique({ where: { email: app.email }, select: { id: true } });
   if (existingUser)
     return { error: "An account with this email already exists — link it from Customers instead." };
+  if (await companyNameTaken(fields.name))
+    return { error: "A company with that name already exists." };
 
   let company;
   try {
@@ -226,14 +236,10 @@ async function createCompanyFromApplication(
   };
 
   try {
-    await db.$transaction([
-      db.user.update({ where: { id: userId }, data: { companyId: company.id } }),
-      db.inquiry.update({
-        where: { id: app.inquiryId },
-        data: { companyId: company.id, userId, matchStatus: MATCH_STATUS.VERIFIED, matchedCompanyId: null },
-      }),
-      // Status-guarded: a concurrent create/revert leaves count 0; re-read below catches it.
-      db.customerApplication.updateMany({
+    await db.$transaction(async (tx) => {
+      // Status-guarded and run first: a concurrent create/revert leaves count 0,
+      // which aborts before the user/inquiry are touched.
+      const claimed = await tx.customerApplication.updateMany({
         where: { id: applicationId, status: APPLICATION_STATUS.APPROVED, companyId: null },
         data: {
           status: APPLICATION_STATUS.ACCOUNT_CREATED,
@@ -242,18 +248,20 @@ async function createCompanyFromApplication(
           accountCreatedAt: new Date(),
           accountCreatedByUserId: session?.user.id ?? null,
         },
-      }),
-    ]);
+      });
+      if (claimed.count === 0) throw new HandledElsewhere();
+      await tx.user.update({ where: { id: userId }, data: { companyId: company.id } });
+      await tx.inquiry.update({
+        where: { id: app.inquiryId },
+        data: { companyId: company.id, userId, matchStatus: MATCH_STATUS.VERIFIED, matchedCompanyId: null },
+      });
+    });
   } catch (e) {
+    await rollback();
+    if (e instanceof HandledElsewhere)
+      return { error: "This application was handled by someone else moments ago." };
     console.error(`[companies] account creation failed for application ${applicationId}:`, e);
-    await rollback();
     return { error: "Creating the account failed while linking the quote — nothing was created. Please try again." };
-  }
-
-  const done = await db.customerApplication.findUnique({ where: { id: applicationId }, select: { status: true, companyId: true } });
-  if (done?.status !== APPLICATION_STATUS.ACCOUNT_CREATED || done.companyId !== company.id) {
-    await rollback();
-    return { error: "This application was handled by someone else moments ago." };
   }
 
   // Application is ACCOUNT_CREATED + linked, so the invite hook picks the "approved" copy.
