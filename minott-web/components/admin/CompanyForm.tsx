@@ -198,7 +198,7 @@ export function CompanyForm({
           </label>
           <label className={label}>
             Credit limit (JMD)
-            <input name="creditLimit" type="number" min={0} step="0.01" defaultValue={company?.creditLimit ?? "0"} className={field} />
+            <input name="creditLimit" type="number" min={0} step="0.01" defaultValue={editing ? (company?.creditLimit ?? "") : "0"} className={field} />
           </label>
           <label className={label}>
             GCT status
