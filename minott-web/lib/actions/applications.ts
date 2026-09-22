@@ -9,6 +9,7 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { currentRequestIp } from "@/lib/request-ip";
 import { getInquiryByRef } from "@/lib/applications";
 import { sendApplicationEmails } from "@/lib/email/send-application-emails";
+import { saveCertificate, validateCertificate } from "@/lib/application-files";
 import { requireRole } from "@/lib/auth/require-admin";
 import { getPortalSession } from "@/lib/portal";
 
@@ -81,18 +82,38 @@ export async function submitApplication(
   if (!data.phone) return { error: "Principal telephone is required." };
   if (data.accountingEmail && !EMAIL_RE.test(data.accountingEmail)) return { error: "The accounting contact email is not valid." };
 
+  // Business Registration Certificate: required on first submission; on a
+  // resubmit the applicant may keep the file already on record.
+  const certRaw = formData.get("registrationCert");
+  const cert = certRaw instanceof File && certRaw.size > 0 ? certRaw : null;
+  if (!cert && !existing?.registrationCertPath)
+    return { error: "Please upload your Business Registration Certificate." };
+  if (cert) {
+    const valid = validateCertificate(cert);
+    if (!valid.ok) return { error: valid.error };
+  }
+  const certData = cert
+    ? { registrationCertPath: await saveCertificate(cert), registrationCertName: cert.name.slice(0, 200) }
+    : {};
+
   let appId: number;
   if (existing) {
     // Status-guarded so two concurrent resubmits can't both go through.
     const claimed = await db.customerApplication.updateMany({
       where: { id: existing.id, status: APPLICATION_STATUS.INFO_REQUESTED },
-      data: { ...data, status: APPLICATION_STATUS.SUBMITTED, decisionNote: null },
+      data: {
+        ...data,
+        ...certData,
+        status: APPLICATION_STATUS.SUBMITTED,
+        decisionNote: null,
+        resubmittedAt: new Date(),
+      },
     });
     if (claimed.count === 0) return { error: "This application has already been submitted." };
     appId = existing.id;
   } else {
     const created = await db.customerApplication.create({
-      data: { ...data, inquiryId: inquiry.id },
+      data: { ...data, ...certData, inquiryId: inquiry.id },
     });
     appId = created.id;
   }

@@ -159,6 +159,14 @@ model CustomerApplication {
   email                  String // principal email — becomes the first portal user
   phone                  String // principal tel
   notes                  String?
+  // Business Registration Certificate upload — stored on the data volume
+  // (data/applications/<uuid>.<ext>), served only to staff via the
+  // /portal/applications/[id]/certificate route. Nullable: rows predate it.
+  registrationCertPath   String?
+  registrationCertName   String? // original filename, for display/download
+  // Set when the applicant resubmits after an info request; drives the
+  // "Resubmitted" tag in the Awaiting review queue.
+  resubmittedAt          DateTime?
   // Paper-form customer fields (nullable: rows predate these columns)
   businessType           String?
   inBusinessSince        String?

@@ -41,6 +41,9 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
       <div className="flex flex-wrap items-center gap-3">
         <h1 className="font-display-tight text-3xl">{app.companyName}</h1>
         <span className="rounded-pill bg-mec-mist px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-mec-ink/70">{APPLICATION_STATUS_LABELS[app.status] ?? app.status}</span>
+        {app.status === APPLICATION_STATUS.SUBMITTED && app.resubmittedAt && (
+          <span className="rounded-pill bg-mec-red/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-mec-red">Resubmitted · {formatDate(app.resubmittedAt)}</span>
+        )}
       </div>
 
       {awaitingSetup && (
@@ -66,6 +69,16 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
           <Field label="Tax exemption number" value={app.taxExemptionNumber} />
           <Field label="Billing address" value={address(app.billingStreet, app.billingCity, app.billingParish, app.billingZip) ?? app.location} />
           <Field label="Shipping address" value={shipping ?? "Same as billing"} />
+          <p className={`${dl} mt-3`}>Business Registration Certificate</p>
+          {app.registrationCertPath ? (
+            <p className="mt-0.5">
+              <a href={`/portal/applications/${app.id}/certificate`} target="_blank" rel="noopener" className="font-semibold text-mec-red hover:underline">
+                {app.registrationCertName ?? "View certificate"}
+              </a>
+            </p>
+          ) : (
+            <p className="mt-0.5 text-mec-ink/50">Not provided</p>
+          )}
 
           <p className={`${dl} mt-5`}>Principal contact</p>
           <p className="mt-1 font-semibold">{app.contactName}{app.principalTitle ? <span className="font-normal text-mec-ink/60"> · {app.principalTitle}</span> : null}</p>

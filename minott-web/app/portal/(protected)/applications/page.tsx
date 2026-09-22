@@ -47,7 +47,12 @@ function Group({
                 <td className="px-4 py-3 text-mec-ink/70">{a.industry}</td>
                 <td className="px-4 py-3 text-mec-ink/70">#{a.inquiry.id} · {a.inquiry._count.items} items</td>
                 <td className="px-4 py-3 text-mec-ink/60">{formatDate(a.createdAt)}</td>
-                <td className="px-4 py-3"><span className="rounded-pill bg-mec-mist px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-mec-ink/70">{APPLICATION_STATUS_LABELS[a.status] ?? a.status}</span></td>
+                <td className="px-4 py-3">
+                  <span className="rounded-pill bg-mec-mist px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-mec-ink/70">{APPLICATION_STATUS_LABELS[a.status] ?? a.status}</span>
+                  {a.status === APPLICATION_STATUS.SUBMITTED && a.resubmittedAt && (
+                    <span className="ml-1 rounded-pill bg-mec-red/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-mec-red">Resubmitted</span>
+                  )}
+                </td>
                 {createAccount && (
                   <td className="px-4 py-3 text-right">
                     <Link href={`/portal/customers/new?application=${a.id}`} className="font-semibold text-mec-red hover:underline">Create account</Link>

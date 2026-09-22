@@ -5,6 +5,7 @@ import Link from "next/link";
 import { INDUSTRIES } from "@/lib/industries";
 import { AddressFields, type AddressValues } from "@/components/forms/AddressFields";
 import { submitApplication, type ApplicationFormState } from "@/lib/actions/applications";
+import { CERT_ACCEPT } from "@/lib/application-files-shared";
 
 const inputCls =
   "mt-1 w-full rounded-sm border border-black/15 bg-mec-pure px-4 py-3 text-mec-ink outline-none focus:border-mec-red";
@@ -29,6 +30,8 @@ export type ApplicationPrefill = {
   accountingPhone: string;
   accountingEmail: string;
   notes: string;
+  /** Original filename of the certificate already on record (resubmits). */
+  registrationCertName: string | null;
 };
 
 export function ApplicationForm({
@@ -100,6 +103,24 @@ export function ApplicationForm({
       <label className={labelCls}>Name<input name="accountingName" defaultValue={prefill.accountingName} className={inputCls} /></label>
       <label className={labelCls}>Tel.<input name="accountingPhone" type="tel" defaultValue={prefill.accountingPhone} className={inputCls} /></label>
       <label className={labelCls}>Email<input name="accountingEmail" type="email" defaultValue={prefill.accountingEmail} className={inputCls} /></label>
+
+      <h2 className={h2}>Business Registration Certificate</h2>
+      <p className="mt-1 text-xs text-mec-ink/60">
+        Upload a copy of your Business Registration Certificate (PDF, PNG, JPG or WEBP, under 6 MB).
+        {prefill.registrationCertName ? " Leave this empty to keep the file you already sent." : ""}
+      </p>
+      {prefill.registrationCertName && (
+        <p className="mt-2 text-sm text-mec-ink/80">On file: <span className="font-semibold">{prefill.registrationCertName}</span></p>
+      )}
+      <label className={labelCls}>Certificate {prefill.registrationCertName ? "" : "*"}
+        <input
+          name="registrationCert"
+          type="file"
+          accept={CERT_ACCEPT}
+          required={!prefill.registrationCertName}
+          className={`${inputCls} file:mr-4 file:border-0 file:bg-mec-ink file:px-4 file:py-2 file:text-xs file:font-semibold file:uppercase file:tracking-[0.1em] file:text-mec-pure`}
+        />
+      </label>
 
       <h2 className={h2}>Notes</h2>
       <label className={labelCls}>Notes<textarea name="notes" rows={3} defaultValue={prefill.notes} className={`${inputCls} resize-none`} /></label>

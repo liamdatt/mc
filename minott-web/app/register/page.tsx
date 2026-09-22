@@ -89,6 +89,7 @@ export default async function RegisterPage({
         accountingPhone: app.accountingPhone ?? "",
         accountingEmail: app.accountingEmail ?? "",
         notes: app.notes ?? "",
+        registrationCertName: app.registrationCertPath ? (app.registrationCertName ?? "certificate") : null,
       }
     : {
         companyName: inquiry.company ?? "",
@@ -107,6 +108,7 @@ export default async function RegisterPage({
         accountingPhone: "",
         accountingEmail: "",
         notes: "",
+        registrationCertName: null,
       };
 
   return (

@@ -5,6 +5,10 @@ const nextConfig: NextConfig = {
   // wraps it) out of the bundler so the .node binary loads at runtime.
   serverExternalPackages: ["better-sqlite3", "@prisma/adapter-better-sqlite3"],
 
+  // The New Customer Form posts its Business Registration Certificate (≤ 6 MB)
+  // through a Server Action; the default 1 MB body limit would reject it.
+  experimental: { serverActions: { bodySizeLimit: "8mb" } },
+
   async redirects() {
     // The old three-portal URLs. Specific rules first — Next matches in order.
     return [
