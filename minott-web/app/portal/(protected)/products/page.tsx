@@ -2,6 +2,7 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { deleteProduct } from "@/lib/actions/admin-products";
 import { requireAdminSession } from "@/lib/portal";
+import { ExportCatalogButton } from "@/components/admin/ExportCatalogButton";
 
 const UNSORTED_SLUG = "unsorted-imports";
 
@@ -61,14 +62,17 @@ export default async function AdminProductsPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between">
         <h1 className="font-display-tight text-3xl">Products</h1>
-        <Link
-          href="/portal/products/new"
-          className="bg-mec-red px-5 py-2.5 text-sm font-semibold uppercase tracking-[0.12em] text-mec-pure hover:bg-mec-red-hover"
-        >
-          + New Product
-        </Link>
+        <div className="flex items-start gap-3">
+          <ExportCatalogButton />
+          <Link
+            href="/portal/products/new"
+            className="bg-mec-red px-5 py-2.5 text-sm font-semibold uppercase tracking-[0.12em] text-mec-pure hover:bg-mec-red-hover"
+          >
+            + New Product
+          </Link>
+        </div>
       </div>
 
       {unsorted && unsorted._count.variants > 0 && (

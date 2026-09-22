@@ -3,7 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // better-sqlite3 is a native module; keep it (and the Prisma adapter that
   // wraps it) out of the bundler so the .node binary loads at runtime.
-  serverExternalPackages: ["better-sqlite3", "@prisma/adapter-better-sqlite3"],
+  serverExternalPackages: ["better-sqlite3", "@prisma/adapter-better-sqlite3", "sharp", "exceljs"],
 
   // The New Customer Form posts its Business Registration Certificate (≤ 6 MB)
   // through a Server Action; the default 1 MB body limit would reject it.
