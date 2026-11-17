@@ -46,6 +46,16 @@ export default async function SalesQuoteDetailPage({
                         {i.dealLabel}
                       </span>
                     )}
+                    {i.logoFile && (
+                      <a
+                        href={`/portal/requests/${quote.id}/logo/${i.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="ml-2 text-xs font-semibold text-mec-red hover:underline"
+                      >
+                        Custom logo · {i.logoOriginalName ?? "logo"}
+                      </a>
+                    )}
                   </span>
                   <span className="font-semibold text-mec-ink/70">× {i.quantity}</span>
                 </li>

@@ -123,18 +123,22 @@ model Inquiry {
 }
 
 model InquiryItem {
-  id          Int             @id @default(autoincrement())
-  inquiry     Inquiry         @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
-  inquiryId   Int
-  product     Product?        @relation(fields: [productId], references: [id], onDelete: SetNull)
-  productId   Int?
-  variant     ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
-  variantId   Int?
-  productName String
-  quantity    Int             @default(1)
+  id               Int             @id @default(autoincrement())
+  inquiry          Inquiry         @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+  inquiryId        Int
+  product          Product?        @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productId        Int?
+  variant          ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  variantId        Int?
+  productName      String
+  quantity         Int             @default(1)
   // Badge text of the deal live at submission time (e.g. "15% OFF"). Plain
   // snapshot, no FK — survives deal edits/expiry/deletion.
-  dealLabel   String?
+  dealLabel        String?
+  // Custom-logo mats: stored token (`<uuid>.<ext>` under data/quote-logos/,
+  // never a path or URL) and the customer's original filename.
+  logoFile         String?
+  logoOriginalName String?
 }
 
 model InquiryNote {

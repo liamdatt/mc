@@ -19,13 +19,23 @@ export type QuoteItem = {
   imagePath: string;
   categorySlug: string;
   quantity: number;
+  /** Custom-logo mats: opaque upload token + original filename. Optional —
+   *  cart lines saved before this field existed have no `logo`. */
+  logo?: QuoteLogo;
 };
+
+export type QuoteLogo = { token: string; fileName: string };
 
 type QuoteCartValue = {
   items: QuoteItem[];
   count: number;
-  addItem: (item: Omit<QuoteItem, "quantity">, quantity?: number) => void;
+  addItem: (
+    item: Omit<QuoteItem, "quantity" | "logo">,
+    quantity?: number,
+    logo?: QuoteLogo,
+  ) => void;
   removeItem: (variantId: number) => void;
+  removeLogo: (variantId: number) => void;
   setQuantity: (variantId: number, quantity: number) => void;
   clear: () => void;
 };
@@ -57,17 +67,23 @@ export function QuoteCartProvider({ children }: { children: React.ReactNode }) {
   }, [items, hydrated]);
 
   const addItem = useCallback(
-    (item: Omit<QuoteItem, "quantity">, quantity = 1) => {
+    (
+      item: Omit<QuoteItem, "quantity" | "logo">,
+      quantity = 1,
+      logo?: QuoteLogo,
+    ) => {
       setItems((prev) => {
         const existing = prev.find((p) => p.variantId === item.variantId);
         if (existing) {
+          // A newly passed logo sets/replaces the line's logo; otherwise the
+          // line keeps whatever logo it already had.
           return prev.map((p) =>
             p.variantId === item.variantId
-              ? { ...p, quantity: p.quantity + quantity }
+              ? { ...p, quantity: p.quantity + quantity, ...(logo ? { logo } : {}) }
               : p,
           );
         }
-        return [...prev, { ...item, quantity }];
+        return [...prev, { ...item, quantity, ...(logo ? { logo } : {}) }];
       });
     },
     [],
@@ -75,6 +91,17 @@ export function QuoteCartProvider({ children }: { children: React.ReactNode }) {
 
   const removeItem = useCallback((variantId: number) => {
     setItems((prev) => prev.filter((p) => p.variantId !== variantId));
+  }, []);
+
+  const removeLogo = useCallback((variantId: number) => {
+    setItems((prev) =>
+      prev.map((p) => {
+        if (p.variantId !== variantId) return p;
+        const next = { ...p };
+        delete next.logo;
+        return next;
+      }),
+    );
   }, []);
 
   const setQuantity = useCallback((variantId: number, quantity: number) => {
@@ -97,10 +124,11 @@ export function QuoteCartProvider({ children }: { children: React.ReactNode }) {
       count: items.reduce((n, i) => n + i.quantity, 0),
       addItem,
       removeItem,
+      removeLogo,
       setQuantity,
       clear,
     }),
-    [items, addItem, removeItem, setQuantity, clear],
+    [items, addItem, removeItem, removeLogo, setQuantity, clear],
   );
 
   return (

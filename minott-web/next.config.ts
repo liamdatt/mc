@@ -6,8 +6,9 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["better-sqlite3", "@prisma/adapter-better-sqlite3", "sharp", "exceljs"],
 
   // The New Customer Form posts its Business Registration Certificate (≤ 6 MB)
-  // through a Server Action; the default 1 MB body limit would reject it.
-  experimental: { serverActions: { bodySizeLimit: "8mb" } },
+  // and the mat custom-logo upload (≤ 10 MB) through Server Actions; the
+  // default 1 MB body limit would reject them.
+  experimental: { serverActions: { bodySizeLimit: "11mb" } },
 
   async redirects() {
     // The old three-portal URLs. Specific rules first — Next matches in order.

@@ -65,6 +65,7 @@ export async function sendInquiryEmails(
             variant: i.variant?.label ?? i.variant?.size ?? null,
             quantity: i.quantity,
             dealLabel: i.dealLabel ?? null,
+            hasLogo: Boolean(i.logoFile),
           }))
         : inquiry.product
           ? [
@@ -122,6 +123,11 @@ export async function sendInquiryEmails(
           classification={classification}
           ctaUrl={ctaUrl}
           ctaLabel={ctaLabel}
+          detailUrl={
+            repRouted
+              ? `${baseUrl}/portal/quotes/${inquiry.id}`
+              : `${baseUrl}/portal/requests/${inquiry.id}`
+          }
         />
       );
       const [html, text] = await Promise.all([

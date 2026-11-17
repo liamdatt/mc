@@ -7,6 +7,8 @@ export type NotificationItem = {
   quantity: number;
   /** Deal badge snapshotted at submission time, if any. */
   dealLabel: string | null;
+  /** Custom-logo mats: the line carries an uploaded logo (viewable in the portal). */
+  hasLogo?: boolean;
 };
 
 export type InquiryNotificationProps = {
@@ -25,6 +27,8 @@ export type InquiryNotificationProps = {
   /** Absolute CTA link: sales-portal quote page when rep-routed, else /admin/requests. */
   ctaUrl: string;
   ctaLabel: string;
+  /** Absolute link to this request's detail page (where staff open custom logos). */
+  detailUrl?: string;
 };
 
 const detailLabel = {
@@ -113,6 +117,14 @@ export function InquiryNotification(props: InquiryNotificationProps) {
                 <span style={{ color: emailColors.red, fontWeight: 700 }}>
                   {` · ${item.dealLabel}`}
                 </span>
+              ) : null}
+              {item.hasLogo ? (
+                <>
+                  {" · "}
+                  <Link href={props.detailUrl ?? props.ctaUrl} style={{ color: emailColors.red }}>
+                    Custom logo attached — view in portal
+                  </Link>
+                </>
               ) : null}
             </Text>
           ))}

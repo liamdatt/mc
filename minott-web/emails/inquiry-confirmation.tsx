@@ -68,6 +68,7 @@ export function InquiryConfirmation(props: InquiryConfirmationProps) {
                   {` · ${item.dealLabel}`}
                 </span>
               ) : null}
+              {item.hasLogo ? " · Custom logo attached" : null}
             </Text>
           ))}
         </>

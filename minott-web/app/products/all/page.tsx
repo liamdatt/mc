@@ -17,6 +17,8 @@ import { ProductSort } from "@/components/products/ProductSort";
 import { ProductSearchBar } from "@/components/products/ProductSearchBar";
 import { ShowroomBanner } from "@/components/products/ShowroomBanner";
 import { WhatsAppCta } from "@/components/products/WhatsAppCta";
+import { CustomLogoBanner } from "@/components/products/CustomLogoBanner";
+import { isLogoCategory } from "@/lib/quote-logos-shared";
 
 export const metadata: Metadata = {
   title: "All Products — Chemicals, Janitorial, PPE & Paper | Minott Chemicals",
@@ -84,6 +86,7 @@ export default async function AllProductsPage({
   ]);
 
   const activeCategory = categories.find((c) => c.slug === sp.category);
+  const showLogoBanner = !!activeCategory && isLogoCategory(activeCategory.slug);
 
   // When a category is active, check whether it has child subsections; if so we
   // render products grouped under subsection headings. getCategoryWithChildren
@@ -152,26 +155,37 @@ export default async function AllProductsPage({
           )}
         </nav>
 
-        <Eyebrow tone="red" className="mt-6">
-          Catalog
-        </Eyebrow>
-        <h1 className="mt-4 font-display-tight text-h1 leading-[0.95]">
-          {activeCategory ? (
-            activeCategory.name
-          ) : q ? (
-            <>
-              Search <span className="text-mec-red">results</span>
-            </>
-          ) : (
-            <>
-              All <span className="text-mec-red">Products</span>
-            </>
-          )}
-        </h1>
-        <p className="mt-6 max-w-2xl text-lede text-mec-ink/80">
-          Browse our complete range of high-quality chemicals, equipment, and
-          supplies for every industry and business need.
-        </p>
+        <div
+          className={
+            showLogoBanner
+              ? "lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:items-center lg:gap-10"
+              : undefined
+          }
+        >
+          <div>
+            <Eyebrow tone="red" className="mt-6">
+              Catalog
+            </Eyebrow>
+            <h1 className="mt-4 font-display-tight text-h1 leading-[0.95]">
+              {activeCategory ? (
+                activeCategory.name
+              ) : q ? (
+                <>
+                  Search <span className="text-mec-red">results</span>
+                </>
+              ) : (
+                <>
+                  All <span className="text-mec-red">Products</span>
+                </>
+              )}
+            </h1>
+            <p className="mt-6 max-w-2xl text-lede text-mec-ink/80">
+              Browse our complete range of high-quality chemicals, equipment, and
+              supplies for every industry and business need.
+            </p>
+          </div>
+          {showLogoBanner && <CustomLogoBanner className="mt-8 lg:mt-6" />}
+        </div>
 
         <div className="mt-8 max-w-xl">
           <ProductSearchBar />

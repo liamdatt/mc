@@ -174,6 +174,11 @@ export default async function PortalHistoryDetailPage({
                           {it.dealLabel}
                         </span>
                       )}
+                      {it.logoFile && (
+                        <p className="mt-0.5 text-xs text-mec-ink/60">
+                          Custom logo attached
+                        </p>
+                      )}
                       {!reorderItem && (
                         <p className="mt-0.5 text-xs text-mec-ink/50">
                           No longer available

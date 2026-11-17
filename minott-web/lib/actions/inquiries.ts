@@ -9,6 +9,7 @@ import { sendInquiryEmails } from "@/lib/email/send-inquiry-emails";
 import { getLiveDealBadges, pickBadgeForVariant } from "@/lib/deals";
 import { matchGuest, type MatchStatus } from "@/lib/customer-match";
 import { isIndustry } from "@/lib/industries";
+import { isLogoToken, logoExists } from "@/lib/quote-logos";
 
 export type InquiryResult = { ok: boolean; error?: string };
 
@@ -78,7 +79,25 @@ type CartLine = {
   variantId?: number;
   productName: string;
   quantity: number;
+  // Custom-logo mats (optional — pre-release cart lines have neither).
+  logoToken?: unknown;
+  logoFileName?: unknown;
 };
+
+/** Resolve a line's logo to stored columns. Any token that isn't a well-formed
+ *  stored name or whose file is missing is dropped silently — never fails the quote. */
+async function resolveLogo(
+  i: CartLine,
+): Promise<{ logoFile: string | null; logoOriginalName: string | null }> {
+  if (!isLogoToken(i.logoToken) || !(await logoExists(i.logoToken))) {
+    return { logoFile: null, logoOriginalName: null };
+  }
+  const original =
+    typeof i.logoFileName === "string" && i.logoFileName.trim()
+      ? i.logoFileName.trim()
+      : i.logoToken;
+  return { logoFile: i.logoToken, logoOriginalName: original.slice(0, 120) };
+}
 
 export async function submitQuote(
   _prev: QuoteResult,
@@ -135,6 +154,7 @@ export async function submitQuote(
   }
 
   const badges = await getLiveDealBadges();
+  const logos = await Promise.all(items.map((i) => resolveLogo(i)));
 
   const inquiry = await db.inquiry.create({
     data: {
@@ -152,7 +172,7 @@ export async function submitQuote(
       matchStatus,
       matchedCompanyId,
       items: {
-        create: items.map((i) => ({
+        create: items.map((i, idx) => ({
           productId: typeof i.productId === "number" ? i.productId : null,
           variantId: typeof i.variantId === "number" ? i.variantId : null,
           productName: String(i.productName).slice(0, 200),
@@ -163,6 +183,7 @@ export async function submitQuote(
             typeof i.productId === "number" ? i.productId : -1,
             typeof i.variantId === "number" ? i.variantId : null,
           ),
+          ...logos[idx],
         })),
       },
     },

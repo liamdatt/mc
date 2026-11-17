@@ -32,7 +32,7 @@ export function QuotePageClient({
   portalUser: QuotePortalUser | null;
   deals: QuoteDealLookup;
 }) {
-  const { items, setQuantity, removeItem, clear } = useQuoteCart();
+  const { items, setQuantity, removeItem, removeLogo, clear } = useQuoteCart();
   const [state, formAction, pending] = useActionState(submitQuote, initial);
   const clearedRef = useRef(false);
 
@@ -170,6 +170,21 @@ export function QuotePageClient({
                       {deal}
                     </span>
                   )}
+                  {it.logo && (
+                    <p className="mt-1 flex flex-wrap items-center gap-x-2 text-sm text-mec-ink/70">
+                      <span className="min-w-0 truncate">
+                        Custom logo:{" "}
+                        <span className="font-medium text-mec-ink">{it.logo.fileName}</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => removeLogo(it.variantId)}
+                        className="text-xs font-semibold text-mec-red hover:underline"
+                      >
+                        Remove logo
+                      </button>
+                    </p>
+                  )}
                 </div>
                 <input
                   type="number"
@@ -210,6 +225,9 @@ export function QuotePageClient({
                   ? `${it.name} — ${it.variantLabel} (${it.sku})`
                   : `${it.name} (${it.sku})`,
                 quantity: it.quantity,
+                ...(it.logo
+                  ? { logoToken: it.logo.token, logoFileName: it.logo.fileName }
+                  : {}),
               })),
             )}
           />

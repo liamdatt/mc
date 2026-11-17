@@ -189,6 +189,16 @@ export default async function AdminRequestDetailPage({
                     {it.dealLabel}
                   </span>
                 )}
+                {it.logoFile && (
+                  <a
+                    href={`/portal/requests/${inquiry.id}/logo/${it.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ml-2 text-xs font-semibold text-mec-red hover:underline"
+                  >
+                    Custom logo · {it.logoOriginalName ?? "logo"}
+                  </a>
+                )}
               </li>
             ))}
           </ul>

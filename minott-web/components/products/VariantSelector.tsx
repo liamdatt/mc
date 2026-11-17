@@ -3,6 +3,13 @@
 import { useMemo, useState } from "react";
 import { Minus, Plus } from "lucide-react";
 import { AddToQuoteButton } from "@/components/quote/AddToQuoteButton";
+import {
+  CustomLogoField,
+  EMPTY_LOGO_STATE,
+  logoBlocksAdd,
+  type CustomLogoState,
+} from "./CustomLogoField";
+import { isLogoCategory } from "@/lib/quote-logos-shared";
 
 /** A live deal badge already filtered down to one product by the server page.
  *  `variantId: null` means the badge applies to the whole product. */
@@ -52,6 +59,8 @@ export function VariantSelector({
   dealBadges = [],
 }: Props) {
   const [qty, setQty] = useState(1);
+  const [logoState, setLogoState] = useState<CustomLogoState>(EMPTY_LOGO_STATE);
+  const offersLogo = isLogoCategory(listing.categorySlug);
   const clampQty = (n: number) =>
     Number.isFinite(n) ? Math.min(999, Math.max(1, Math.floor(n))) : 1;
   const sizeHeading = optionLabel?.trim() || "Size";
@@ -181,6 +190,8 @@ export function VariantSelector({
         )}
       </p>
 
+      {offersLogo && <CustomLogoField value={logoState} onChange={setLogoState} />}
+
       <div className="flex flex-wrap items-stretch gap-3">
         <div
           role="group"
@@ -218,6 +229,8 @@ export function VariantSelector({
         </div>
         <AddToQuoteButton
           quantity={qty}
+          logo={offersLogo && logoState.enabled ? logoState.logo ?? undefined : undefined}
+          disabled={offersLogo && logoBlocksAdd(logoState)}
           product={{
             productId: listing.id,
             variantId: selected.id,
