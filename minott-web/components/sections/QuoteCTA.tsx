@@ -1,7 +1,6 @@
 "use client";
 import { useRef } from "react";
 import { motion } from "framer-motion";
-import { Container } from "@/components/primitives/Container";
 import { Button } from "@/components/primitives/Button";
 import { PHONES } from "@/lib/constants";
 
@@ -20,7 +19,7 @@ export function QuoteCTA() {
         transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }}
         className="absolute inset-0 origin-left bg-mec-red"
       />
-      <Container className="relative">
+      <div className="relative mx-auto w-full max-w-[1440px] px-6 md:px-10">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -56,7 +55,7 @@ export function QuoteCTA() {
             ))}
           </div>
         </motion.div>
-      </Container>
+      </div>
     </section>
   );
 }

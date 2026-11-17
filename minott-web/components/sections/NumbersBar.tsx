@@ -1,6 +1,5 @@
 "use client";
 import { Section } from "@/components/primitives/Section";
-import { Container } from "@/components/primitives/Container";
 import { AnimatedNumber } from "@/components/primitives/AnimatedNumber";
 import { RevealOnScroll } from "@/components/motion/RevealOnScroll";
 import { JamaicaOutline } from "@/components/sections/JamaicaOutline";
@@ -53,7 +52,7 @@ export function NumbersBar() {
       data-section="stats"
     >
       <h2 className="sr-only">MEC at a glance</h2>
-      <Container>
+      <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10">
         <div className="grid grid-cols-2 gap-x-6 gap-y-10 lg:grid-cols-4 lg:gap-0">
           {STATS.map((s, i) => (
             <RevealOnScroll
@@ -70,7 +69,7 @@ export function NumbersBar() {
                 {s.kind === "number" ? (
                   <>
                     <span className="sr-only">{s.spoken}</span>
-                    <span aria-hidden className="contents">
+                    <span aria-hidden>
                       <AnimatedNumber
                         to={s.value}
                         duration={s.duration}
@@ -106,7 +105,7 @@ export function NumbersBar() {
             </RevealOnScroll>
           ))}
         </div>
-      </Container>
+      </div>
     </Section>
   );
 }

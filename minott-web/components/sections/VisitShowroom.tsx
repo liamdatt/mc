@@ -6,7 +6,11 @@ import {
   SHOWROOM_FULL_ADDRESS,
 } from "@/lib/constants";
 
-const ADDRESS_Q = encodeURIComponent(SHOWROOM_FULL_ADDRESS);
+// Google doesn't geocode "½"; the query strings spell it out. The displayed
+// address keeps ½.
+const ADDRESS_Q = encodeURIComponent(
+  SHOWROOM_FULL_ADDRESS.replace("14½", "14 1/2"),
+);
 const DIRECTIONS_URL = `https://www.google.com/maps/dir/?api=1&destination=${ADDRESS_Q}`;
 const EMBED_URL = `https://www.google.com/maps?q=${ADDRESS_Q}&output=embed`;
 
@@ -22,7 +26,7 @@ export function VisitShowroom() {
               Visit Our Showroom
             </h2>
 
-            <dl className="mt-8 divide-y divide-mec-ink/10 border-y border-mec-ink/10">
+            <ul className="mt-8 divide-y divide-mec-ink/10 border-y border-mec-ink/10">
               <Row icon={MapPin} caption="Address">
                 {SHOWROOM_FULL_ADDRESS}
               </Row>
@@ -43,7 +47,7 @@ export function VisitShowroom() {
                   ))}
                 </span>
               </Row>
-            </dl>
+            </ul>
 
             <Button
               href={DIRECTIONS_URL}
@@ -81,14 +85,14 @@ function Row({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex gap-4 py-5">
+    <li className="flex gap-4 py-5">
       <Icon aria-hidden className="mt-0.5 h-5 w-5 shrink-0 text-mec-red" />
       <div>
-        <dt className="font-mono text-[11px] uppercase tracking-[0.12em] text-mec-ink/55">
+        <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-mec-ink/55">
           {caption}
-        </dt>
-        <dd className="mt-1 text-base font-medium text-mec-ink">{children}</dd>
+        </p>
+        <div className="mt-1 text-base font-medium text-mec-ink">{children}</div>
       </div>
-    </div>
+    </li>
   );
 }

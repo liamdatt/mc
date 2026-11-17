@@ -140,12 +140,6 @@ body {
   font-family: var(--font-body), system-ui, sans-serif;
 }
 
-/* Outlined display type (hero watermark) */
-.text-outline-pure {
-  color: transparent;
-  -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.6);
-}
-
 /* Homepage stats: hard stepped extrusion, white face on red depth, 45° down-right.
    1px steps, zero blur — 5px below lg, 8px from lg. Chained drop-shadows
    accumulate, so .stat-3d-shape gives the SVG the same depth as the text. */

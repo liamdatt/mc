@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Section } from "@/components/primitives/Section";
-import { Container } from "@/components/primitives/Container";
 import { Eyebrow } from "@/components/primitives/Eyebrow";
 import { RevealOnScroll } from "@/components/motion/RevealOnScroll";
 import { DealCardView } from "@/components/deals/DealCardView";
@@ -20,7 +19,7 @@ export async function FeaturedDeals() {
       pad={false}
       className="scroll-mt-20 py-16 md:py-24"
     >
-      <Container>
+      <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10">
         <RevealOnScroll className="text-center">
           <p>
             <Eyebrow tone="red">Exclusive Offers</Eyebrow>
@@ -52,7 +51,7 @@ export async function FeaturedDeals() {
             </Link>
           </div>
         )}
-      </Container>
+      </div>
     </Section>
   );
 }

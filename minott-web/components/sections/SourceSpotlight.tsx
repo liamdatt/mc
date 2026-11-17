@@ -106,13 +106,13 @@ function PromoCard({
         </DealsAnchorButton>
       </div>
 
-      <div className="relative order-first aspect-[16/10] min-h-[220px] w-full bg-mec-mist sm:order-none sm:aspect-auto">
+      <div className="relative order-first aspect-[16/10] min-h-[220px] w-full border-b border-mec-ink/10 bg-mec-pure sm:order-none sm:aspect-auto sm:border-b-0 sm:border-l">
         <Image
           src={imagePath}
-          alt={deal.product.name}
+          alt=""
           fill
           sizes="(min-width:1024px) 25vw, (min-width:640px) 50vw, 100vw"
-          className="object-contain p-6 mix-blend-multiply"
+          className="object-contain p-6"
         />
         {isPercent ? (
           <span className="absolute right-4 top-4 grid h-24 w-24 place-items-center rounded-full bg-mec-red text-center text-mec-pure ring-4 ring-mec-pure">

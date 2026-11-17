@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 
@@ -37,7 +38,9 @@ export type DealCard = Prisma.DealGetPayload<{ include: typeof cardInclude }>;
 
 /** Top-4 live deals for the homepage, plus the total live count (for the
  *  "View all deals" threshold). Only deals on active products are shown. */
-export async function getFeaturedDeals(): Promise<{
+// cache(): the homepage calls this from the page (hasDeals), SourceSpotlight
+// and FeaturedDeals; dedupe to one query pair per request.
+export const getFeaturedDeals = cache(async function getFeaturedDeals(): Promise<{
   deals: DealCard[];
   total: number;
 }> {
@@ -56,7 +59,7 @@ export async function getFeaturedDeals(): Promise<{
     db.deal.count({ where }),
   ]);
   return { deals, total };
-}
+});
 
 /** The single deal featured in the homepage spotlight: the first featured
  *  deal by sortOrder, or null when there are no live deals. */

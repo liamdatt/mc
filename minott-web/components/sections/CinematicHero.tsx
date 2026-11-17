@@ -147,7 +147,7 @@ export function CinematicHero({ hasDeals }: { hasDeals: boolean }) {
       <div className="relative z-[2] mx-auto flex w-full max-w-[1440px] flex-1 flex-col justify-center px-6 md:px-10">
         <motion.div
           style={{ opacity: fadeContent, y: yContent }}
-          className="chero-content max-w-[760px]"
+          className="max-w-[760px]"
         >
           <p className="chero-eyebrow">
             <Eyebrow tone="white">

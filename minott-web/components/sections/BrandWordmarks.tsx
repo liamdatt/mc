@@ -45,20 +45,11 @@ function RubbermaidWordmark() {
 
 export interface BrandSlot {
   name: string;
-  desc: string;
   Wordmark: ComponentType;
 }
 
 export const BRAND_SLOTS: BrandSlot[] = [
-  { name: "3M", desc: "Safety, PPE, Adhesives", Wordmark: ThreeMWordmark },
-  {
-    name: "San Jamar",
-    desc: "Foodservice & Dispensing",
-    Wordmark: SanJamarWordmark,
-  },
-  {
-    name: "Rubbermaid",
-    desc: "Carts, Bins, Mop Systems",
-    Wordmark: RubbermaidWordmark,
-  },
+  { name: "3M", Wordmark: ThreeMWordmark },
+  { name: "San Jamar", Wordmark: SanJamarWordmark },
+  { name: "Rubbermaid", Wordmark: RubbermaidWordmark },
 ];
