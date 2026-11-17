@@ -17,6 +17,9 @@ export const INDUSTRIES = [
   "Property & Facilities Management",
   "Janitorial & Cleaning Services",
   "Distribution & Wholesale",
+  "Beauty, Wellness & Personal Care",
+  "Automotive & Transportation",
+  "Construction",
   "Personal / Individual",
   "Other",
 ] as const;

@@ -19,7 +19,7 @@ if (typeof window !== "undefined") {
 const MILESTONES = [
   {
     years: 40,
-    title: "1984 — A Vision Takes Root",
+    title: "1989 — A Vision Takes Root",
     body: "Forty years ago, our founder, Chester G. Minott, started Minott Equipment & Chemicals with a clear vision — to provide quality products, exceptional service, and honest relationships. With determination and hard work, he built a company grounded in integrity, reliability, and customer trust.",
     img: "/images/team/previous-ceo.png",
     imgAlt: "Chester G. Minott, founder and previous CEO of Minott Equipment & Chemicals",
@@ -27,7 +27,7 @@ const MILESTONES = [
   {
     years: 15,
     title: "A New Chapter of Strength",
-    body: "Fifteen years ago, Mileydi Minott stepped in with courage and vision, taking the reins and leading the company through new challenges. Continuing the legacy, she transformed Minott Equipment & Chemicals into the strong, respected company it is today.",
+    body: "Fifteen years ago, Mileydi Minott stepped in with courage and vision, taking the reins and leading the company through new challenges. Building on a proud legacy, she spearheaded the diversification of MEC’s product lines and enhanced service capabilities, driving dynamic growth across new and existing markets.",
     img: "/images/team/ceo.jpg",
     imgAlt: "The current CEO of Minott Equipment & Chemicals",
   },
@@ -130,7 +130,7 @@ export function OurStory() {
             <p className="mt-5 text-lg leading-relaxed text-mec-ink/80">
               As a family, we remain hands-on in every aspect of the business.
               Our success is built not just on the products we provide, but on
-              the relationships we build and the values we live by every day.
+              the relationships we nurture and the values we live by every day.
             </p>
           </RevealOnScroll>
         </Container>

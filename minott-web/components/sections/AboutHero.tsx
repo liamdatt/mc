@@ -3,7 +3,7 @@ import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { SplitText } from "gsap/SplitText";
-import { Calendar, Users, Package, MapPin } from "lucide-react";
+import { Calendar, Package, MapPin, Truck } from "lucide-react";
 import { Container } from "@/components/primitives/Container";
 import { AnimatedNumber } from "@/components/primitives/AnimatedNumber";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
@@ -22,9 +22,13 @@ type Stat = {
 
 const STATS: Stat[] = [
   { icon: Calendar, value: 40, suffix: "+", label: "Years of Excellence" },
-  { icon: Users, value: 1000, suffix: "+", label: "Customers Served" },
-  { icon: Package, value: 5000, suffix: "+", label: "Products Available" },
-  { icon: MapPin, display: "Nationwide", label: "Coverage Across Jamaica" },
+  { icon: MapPin, display: "Nationwide", label: "Nationwide coverage, multi-sector expertise." },
+  {
+    icon: Package,
+    display: "2,000+",
+    label: "Core products in stock — with custom and special-order solutions available upon request.",
+  },
+  { icon: Truck, display: "Islandwide", label: "Delivery islandwide, with twice-weekly delivery to major cities." },
 ];
 
 export function AboutHero() {
@@ -102,7 +106,7 @@ export function AboutHero() {
             </div>
           </div>
 
-          <ul className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-4 lg:gap-x-4">
+          <ul className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:gap-x-4">
             {STATS.map(({ icon: Icon, value, suffix, display, label }) => (
               <li
                 key={label}
@@ -116,7 +120,7 @@ export function AboutHero() {
                     <AnimatedNumber to={value ?? 0} suffix={suffix} />
                   )}
                 </span>
-                <span className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-mec-ink/70">
+                <span className="mt-2 text-sm font-semibold normal-case tracking-normal text-mec-ink/70">
                   {label}
                 </span>
               </li>

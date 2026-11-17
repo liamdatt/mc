@@ -45,18 +45,6 @@ function RubbermaidWordmark() {
   );
 }
 
-function PurellWordmark() {
-  return (
-    <Image
-      src="/brand-logos/purell.png"
-      alt="Purell"
-      width={529}
-      height={378}
-      className="h-14 w-auto object-contain"
-    />
-  );
-}
-
 export interface BrandSlot {
   name: string;
   desc: string;
@@ -75,5 +63,4 @@ export const BRAND_SLOTS: BrandSlot[] = [
     desc: "Carts, Bins, Mop Systems",
     Wordmark: RubbermaidWordmark,
   },
-  { name: "Purell", desc: "Hand Sanitization", Wordmark: PurellWordmark },
 ];

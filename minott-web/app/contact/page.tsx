@@ -10,7 +10,7 @@ import { WHATSAPP_URL } from "@/lib/constants";
 export const metadata: Metadata = {
   title: "Contact — Minott Chemicals | Kingston 5, Jamaica",
   description:
-    "Reach Minott Equipment & Chemicals in Kingston 5. Call (876) 929-5284, message us on WhatsApp, or send a message and we'll respond within one business day.",
+    "Reach Minott Equipment & Chemicals in Kingston 5. Call (876) 906-4835, message us on WhatsApp, or send a message and we'll respond within one business day.",
 };
 
 export default function ContactPage() {

@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { Container } from "@/components/primitives/Container";
+import { PHONES } from "@/lib/constants";
 
 const QUICK = [
   { href: "/", label: "Home" },
@@ -39,7 +40,7 @@ export function Footer() {
           </Link>
           <p className="mt-4 max-w-xs text-sm leading-relaxed">
             Cleaner Spaces. Stronger Business. Jamaica&apos;s most trusted partner in
-            clean — since 1990.
+            clean — since 1988.
           </p>
           <a
             href="https://facebook.com/minottchemicalsja"
@@ -84,13 +85,16 @@ export function Footer() {
         <div className="md:col-span-3">
           <h3 className="eyebrow text-mec-pure">Contact</h3>
           <div className="mt-4 space-y-3 text-sm">
-            <a
-              href="tel:+18769295284"
-              className="block hover:text-mec-red"
-              data-cursor="Call"
-            >
-              (876) 929-5284
-            </a>
+            {PHONES.map((p) => (
+              <a
+                key={p.tel}
+                href={`tel:${p.tel}`}
+                className="block hover:text-mec-red"
+                data-cursor="Call"
+              >
+                {p.label}
+              </a>
+            ))}
             <a
               href="mailto:sales@minottchem.com"
               className="block hover:text-mec-red"

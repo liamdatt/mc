@@ -5,18 +5,13 @@ import { Eyebrow } from "@/components/primitives/Eyebrow";
 import { Button } from "@/components/primitives/Button";
 import { motion } from "framer-motion";
 import { MapPin, Phone, Mail, Clock, Printer } from "lucide-react";
+import { PHONES } from "@/lib/constants";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
 
 const DIRECTIONS_HREF =
   `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
     "14½ Retirement Road, Kingston 5, Jamaica",
   )}`;
-
-const PHONES = [
-  { tel: "+18769295284", label: "(876) 929-5284" },
-  { tel: "+18769293132", label: "929-3132" },
-  { tel: "+18769295147", label: "929-5147" },
-];
 
 export function LocationContact() {
   return (

@@ -27,6 +27,11 @@ export const INQUIRY_TYPE_LABELS: Record<string, string> = {
 // TODO: replace with MEC's real WhatsApp business number (pending from client).
 export const WHATSAPP_URL = "https://wa.me/18760000000";
 
+export const PHONES = [
+  { tel: "+18769064835", label: "(876) 906-4835" },
+  { tel: "+18769685857", label: "(876) 968-5857" },
+] as const;
+
 export const SHOWROOM_ADDRESS = "14½ Retirement Rd";
 
 export const MATCH_STATUS = {
