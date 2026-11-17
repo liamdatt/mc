@@ -42,11 +42,11 @@ export const metadata: Metadata = {
   title:
     "Minott Chemicals — Jamaica's Most Trusted Partner in Clean | Industrial & Janitorial Supplies",
   description:
-    "Jamaica's largest supplier of chemicals, janitorial equipment, and PPE. Elite Distributor for 3M, NSS, San Jamar, Rubbermaid Commercial. Since 1988 serving Jamaican businesses. Request a quote in one business day.",
+    "Jamaica's largest supplier of chemicals, janitorial equipment, and PPE. Elite Distributor for 3M, NSS, San Jamar, and Rubbermaid Commercial. Serving Jamaican businesses since 1988. Request a quote in one business day.",
   openGraph: {
     title: "Minott Chemicals — Cleaner Spaces. Stronger Business.",
     description:
-      "Jamaica's largest chemical & janitorial supplier. Elite Distributor for 3M, NSS, San Jamar, Rubbermaid Commercial.",
+      "Jamaica's largest chemical & janitorial supplier. Elite Distributor for 3M, NSS, San Jamar, and Rubbermaid Commercial.",
     type: "website",
     locale: "en_JM",
     siteName: "Minott Chemicals",

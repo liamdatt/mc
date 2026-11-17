@@ -80,7 +80,7 @@ export function DualPlay() {
             The World&apos;s Best Equipment.
           </h2>
           <p className="mt-4 text-sm text-mec-pure/80 md:text-base">
-            Elite Distributor for 3M, NSS, San Jamar, Rubbermaid Commercial
+            Elite Distributor for 3M, NSS, San Jamar, and Rubbermaid Commercial
             — the brands that set global standards.
           </p>
         </div>

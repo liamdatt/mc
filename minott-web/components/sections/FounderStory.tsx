@@ -16,7 +16,7 @@ if (typeof window !== "undefined") {
 
 const PARAS = [
   "Thirty-five years ago, Chester G. Minott opened the doors of a small equipment distribution shop in Kingston with a single conviction: that Jamaican businesses deserved the same caliber of cleaning, sanitation, and chemical supplies as any company in Miami, Atlanta, or Toronto.",
-  "That conviction built MEC into Jamaica's largest supplier of chemicals — the country's go-to manufacturer for industrial and household formulations, and the Elite Distributor of choice for 3M, NSS, San Jamar, Rubbermaid Commercial.",
+  "That conviction built MEC into Jamaica's largest supplier of chemicals — the country's go-to manufacturer for industrial and household formulations, and the Elite Distributor of choice for 3M, NSS, San Jamar, and Rubbermaid Commercial.",
   "Three and a half decades later, we still answer to one standard: the work we deliver should let our clients run their businesses without ever having to think about ours.",
 ];
 
