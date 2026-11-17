@@ -7,29 +7,18 @@ import { SplitText } from "gsap/SplitText";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Eyebrow } from "@/components/primitives/Eyebrow";
 import { Button } from "@/components/primitives/Button";
-import { Shield, Truck, Headphones } from "lucide-react";
+import { DealsAnchorButton } from "@/components/sections/DealsAnchorButton";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(SplitText);
 }
 
-const TRUST_ITEMS = [
-  { icon: Shield, label: "Quality Products" },
-  { icon: Truck, label: "Reliable Supply" },
-  { icon: Headphones, label: "Expert Support" },
-];
-
-// Deterministic pseudo-random particle field (index-derived so SSR markup is
-// stable). Tiny red/white motes that drift in the warehouse haze.
-const PARTICLES = Array.from({ length: 18 }, (_, i) => ({
-  left: `${((i * 53) % 94) + 3}%`,
-  top: `${((i * 37) % 76) + 10}%`,
-  size: 2 + (i % 3),
-  red: i % 4 === 0,
-}));
-
-export function CinematicHero() {
+// Short homepage hero: the Minott warehouse backdrop under a left-to-right ink
+// gradient, with the headline vertically centred and lined up with the nav
+// logo. Sized so the partner strip and the top of the promo spotlight sit
+// above the fold at 1440×900.
+export function CinematicHero({ hasDeals }: { hasDeals: boolean }) {
   const ref = useRef<HTMLElement>(null);
   const reduced = useReducedMotion();
 
@@ -38,8 +27,8 @@ export function CinematicHero() {
     target: ref,
     offset: ["start start", "end start"],
   });
-  const yBg = useTransform(scrollYProgress, [0, 1], ["0%", "22%"]);
-  const scaleBg = useTransform(scrollYProgress, [0, 1], [1, 1.12]);
+  const yBg = useTransform(scrollYProgress, [0, 1], ["0%", "12%"]);
+  const scaleBg = useTransform(scrollYProgress, [0, 1], [1, 1.06]);
   const fadeContent = useTransform(scrollYProgress, [0, 0.55], [1, 0]);
   const yContent = useTransform(scrollYProgress, [0, 0.55], ["0%", "-12%"]);
 
@@ -62,11 +51,6 @@ export function CinematicHero() {
         y: 28,
         opacity: 0,
       });
-      gsap.set(".chero-trust > *, .chero-chip", {
-        y: 14,
-        opacity: 0,
-      });
-      gsap.set(".chero-watermark", { opacity: 0, yPercent: 12 });
       // The veil ships at CSS opacity 0 (so reduced-motion/no-JS users see the
       // scene); raise it just for the entrance, then fade it away.
       gsap.set(".chero-veil", { opacity: 1 });
@@ -85,23 +69,12 @@ export function CinematicHero() {
           { yPercent: 0, stagger: 0.035, duration: 1.0 },
           "-=0.35",
         )
-        .to(
-          ".chero-watermark",
-          { opacity: 1, yPercent: 0, duration: 1.4, ease: "power2.out" },
-          "<",
-        )
         .to(".chero-lede", { y: 0, opacity: 1, duration: 0.6 }, "-=0.6")
         .to(
           ".chero-cta > *",
           { y: 0, opacity: 1, stagger: 0.08, duration: 0.5 },
           "-=0.35",
-        )
-        .to(
-          ".chero-trust > *",
-          { y: 0, opacity: 1, stagger: 0.07, duration: 0.45 },
-          "-=0.3",
-        )
-        .to(".chero-chip", { y: 0, opacity: 1, duration: 0.5 }, "-=0.4");
+        );
 
       return () => {
         split.revert();
@@ -110,39 +83,13 @@ export function CinematicHero() {
     { scope: ref, dependencies: [reduced] },
   );
 
-  // Ambient life: drifting particles, a recurring red light-sweep, and
-  // pointer parallax. All transform/opacity only, fully reduced-motion gated.
+  // Pointer parallax on the background only. Reduced-motion gated.
   useGSAP(
     () => {
       if (reduced) return;
       const root = ref.current;
       if (!root) return;
 
-      gsap.to(".chero-particle", {
-        y: (i) => (i % 2 === 0 ? -34 : 26),
-        x: (i) => (i % 3 === 0 ? 18 : -14),
-        opacity: (i) => 0.15 + (i % 4) * 0.12,
-        duration: (i) => 5 + (i % 5) * 1.6,
-        ease: "sine.inOut",
-        repeat: -1,
-        yoyo: true,
-        stagger: { each: 0.3, from: "random" },
-      });
-
-      gsap.fromTo(
-        ".chero-sweep",
-        { xPercent: -160 },
-        {
-          xPercent: 480,
-          duration: 3.6,
-          ease: "sine.inOut",
-          repeat: -1,
-          repeatDelay: 5,
-          delay: 2,
-        },
-      );
-
-      // Pointer parallax — background leans away, content leans in.
       const xBg = gsap.quickTo(".chero-drift", "x", {
         duration: 1.1,
         ease: "power3.out",
@@ -151,16 +98,11 @@ export function CinematicHero() {
         duration: 1.1,
         ease: "power3.out",
       });
-      const xFg = gsap.quickTo(".chero-content", "x", {
-        duration: 1.4,
-        ease: "power3.out",
-      });
       const onMove = (e: MouseEvent) => {
         const nx = e.clientX / window.innerWidth - 0.5;
         const ny = e.clientY / window.innerHeight - 0.5;
         xBg(nx * -26);
         yBgDrift(ny * -16);
-        xFg(nx * 10);
       };
       window.addEventListener("mousemove", onMove, { passive: true });
       return () => window.removeEventListener("mousemove", onMove);
@@ -171,9 +113,9 @@ export function CinematicHero() {
   return (
     <section
       ref={ref}
-      className="relative flex min-h-[100svh] flex-col overflow-hidden bg-mec-ink text-mec-pure"
+      className="relative flex min-h-0 flex-col overflow-hidden bg-mec-ink pb-10 pt-[calc(80px+2.5rem)] text-mec-pure md:min-h-[clamp(440px,58svh,540px)] md:pt-20"
     >
-      {/* ── Background stack: image → tint → sweep → particles → grid ── */}
+      {/* ── Background: photo → legibility tint → entrance veil ── */}
       <motion.div
         aria-hidden
         style={{ y: yBg, scale: scaleBg }}
@@ -182,131 +124,63 @@ export function CinematicHero() {
         <div className="chero-drift absolute -inset-[3%]">
           <div className="chero-bg relative h-full w-full">
             <Image
-              src="/images/hero-promotional.png"
+              src="/images/hero-minott-warehouse.jpg"
               alt=""
               fill
               priority
               sizes="100vw"
-              className="object-cover"
+              className="object-cover object-[70%_50%]"
             />
           </div>
         </div>
       </motion.div>
 
-      {/* Legibility tint + cinematic vignette */}
+      {/* Flat tint below md (text spans the width); left-to-right gradient above */}
+      <div aria-hidden className="absolute inset-0 bg-mec-ink/75 md:hidden" />
       <div
         aria-hidden
-        className="absolute inset-0 bg-gradient-to-r from-mec-ink/70 via-mec-ink/40 to-mec-ink/10"
+        className="absolute inset-0 hidden bg-[linear-gradient(90deg,rgba(13,13,13,0.96)_0%,rgba(13,13,13,0.88)_32%,rgba(13,13,13,0.45)_58%,rgba(13,13,13,0.05)_100%)] md:block"
       />
-      <div
-        aria-hidden
-        className="absolute inset-0 bg-gradient-to-b from-mec-ink/45 via-transparent to-mec-ink/85"
-      />
-      {/* Entrance veil — raised to full black by GSAP, then faded out */}
       <div aria-hidden className="chero-veil absolute inset-0 bg-mec-ink opacity-0" />
 
-      {/* Recurring red light-sweep across the scene */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 overflow-hidden"
-      >
-        <div className="chero-sweep absolute inset-y-0 left-0 w-[30%] -skew-x-12 bg-gradient-to-r from-transparent via-mec-red/[0.07] to-transparent" />
-      </div>
-
-      {/* Drifting haze particles */}
-      <div aria-hidden className="pointer-events-none absolute inset-0">
-        {PARTICLES.map((p, i) => (
-          <span
-            key={i}
-            className={`chero-particle absolute rounded-full ${
-              p.red ? "bg-mec-red/40" : "bg-mec-pure/25"
-            }`}
-            style={{
-              left: p.left,
-              top: p.top,
-              width: p.size,
-              height: p.size,
-              opacity: 0.12,
-            }}
-          />
-        ))}
-      </div>
-
-      {/* Giant outlined watermark, anchored behind the content */}
-      <div
-        aria-hidden
-        className="chero-watermark pointer-events-none absolute -right-4 bottom-[18svh] hidden select-none font-display leading-none text-outline-pure lg:block"
-        style={{ fontSize: "clamp(8rem, 18vw, 16rem)" }}
-      >
-        1990
-      </div>
-
       {/* ── Content ── */}
-      <div className="relative z-[2] mx-auto flex w-full max-w-[1440px] flex-1 flex-col justify-end px-6 pb-8 pt-28 md:px-10 md:pb-10">
+      <div className="relative z-[2] mx-auto flex w-full max-w-[1440px] flex-1 flex-col justify-center px-6 md:px-10">
         <motion.div
           style={{ opacity: fadeContent, y: yContent }}
-          className="chero-content max-w-4xl"
+          className="chero-content max-w-[760px]"
         >
           <p className="chero-eyebrow">
             <Eyebrow tone="white">
-              Jamaica&apos;s Most Trusted Partner in Clean — Since 1990
+              Jamaica&rsquo;s Most Trusted Partner in Clean — Since 1988
             </Eyebrow>
           </p>
 
           <h1
             role="text"
-            className="chero-heading mt-6 font-display-tight text-[clamp(3rem,7.5vw,6.75rem)] leading-[0.92]"
+            className="chero-heading mt-4 font-display-tight text-[clamp(2.5rem,4.6vw,4.25rem)] uppercase leading-[0.95]"
           >
             The premium standard in{" "}
             <span className="text-mec-red">equipment &amp; chemicals.</span>
           </h1>
 
-          <p className="chero-lede mt-6 max-w-[58ch] text-[clamp(1.05rem,1.3vw,1.25rem)] leading-relaxed text-mec-pure/95">
-            For over 30 years, MEC has powered clean, safe, and productive
-            spaces across Jamaica — locally manufactured chemical solutions,
-            backed by world-class equipment from 3M, San Jamar, Rubbermaid, and
-            Purell.
+          <p className="chero-lede mt-4 max-w-[56ch] text-[15px] leading-relaxed text-mec-pure/90 sm:text-[clamp(1rem,1.15vw,1.125rem)]">
+            Locally manufactured chemical solutions, backed by world-class
+            equipment from 3M, San Jamar and Rubbermaid.
           </p>
 
-          <div className="chero-cta mt-8 flex flex-wrap items-center gap-4">
-            <Button href="/products" variant="primary" arrow>
-              See Our Products
-            </Button>
-            <Button href="/quote" variant="ghost-dark">
-              Request a Quote
+          <div className="chero-cta mt-6 flex flex-wrap gap-3 sm:mt-7 sm:gap-4 [&>*]:max-sm:py-3.5">
+            {hasDeals ? (
+              <DealsAnchorButton>See the Promotions</DealsAnchorButton>
+            ) : (
+              <Button href="/deals" variant="primary" arrow>
+                See the Promotions
+              </Button>
+            )}
+            <Button href="/products" variant="ghost-dark">
+              Explore Products
             </Button>
           </div>
         </motion.div>
-
-        {/* Bottom strip: trust items / distributor chip / scroll cue */}
-        <div className="mt-10 flex flex-wrap items-end justify-between gap-8 border-t border-mec-pure/15 pt-6">
-          <ul className="chero-trust flex flex-wrap gap-x-8 gap-y-3">
-            {TRUST_ITEMS.map(({ icon: Icon, label }) => (
-              <li
-                key={label}
-                className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-mec-pure/90"
-              >
-                <Icon className="h-4 w-4 text-mec-red" aria-hidden />
-                {label}
-              </li>
-            ))}
-          </ul>
-
-          <div className="chero-chip flex items-center gap-3 rounded-md border border-white/15 bg-white/10 px-5 py-3 backdrop-blur-lg">
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-mec-red text-sm font-bold">
-              ★
-            </span>
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] opacity-80">
-                Elite Distributor
-              </p>
-              <p className="text-sm font-semibold">
-                3M · San Jamar · Rubbermaid · Purell
-              </p>
-            </div>
-          </div>
-
-        </div>
       </div>
     </section>
   );

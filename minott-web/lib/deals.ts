@@ -58,6 +58,13 @@ export async function getFeaturedDeals(): Promise<{
   return { deals, total };
 }
 
+/** The single deal featured in the homepage spotlight: the first featured
+ *  deal by sortOrder, or null when there are no live deals. */
+export async function getSpotlightDeal(): Promise<DealCard | null> {
+  const { deals } = await getFeaturedDeals();
+  return deals[0] ?? null;
+}
+
 /** Every live deal (active products only), for the /deals page. */
 export function getAllLiveDeals(): Promise<DealCard[]> {
   return db.deal.findMany({

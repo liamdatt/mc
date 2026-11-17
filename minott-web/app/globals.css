@@ -146,6 +146,50 @@ body {
   -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.6);
 }
 
+/* Homepage stats: hard stepped extrusion, white face on red depth, 45° down-right.
+   1px steps, zero blur — 5px below lg, 8px from lg. Chained drop-shadows
+   accumulate, so .stat-3d-shape gives the SVG the same depth as the text. */
+.stat-3d {
+  text-shadow:
+    1px 1px 0 var(--color-mec-red),
+    2px 2px 0 var(--color-mec-red),
+    3px 3px 0 var(--color-mec-red),
+    4px 4px 0 var(--color-mec-red),
+    5px 5px 0 var(--color-mec-red);
+}
+.stat-3d-shape {
+  filter:
+    drop-shadow(1px 1px 0 var(--color-mec-red))
+    drop-shadow(1px 1px 0 var(--color-mec-red))
+    drop-shadow(1px 1px 0 var(--color-mec-red))
+    drop-shadow(1px 1px 0 var(--color-mec-red))
+    drop-shadow(1px 1px 0 var(--color-mec-red));
+}
+@media (min-width: 1024px) {
+  .stat-3d {
+    text-shadow:
+      1px 1px 0 var(--color-mec-red),
+      2px 2px 0 var(--color-mec-red),
+      3px 3px 0 var(--color-mec-red),
+      4px 4px 0 var(--color-mec-red),
+      5px 5px 0 var(--color-mec-red),
+      6px 6px 0 var(--color-mec-red),
+      7px 7px 0 var(--color-mec-red),
+      8px 8px 0 var(--color-mec-red);
+  }
+  .stat-3d-shape {
+    filter:
+      drop-shadow(1px 1px 0 var(--color-mec-red))
+      drop-shadow(1px 1px 0 var(--color-mec-red))
+      drop-shadow(1px 1px 0 var(--color-mec-red))
+      drop-shadow(1px 1px 0 var(--color-mec-red))
+      drop-shadow(1px 1px 0 var(--color-mec-red))
+      drop-shadow(1px 1px 0 var(--color-mec-red))
+      drop-shadow(1px 1px 0 var(--color-mec-red))
+      drop-shadow(1px 1px 0 var(--color-mec-red));
+  }
+}
+
 /* Loader bar (initial page load) */
 .page-loader {
   position: fixed;

@@ -33,6 +33,8 @@ export const PHONES = [
 ] as const;
 
 export const SHOWROOM_ADDRESS = "14½ Retirement Rd";
+export const SHOWROOM_FULL_ADDRESS = "14½ Retirement Road, Kingston 5, Jamaica";
+export const OPENING_HOURS = "Mon–Fri, 8:00 AM – 4:30 PM";
 
 export const MATCH_STATUS = {
   VERIFIED: "VERIFIED",

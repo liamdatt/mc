@@ -3,13 +3,14 @@ import { useRef } from "react";
 import { motion } from "framer-motion";
 import { Container } from "@/components/primitives/Container";
 import { Button } from "@/components/primitives/Button";
+import { PHONES } from "@/lib/constants";
 
 export function QuoteCTA() {
   const sectionRef = useRef<HTMLElement>(null);
   return (
     <section
       ref={sectionRef}
-      className="relative overflow-hidden bg-mec-ink py-[var(--spacing-section-y)] text-mec-pure"
+      className="relative overflow-hidden bg-mec-ink py-16 text-mec-pure md:py-24"
     >
       <motion.div
         aria-hidden
@@ -26,34 +27,34 @@ export function QuoteCTA() {
           viewport={{ once: true, amount: 0.3 }}
           transition={{ delay: 0.5, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
         >
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-mec-pure/80">
-            ★ Request a Quote
-          </p>
-          <h2 className="mt-6 max-w-4xl font-display-tight text-[clamp(3rem,7vw,7rem)] leading-[0.95] text-mec-pure">
+          <h2 className="max-w-3xl font-display-tight text-[clamp(2.5rem,5.5vw,5rem)] leading-[0.95] text-mec-pure">
             Your space. Our standard.
           </h2>
-          <p className="mt-6 max-w-2xl text-lg text-mec-pure/90">
+          <p className="mt-5 max-w-2xl text-lg text-mec-pure">
             Tell us what you need clean. We&apos;ll quote it within one business
             day.
           </p>
-          <div className="mt-10 flex flex-wrap items-center gap-4">
-            <Button href="/products" variant="primary" arrow>
-              Browse Products
+          <div className="mt-8 flex flex-wrap gap-4">
+            <Button href="/contact" variant="solid-light" arrow>
+              Contact Us
             </Button>
-            <Button href="/contact" variant="ghost-dark">
+            <Button href={`tel:${PHONES[0].tel}`} variant="ghost-on-red">
               Talk to a Consultant
             </Button>
           </div>
-          <p className="mt-6 text-sm text-mec-pure/80">
-            Or call us directly:{" "}
-            <a
-              href="tel:+18769295284"
-              className="font-semibold underline-offset-4 hover:underline"
-              data-cursor="Call"
-            >
-              (876) 929-5284
-            </a>
-          </p>
+          <p className="mt-8 text-sm text-mec-pure">Or call us directly</p>
+          <div className="mt-2 flex flex-wrap gap-x-8 gap-y-2">
+            {PHONES.map((p) => (
+              <a
+                key={p.tel}
+                href={`tel:${p.tel}`}
+                data-cursor="Call"
+                className="font-display text-[1.75rem] tracking-[0.02em] text-mec-pure underline-offset-4 hover:underline"
+              >
+                +1 {p.label}
+              </a>
+            ))}
+          </div>
         </motion.div>
       </Container>
     </section>

@@ -1,9 +1,7 @@
-// Official partner brand logos, rendered inside the TrustBar carousel chips.
-//
-// Each brand renders only its inner mark; the chip/card chrome lives in the
-// caller (TrustBar) so spacing and hover behaviour stay consistent. Logos are
-// the official client-supplied PNGs in /public/brand-logos, sized per brand so
-// they optically balance against one another within the shared chip.
+// Official partner brand logos, rendered bare in the homepage partner strip
+// (TrustBar). Logos are the official client-supplied PNGs in
+// /public/brand-logos, trimmed to their ink so heights compare like for like;
+// each is sized per brand so they optically balance. TrustBar caps the height.
 
 import Image from "next/image";
 import type { ComponentType } from "react";
@@ -14,9 +12,9 @@ function ThreeMWordmark() {
     <Image
       src="/brand-logos/3m.png"
       alt="3M"
-      width={3000}
-      height={2000}
-      className="h-10 w-auto object-contain"
+      width={2308}
+      height={1206}
+      className="h-9 w-auto object-contain"
     />
   );
 }
@@ -26,9 +24,9 @@ function SanJamarWordmark() {
     <Image
       src="/brand-logos/san-jamar.png"
       alt="San Jamar"
-      width={900}
-      height={500}
-      className="h-12 w-auto object-contain"
+      width={864}
+      height={180}
+      className="h-8 w-auto object-contain"
     />
   );
 }
@@ -38,9 +36,9 @@ function RubbermaidWordmark() {
     <Image
       src="/brand-logos/rubbermaid.png"
       alt="Rubbermaid Commercial Products"
-      width={612}
-      height={326}
-      className="h-14 w-auto object-contain"
+      width={544}
+      height={271}
+      className="h-12 w-auto object-contain"
     />
   );
 }

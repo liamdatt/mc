@@ -7,6 +7,7 @@ import {
   useInView,
   animate,
 } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 
 export function AnimatedNumber({
   to,
@@ -21,10 +22,17 @@ export function AnimatedNumber({
 }) {
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true, amount: 0.6 });
+  const reduced = useReducedMotion();
   const v = useMotionValue(0);
   const rounded = useTransform(v, (latest) => Math.round(latest));
 
+  // framer's imperative animate() is not covered by MotionRoot's
+  // reducedMotion="user", so gate it here: jump straight to the final value.
   useEffect(() => {
+    if (reduced) {
+      v.set(to);
+      return;
+    }
     if (inView) {
       const controls = animate(v, to, {
         duration,
@@ -32,11 +40,11 @@ export function AnimatedNumber({
       });
       return controls.stop;
     }
-  }, [inView, to, duration, v]);
+  }, [reduced, inView, to, duration, v]);
 
   return (
     <span ref={ref} className={className}>
-      <motion.span>{rounded}</motion.span>
+      {reduced ? <span>{to}</span> : <motion.span>{rounded}</motion.span>}
       {suffix}
     </span>
   );

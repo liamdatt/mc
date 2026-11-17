@@ -4,7 +4,12 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/cn";
 
-type Variant = "primary" | "ghost" | "ghost-dark";
+type Variant =
+  | "primary"
+  | "ghost"
+  | "ghost-dark"
+  | "solid-light"
+  | "ghost-on-red";
 
 interface BaseProps {
   variant?: Variant;
@@ -33,6 +38,12 @@ const variants: Record<Variant, string> = {
     "border border-mec-ink text-mec-ink px-7 py-[15px] hover:border-mec-red hover:text-mec-red",
   "ghost-dark":
     "border border-white/30 text-mec-pure px-7 py-[15px] hover:border-mec-red hover:text-mec-red",
+  // For use on the red band: white fill, inverts to ink on hover.
+  "solid-light":
+    "bg-mec-pure text-mec-ink px-7 py-4 hover:bg-mec-ink hover:text-mec-pure",
+  // Outline on red: hovers to a white fill so it never disappears.
+  "ghost-on-red":
+    "border border-mec-pure/70 text-mec-pure px-7 py-[15px] hover:border-mec-pure hover:bg-mec-pure hover:text-mec-ink",
 };
 
 export const Button = forwardRef<HTMLElement, ButtonProps>(function Button(

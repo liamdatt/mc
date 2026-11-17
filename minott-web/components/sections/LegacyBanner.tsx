@@ -1,5 +1,5 @@
 "use client";
-// Shared closing/CTA banner — used on both About and Home pages.
+// Closing/CTA banner for the About page.
 // Self-contained: no page-specific props. Safe to import anywhere.
 import { Container } from "@/components/primitives/Container";
 import { RevealOnScroll } from "@/components/motion/RevealOnScroll";

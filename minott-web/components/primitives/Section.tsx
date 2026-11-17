@@ -17,6 +17,7 @@ export function Section({
   id,
   pad = true,
   as: As = "section",
+  ...rest
 }: {
   children: React.ReactNode;
   tone?: Tone;
@@ -24,9 +25,10 @@ export function Section({
   id?: string;
   pad?: boolean;
   as?: "section" | "div" | "article";
-}) {
+} & Omit<React.HTMLAttributes<HTMLElement>, "className" | "id" | "children">) {
   return (
     <As
+      {...rest}
       id={id}
       className={cn(
         "relative w-full",

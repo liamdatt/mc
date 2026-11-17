@@ -14,24 +14,29 @@ export async function FeaturedDeals() {
   if (deals.length === 0) return null;
 
   return (
-    <Section tone="dark" id="deals">
+    <Section
+      tone="light"
+      id="deals"
+      pad={false}
+      className="scroll-mt-20 py-16 md:py-24"
+    >
       <Container>
         <RevealOnScroll className="text-center">
           <p>
             <Eyebrow tone="red">Exclusive Offers</Eyebrow>
           </p>
-          <h2 className="mt-6 font-display-tight text-h2 uppercase text-mec-pure">
+          <h2 className="mt-6 font-display-tight text-[clamp(2.25rem,3.6vw,3.5rem)] uppercase leading-[0.95] text-mec-ink">
             Featured Deals
           </h2>
-          <p className="mx-auto mt-6 max-w-2xl text-lede text-mec-pure/70">
+          <p className="mx-auto mt-6 max-w-2xl text-lede text-mec-ink/70">
             Premium products. Limited-time savings. Built for performance.
           </p>
         </RevealOnScroll>
 
-        <div className="mt-16 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
           {deals.map((deal, i) => (
             <RevealOnScroll key={deal.id} delay={i * 0.05}>
-              <DealCardView deal={deal} />
+              <DealCardView deal={deal} tone="light" />
             </RevealOnScroll>
           ))}
         </div>

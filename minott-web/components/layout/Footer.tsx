@@ -2,7 +2,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Container } from "@/components/primitives/Container";
-import { PHONES } from "@/lib/constants";
+import { OPENING_HOURS, PHONES, SHOWROOM_FULL_ADDRESS } from "@/lib/constants";
 
 const QUICK = [
   { href: "/", label: "Home" },
@@ -105,8 +105,8 @@ export function Footer() {
             >
               sales@minottchem.com
             </a>
-            <p>Mon–Fri, 8:00 AM – 4:30 PM</p>
-            <p>14½ Retirement Road, Kingston 5, Jamaica</p>
+            <p>{OPENING_HOURS}</p>
+            <p>{SHOWROOM_FULL_ADDRESS}</p>
           </div>
         </div>
       </Container>
