@@ -17,13 +17,11 @@ export function PublicChrome({
   // preview lock screen renders bare.
   const isBareChrome = pathname === "/preview";
   if (isBareChrome) return <>{children}</>;
-  // The home route is a single non-scrollable screen — no footer below the fold.
-  const isLanding = pathname === "/";
   return (
     <>
       <Nav categories={categories} />
       <main id="main">{children}</main>
-      {!isLanding && <Footer />}
+      <Footer />
     </>
   );
 }

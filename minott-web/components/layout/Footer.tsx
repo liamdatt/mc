@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { Container } from "@/components/primitives/Container";
 import { PHONES } from "@/lib/constants";
 
@@ -7,9 +8,11 @@ const QUICK = [
   { href: "/", label: "Home" },
   { href: "/products", label: "Products" },
   { href: "/solutions", label: "Tailored Solutions" },
+  { href: "/deals", label: "Special Offer" },
   { href: "/social-responsibility", label: "Social Responsibility" },
   { href: "/about", label: "About Us" },
-  { href: "/portal", label: "Accounts Portal" },
+  { href: "/about", label: "Company Information" },
+  { href: "/portal/sign-in", label: "Login" },
   { href: "/contact", label: "Contact" },
 ];
 
@@ -60,7 +63,7 @@ export function Footer() {
           <h3 className="eyebrow text-mec-pure">Quick Links</h3>
           <ul className="mt-4 space-y-3 text-sm">
             {QUICK.map((l) => (
-              <li key={l.href}>
+              <li key={l.label}>
                 <Link href={l.href} className="hover:text-mec-red">
                   {l.label}
                 </Link>
@@ -109,19 +112,37 @@ export function Footer() {
       </Container>
 
       <div className="border-t border-mec-pure/10">
+        <Container className="flex flex-col items-start gap-5 py-8 md:flex-row md:items-center md:gap-10">
+          <h3 className="eyebrow text-mec-pure">Certifications &amp; Memberships</h3>
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex h-[72px] items-center rounded-lg bg-mec-pure p-2">
+              <Image
+                src="/images/memberships/jmea.jpg"
+                alt="Jamaica Manufacturers and Exporters Association (JMEA) member"
+                width={447}
+                height={447}
+                className="h-14 w-auto"
+              />
+            </div>
+            <div className="flex h-[72px] items-center rounded-lg bg-mec-pure p-2">
+              <Image
+                src="/images/memberships/issa.png"
+                alt="ISSA — The Worldwide Cleaning Industry Association member"
+                width={900}
+                height={500}
+                className="h-14 w-auto"
+              />
+            </div>
+          </div>
+        </Container>
+      </div>
+
+      <div className="border-t border-mec-pure/10">
         <Container className="flex flex-col items-start justify-between gap-3 py-6 text-xs text-mec-pure/50 md:flex-row md:items-center">
           <p>
             © {new Date().getFullYear()} Minott Equipment & Chemicals Limited.
             Designed by FloPro Limited.
           </p>
-          <div className="flex gap-6">
-            <Link href="#" className="hover:text-mec-red">
-              Privacy
-            </Link>
-            <Link href="#" className="hover:text-mec-red">
-              Terms
-            </Link>
-          </div>
         </Container>
       </div>
     </footer>

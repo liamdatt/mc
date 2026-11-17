@@ -9,14 +9,14 @@ import { SHOWROOM_ADDRESS } from "@/lib/constants";
  * on one line (wrapping on small screens). Aligned to the same Container as
  * the page content below it.
  *
- * The site nav is `fixed` and transparent at the top of the page, so this
+ * The site nav is `fixed` and solid (80px), so this
  * strip (always the first element on product pages) carries the clearance:
  * pt-24 puts its content below the nav while its background fills the band
  * behind the nav links.
  */
 export function ShowroomBanner() {
   const item =
-    "flex items-center gap-2 whitespace-nowrap text-[13px] text-mec-ink/75";
+    "flex items-center gap-2 text-[13px] md:whitespace-nowrap text-mec-ink/75";
   const icon = "h-3.5 w-3.5 shrink-0 text-mec-red";
   return (
     <div className="w-full border-b border-black/10 bg-mec-mist pb-3 pt-24">
