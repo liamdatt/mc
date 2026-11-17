@@ -45,7 +45,8 @@ export async function GET(
   return new Response(new Uint8Array(file.body), {
     headers: {
       "Content-Type": file.mime,
-      "Content-Disposition": `inline; filename="${name}"`,
+      // PDFs download (no in-browser PDF viewer on our origin); images open inline.
+      "Content-Disposition": `${file.mime === "application/pdf" ? "attachment" : "inline"}; filename="${name}"`,
       "X-Content-Type-Options": "nosniff",
       "Cache-Control": "private, no-store",
     },

@@ -156,6 +156,23 @@ export async function submitQuote(
   const badges = await getLiveDealBadges();
   const logos = await Promise.all(items.map((i) => resolveLogo(i)));
 
+  // A stale cart (localStorage) can reference products/variants deleted since
+  // it was filled; the FK would reject the whole quote. Null out unknown ids —
+  // productName still records what was asked for.
+  const ids = (key: "productId" | "variantId") => [
+    ...new Set(
+      items.map((i) => i[key]).filter((v): v is number => Number.isInteger(v)),
+    ),
+  ];
+  const [liveProducts, liveVariants] = await Promise.all([
+    db.product.findMany({ where: { id: { in: ids("productId") } }, select: { id: true } }),
+    db.productVariant.findMany({ where: { id: { in: ids("variantId") } }, select: { id: true } }),
+  ]);
+  const productIds = new Set(liveProducts.map((p) => p.id));
+  const variantIds = new Set(liveVariants.map((v) => v.id));
+  const liveId = (v: unknown, live: Set<number>) =>
+    typeof v === "number" && live.has(v) ? v : null;
+
   const inquiry = await db.inquiry.create({
     data: {
       type: INQUIRY_TYPE.QUOTE,
@@ -173,8 +190,8 @@ export async function submitQuote(
       matchedCompanyId,
       items: {
         create: items.map((i, idx) => ({
-          productId: typeof i.productId === "number" ? i.productId : null,
-          variantId: typeof i.variantId === "number" ? i.variantId : null,
+          productId: liveId(i.productId, productIds),
+          variantId: liveId(i.variantId, variantIds),
           productName: String(i.productName).slice(0, 200),
           quantity:
             Number.isFinite(i.quantity) && i.quantity > 0 ? Math.floor(i.quantity) : 1,

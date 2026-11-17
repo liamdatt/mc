@@ -5,7 +5,7 @@
  */
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
-import { access, mkdtemp, rm } from "node:fs/promises";
+import { access, mkdtemp, rm, utimes, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 
@@ -16,9 +16,20 @@ async function main() {
   // the real data volume.
   const repoCwd = process.cwd();
   process.chdir(tmp);
-  const { validateLogo, saveLogo, isLogoToken, logoExists, readLogo } = await import(
-    "../lib/quote-logos"
-  );
+  const {
+    validateLogo,
+    saveLogo,
+    isLogoToken,
+    logoExists,
+    readLogo,
+    listLogoFiles,
+    logoDirBytes,
+    logoQuotaExceeded,
+    selectOrphanLogos,
+    deleteLogos,
+    LOGO_DIR_QUOTA_BYTES,
+    ORPHAN_MAX_AGE_MS,
+  } = await import("../lib/quote-logos");
   const { LOGO_MAX_BYTES, isLogoCategory } = await import("../lib/quote-logos-shared");
 
   const PNG = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
@@ -80,6 +91,56 @@ async function main() {
 
   const rejected = await saveLogo(html);
   assert.equal(rejected.ok, false, "saveLogo rejects HTML");
+
+  // Quota: directory total is readdir+stat over token-named files only.
+  await writeFile(path.join(tmp, "data/quote-logos", "README.txt"), "x".repeat(5000)); // ignored
+  const saved2 = await saveLogo(mk(JPG, "b.jpg", "image/jpeg", 1000));
+  assert.ok(saved2.ok);
+  const fresh = await logoDirBytes({ fresh: true });
+  assert.equal(fresh, 64 + 1000, "dir bytes = sum of stored logos");
+  assert.equal(LOGO_DIR_QUOTA_BYTES, 1024 * 1024 * 1024);
+  assert.equal(await logoQuotaExceeded({ fresh: true }), false, "well under 1 GB");
+  assert.equal(await logoQuotaExceeded({ fresh: true, limitBytes: 1063 }), true, "over a tiny limit");
+  assert.equal(await logoQuotaExceeded({ fresh: true, limitBytes: 1064 }), false, "at the limit is allowed");
+  // Cached between refreshes, but saveLogo bumps the cached total.
+  const saved3 = await saveLogo(mk(PDF, "c.pdf", "application/pdf", 500));
+  assert.ok(saved3.ok);
+  assert.equal(await logoDirBytes(), 64 + 1000 + 500, "cache tracks new saves");
+
+  // Orphan selection (pure).
+  const now = Date.now();
+  const DAY = 24 * 60 * 60 * 1000;
+  const oldOrphan = randomUUID() + ".png";
+  const oldReferenced = randomUUID() + ".jpg";
+  const youngOrphan = randomUUID() + ".pdf";
+  const picked = selectOrphanLogos(
+    [
+      { name: oldOrphan, mtimeMs: now - 31 * DAY },
+      { name: oldReferenced, mtimeMs: now - 90 * DAY },
+      { name: youngOrphan, mtimeMs: now - 29 * DAY },
+      { name: "README.txt", mtimeMs: now - 365 * DAY }, // not a token — never touched
+      { name: "../../prisma/app.db", mtimeMs: now - 365 * DAY },
+    ],
+    new Set([oldReferenced]),
+    now,
+  );
+  assert.deepEqual(picked, [oldOrphan]);
+  assert.equal(ORPHAN_MAX_AGE_MS, 30 * DAY);
+
+  // Sweep on disk: age one stored file past 30 days, keep one "referenced".
+  if (!saved2.ok || !saved3.ok) throw new Error("unreachable");
+  const ancient = new Date(now - 40 * DAY);
+  await utimes(path.join(tmp, "data/quote-logos", saved2.token), ancient, ancient);
+  await utimes(path.join(tmp, "data/quote-logos", saved3.token), ancient, ancient);
+  const onDisk = await listLogoFiles();
+  assert.equal(onDisk.length, 3, "README.txt not listed");
+  const doomed = selectOrphanLogos(onDisk, new Set([saved3.token]), now);
+  assert.deepEqual(doomed, [saved2.token]);
+  assert.equal(await deleteLogos([...doomed, "../README.txt", "README.txt"]), 1);
+  assert.equal(await logoExists(saved2.token), false, "orphan deleted");
+  assert.equal(await logoExists(saved3.token), true, "referenced kept");
+  assert.equal(await logoExists(saved.token), true, "young kept");
+  await access(path.join(tmp, "data/quote-logos", "README.txt")); // non-token untouched
 
   // Category gate
   assert.equal(isLogoCategory("mats"), true);
