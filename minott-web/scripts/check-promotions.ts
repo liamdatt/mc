@@ -42,6 +42,24 @@ const b = parse({ ...base, badgeText: "x".repeat(15) });
 assert.ok("error" in b && b.error.includes("14"));
 assert.ok("error" in parse({ ...base, title: "" }));
 assert.ok("error" in parse({ ...base, categoryId: "abc" }));
+assert.ok("error" in parse({ ...base, categoryId: "9007199254740993" }));
+assert.ok("error" in parse({ ...base, categoryId: "2147483648" }));
+assert.ok("data" in parse({ ...base, categoryId: "2147483647" }));
+
+// Impossible calendar days are rejected, not rolled over.
+assert.deepEqual(parse({ ...base, startsAt: "2026-02-31" }), {
+  error: "Start date is not a valid date.",
+});
+assert.deepEqual(parse({ ...base, endsAt: "2026-04-31" }), {
+  error: "End date is not a valid date.",
+});
+assert.ok("data" in parse({ ...base, startsAt: "2028-02-29" }));
+
+// Body whitespace (incl. CRLF) is collapsed before the 160-char check.
+const crlf = parse({ ...base, body: "x".repeat(150) + "\r\n\r\n" + "y".repeat(9) }); // 163 raw → 160
+assert.ok("data" in crlf);
+if ("data" in crlf) assert.equal(crlf.data.body, "x".repeat(150) + " " + "y".repeat(9));
+assert.ok("error" in parse({ ...base, body: "x".repeat(161) }));
 
 const now = new Date("2026-10-15T12:00:00Z");
 const d = (s: string) => new Date(s);

@@ -2,11 +2,44 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { parsePromotionForm, type PromotionInput } from "@/lib/promotion-rules";
 
-export type PromotionFormState = { error?: string };
+export type PromotionFormState = {
+  error?: string;
+  /** Submitted values, echoed back on error so React's post-action form reset
+   *  doesn't wipe what the admin typed. */
+  values?: Record<string, string>;
+};
+
+const FORM_KEYS = [
+  "categoryId",
+  "eyebrow",
+  "title",
+  "body",
+  "badgeText",
+  "ctaLabel",
+  "startsAt",
+  "endsAt",
+] as const;
+
+function formError(formData: FormData, error: string): PromotionFormState {
+  const values: Record<string, string> = {};
+  for (const k of FORM_KEYS) values[k] = String(formData.get(k) ?? "");
+  values.active = formData.get("active") ? "on" : "";
+  return { error, values };
+}
+
+/** Positive 32-bit integer id from the form, or null. */
+function parseId(formData: FormData): number | null {
+  const raw = String(formData.get("id") ?? "").trim();
+  const id = Number(raw);
+  return /^\d+$/.test(raw) && Number.isSafeInteger(id) && id > 0 && id <= 2147483647
+    ? id
+    : null;
+}
 
 function num(formData: FormData, key: string, fallback = 0): number {
   const n = Number(formData.get(key));
@@ -41,7 +74,7 @@ export async function createPromotion(
 ): Promise<PromotionFormState> {
   await requireAdmin();
   const result = await buildData(formData);
-  if ("error" in result) return { error: result.error };
+  if ("error" in result) return formError(formData, result.error);
   const last = await db.promotion.aggregate({ _max: { sortOrder: true } });
   await db.promotion.create({
     data: { ...result.data, sortOrder: (last._max.sortOrder ?? -1) + 1 },
@@ -55,19 +88,28 @@ export async function updatePromotion(
   formData: FormData,
 ): Promise<PromotionFormState> {
   await requireAdmin();
-  const id = Number(formData.get("id"));
-  if (!Number.isFinite(id)) return { error: "Invalid promotion id." };
+  const id = parseId(formData);
+  if (id === null) return formError(formData, "Invalid promotion id.");
   const result = await buildData(formData);
-  if ("error" in result) return { error: result.error };
-  await db.promotion.update({ where: { id }, data: result.data });
+  if ("error" in result) return formError(formData, result.error);
+  try {
+    await db.promotion.update({ where: { id }, data: result.data });
+  } catch (e) {
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2025") {
+      return formError(formData, "This promotion no longer exists.");
+    }
+    throw e;
+  }
   revalidatePromotionSurfaces();
   redirect("/portal/promotions");
 }
 
 export async function deletePromotion(formData: FormData): Promise<void> {
   await requireAdmin();
-  const id = Number(formData.get("id"));
-  await db.promotion.delete({ where: { id } });
+  const id = parseId(formData);
+  if (id === null) return;
+  // deleteMany: a stale/double submit is a no-op instead of an error page.
+  await db.promotion.deleteMany({ where: { id } });
   revalidatePromotionSurfaces();
 }
 

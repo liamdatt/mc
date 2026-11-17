@@ -86,6 +86,12 @@ export async function deleteCategory(
       error: `Cannot delete: ${count} product(s) still use this category. Reassign or delete them first.`,
     };
   }
+  const promoCount = await db.promotion.count({ where: { categoryId: id } });
+  if (promoCount > 0) {
+    return {
+      error: `Cannot delete: ${promoCount} homepage promotion(s) link to this category. Remove its ${promoCount} promotion(s) first.`,
+    };
+  }
   await db.category.delete({ where: { id } });
   revalidatePath("/portal/categories");
   revalidatePath("/products");

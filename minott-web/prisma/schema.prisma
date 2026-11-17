@@ -7,19 +7,19 @@ datasource db {
 }
 
 model Category {
-  id          Int        @id @default(autoincrement())
-  slug        String     @unique
+  id          Int         @id @default(autoincrement())
+  slug        String      @unique
   name        String
   description String?
   imagePath   String?
-  sortOrder   Int        @default(0)
+  sortOrder   Int         @default(0)
   parentId    Int?
-  parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
-  children    Category[] @relation("CategoryHierarchy")
+  parent      Category?   @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children    Category[]  @relation("CategoryHierarchy")
   products    Product[]
   promotions  Promotion[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 }
 
 model Product {
@@ -94,20 +94,20 @@ model Deal {
 }
 
 model Promotion {
-  id         Int      @id @default(autoincrement())
+  id         Int       @id @default(autoincrement())
   eyebrow    String
   title      String
   body       String
   badgeText  String?
-  ctaLabel   String   @default("Shop the Promotion")
-  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  ctaLabel   String    @default("Shop the Promotion")
+  category   Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   categoryId Int
   startsAt   DateTime? // Jamaica start-of-day; null = immediately
   endsAt     DateTime? // Jamaica end-of-day; null = until switched off
-  active     Boolean  @default(true)
-  sortOrder  Int      @default(0)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  active     Boolean   @default(true)
+  sortOrder  Int       @default(0)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
   @@index([categoryId])
 }

@@ -41,7 +41,8 @@ export const getLivePromotions = cache(async function getLivePromotions(): Promi
     body: p.body,
     badgeText: p.badgeText,
     ctaLabel: p.ctaLabel,
-    href: `/products/${p.category.slug}`,
+    // Link straight to the final URL (/products/[category] only redirects here).
+    href: `/products/all?category=${p.category.slug}`,
     imagePath: p.category.imagePath ?? PLACEHOLDER_IMAGE,
   }));
 });

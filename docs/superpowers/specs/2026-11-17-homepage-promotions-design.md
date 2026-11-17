@@ -76,7 +76,8 @@ white, set at catalog import), falling back to the product placeholder. Client
 decision: use these as-is — no category image upload, no staged photos. The card
 therefore renders the image `object-contain` with padding on white (like the
 current promo card), not full-bleed like the mockup's staged photo. Link:
-`/products/[category.slug]`.
+`/products/all?category=<category.slug>` (the final URL that
+`/products/[category.slug]` redirects to).
 
 ## Admin (portal)
 

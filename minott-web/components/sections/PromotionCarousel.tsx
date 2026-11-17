@@ -56,9 +56,18 @@ export function PromotionCarousel({ slides }: { slides: PromoSlide[] }) {
       aria-label="Current promotions"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => {
-        if (!rootRef.current?.contains(document.activeElement)) setPaused(false);
+        // Stay paused only while keyboard focus is inside (a clicked dot keeps
+        // focus but isn't :focus-visible).
+        const el = document.activeElement;
+        const keyboardFocusInside =
+          !!el && !!rootRef.current?.contains(el) && el.matches(":focus-visible");
+        if (!keyboardFocusInside) setPaused(false);
       }}
-      onFocus={() => setPaused(true)}
+      onFocus={(e) => {
+        // Pause for keyboard focus only — a mouse click on a dot also focuses
+        // it, and that must not stop rotation indefinitely.
+        if ((e.target as Element).matches(":focus-visible")) setPaused(true);
+      }}
       onBlur={(e) => {
         if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
           setPaused(rootRef.current?.matches(":hover") ?? false);
@@ -72,16 +81,19 @@ export function PromotionCarousel({ slides }: { slides: PromoSlide[] }) {
             <article
               key={slide.id}
               aria-roledescription="slide"
-              aria-label={`${i + 1} of ${count}`}
+              aria-label={`${slide.title} (${i + 1} of ${count})`}
               aria-hidden={!isActive}
               inert={!isActive}
               className={cn(
-                "grid grid-cols-[minmax(0,1fr)] overflow-hidden rounded-md bg-mec-pure shadow-card sm:grid-cols-[minmax(0,0.92fr)_minmax(0,1fr)] lg:min-h-[300px]",
+                "grid grid-cols-[minmax(0,1fr)] grid-rows-[auto_1fr] overflow-hidden rounded-md bg-mec-pure shadow-card sm:grid-cols-[minmax(0,0.92fr)_minmax(0,1fr)] sm:grid-rows-none lg:min-h-[300px]",
                 !reduced && "transition-opacity duration-500 ease-out",
                 isActive ? "opacity-100" : "pointer-events-none opacity-0",
               )}
             >
-              <div className="flex flex-col justify-center p-6 sm:p-8">
+              {/* Mobile: text top-aligned under the image and the CTA pinned to the
+                  bottom, so every slide's button sits at the same spot even
+                  though the shared cell takes the tallest slide's height. */}
+              <div className="flex flex-col justify-start p-6 sm:justify-center sm:p-8">
                 <p className="eyebrow inline-flex items-center text-mec-ink/60">
                   <span aria-hidden className="mr-3 h-px w-8 shrink-0 bg-mec-red" />
                   {slide.eyebrow}
@@ -100,6 +112,7 @@ export function PromotionCarousel({ slides }: { slides: PromoSlide[] }) {
                 <p className="mt-3 text-sm leading-snug text-mec-ink/70">
                   {slide.body}
                 </p>
+                <span aria-hidden className="max-sm:flex-1" />
                 <Button
                   href={slide.href}
                   arrow
@@ -116,7 +129,6 @@ export function PromotionCarousel({ slides }: { slides: PromoSlide[] }) {
                   fill
                   sizes="(min-width:1024px) 25vw, (min-width:640px) 50vw, 100vw"
                   className="object-contain p-6"
-                  priority={i === 0}
                 />
                 {slide.badgeText && <Badge text={slide.badgeText} />}
               </div>

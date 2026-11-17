@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import Link from "next/link";
 import type { PromotionFormState } from "@/lib/actions/admin-promotions";
 import { DEFAULT_PROMO_CTA, PROMO_LIMITS } from "@/lib/promotion-rules";
@@ -38,6 +38,10 @@ export function PromotionForm({
 }) {
   const [state, formAction, pending] = useActionState(action, {});
   const p = promotion ?? {};
+  // After a failed submit, prefer the echoed values: React resets uncontrolled
+  // fields when a form action completes.
+  const v = state.values;
+  const [startDate, setStartDate] = useState(v?.startsAt ?? p.startsAt ?? "");
 
   return (
     <form action={formAction} className="max-w-2xl space-y-5">
@@ -46,8 +50,11 @@ export function PromotionForm({
       <label className={label}>
         Category
         <select
+          // React doesn't re-apply a changed defaultValue to <select> options,
+          // so remount it when echoed values arrive (form reset then keeps them).
+          key={v?.categoryId ?? "initial"}
           name="categoryId"
-          defaultValue={p.categoryId ?? categories[0]?.id ?? ""}
+          defaultValue={v?.categoryId ?? p.categoryId ?? categories[0]?.id ?? ""}
           className={field}
           required
         >
@@ -64,7 +71,7 @@ export function PromotionForm({
         <input
           name="eyebrow"
           maxLength={PROMO_LIMITS.eyebrow}
-          defaultValue={p.eyebrow ?? ""}
+          defaultValue={v?.eyebrow ?? p.eyebrow ?? ""}
           placeholder="October Feature"
           className={field}
           required
@@ -76,7 +83,7 @@ export function PromotionForm({
         <input
           name="title"
           maxLength={PROMO_LIMITS.title}
-          defaultValue={p.title ?? ""}
+          defaultValue={v?.title ?? p.title ?? ""}
           className={field}
           required
         />
@@ -87,7 +94,7 @@ export function PromotionForm({
         <textarea
           name="body"
           maxLength={PROMO_LIMITS.body}
-          defaultValue={p.body ?? ""}
+          defaultValue={v?.body ?? p.body ?? ""}
           rows={3}
           className={`${field} resize-none`}
           required
@@ -100,7 +107,7 @@ export function PromotionForm({
           <input
             name="badgeText"
             maxLength={PROMO_LIMITS.badgeText}
-            defaultValue={p.badgeText ?? ""}
+            defaultValue={v?.badgeText ?? p.badgeText ?? ""}
             placeholder="Save 15%"
             className={field}
           />
@@ -110,7 +117,7 @@ export function PromotionForm({
           <input
             name="ctaLabel"
             maxLength={PROMO_LIMITS.ctaLabel}
-            defaultValue={p.ctaLabel ?? ""}
+            defaultValue={v?.ctaLabel ?? p.ctaLabel ?? ""}
             placeholder={DEFAULT_PROMO_CTA}
             className={field}
           />
@@ -123,7 +130,8 @@ export function PromotionForm({
           <input
             name="startsAt"
             type="date"
-            defaultValue={p.startsAt ?? ""}
+            defaultValue={v?.startsAt ?? p.startsAt ?? ""}
+            onChange={(e) => setStartDate(e.target.value)}
             className={field}
           />
         </label>
@@ -132,14 +140,15 @@ export function PromotionForm({
           <input
             name="endsAt"
             type="date"
-            defaultValue={p.endsAt ?? ""}
+            defaultValue={v?.endsAt ?? p.endsAt ?? ""}
+            min={startDate || undefined}
             className={field}
           />
         </label>
       </div>
 
       <label className="flex items-center gap-2 text-sm">
-        <input type="checkbox" name="active" defaultChecked={p.active ?? true} />
+        <input type="checkbox" name="active" defaultChecked={v ? v.active === "on" : (p.active ?? true)} />
         Active
       </label>
 

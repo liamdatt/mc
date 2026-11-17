@@ -33,7 +33,9 @@ const LABELS = {
 function parseDay(raw: string, time: string): Date | null {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) return null;
   const d = new Date(`${raw}T${time}-05:00`);
-  return Number.isNaN(d.getTime()) ? null : d;
+  if (Number.isNaN(d.getTime())) return null;
+  // Reject impossible days (2026-02-31 would otherwise roll over to Mar 3).
+  return toDateInput(d) === raw ? d : null;
 }
 
 export function parsePromotionForm(
@@ -43,13 +45,19 @@ export function parsePromotionForm(
 
   const categoryRaw = val("categoryId");
   const categoryId = Number(categoryRaw);
-  if (!/^\d+$/.test(categoryRaw) || !Number.isInteger(categoryId) || categoryId <= 0) {
+  if (
+    !/^\d+$/.test(categoryRaw) ||
+    !Number.isSafeInteger(categoryId) ||
+    categoryId <= 0 ||
+    categoryId > 2147483647
+  ) {
     return { error: "Choose a category." };
   }
 
   const text = {} as Record<keyof typeof PROMO_LIMITS, string>;
   for (const key of ["eyebrow", "title", "body", "badgeText", "ctaLabel"] as const) {
-    text[key] = val(key);
+    // Body: collapse runs of whitespace (incl. CRLF) so the limit matches what renders.
+    text[key] = key === "body" ? val(key).replace(/\s+/g, " ") : val(key);
     if (text[key].length > PROMO_LIMITS[key]) {
       return { error: `${LABELS[key]} must be ${PROMO_LIMITS[key]} characters or fewer.` };
     }
