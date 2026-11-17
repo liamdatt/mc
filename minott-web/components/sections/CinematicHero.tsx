@@ -113,7 +113,7 @@ export function CinematicHero({ hasDeals }: { hasDeals: boolean }) {
   return (
     <section
       ref={ref}
-      className="relative flex min-h-0 flex-col overflow-hidden bg-mec-ink pb-10 pt-[calc(80px+2.5rem)] text-mec-pure md:min-h-[clamp(400px,48svh,460px)] md:pt-20"
+      className="relative flex min-h-0 flex-col overflow-hidden bg-mec-ink pb-10 pt-[calc(80px+2.5rem)] text-mec-pure md:min-h-[clamp(400px,48svh,460px)] md:pt-[calc(80px+1.75rem)]"
     >
       {/* ── Background: photo → legibility tint → entrance veil ── */}
       <motion.div
