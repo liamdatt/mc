@@ -15,7 +15,7 @@ export type InquiryResult = { ok: boolean; error?: string };
 
 export type QuoteResult =
   | { ok: false; error?: string }
-  | { ok: true; outcome: MatchStatus; ref?: string };
+  | { ok: true; outcome: MatchStatus; ref?: string; droppedLogos?: string[] };
 
 function field(formData: FormData, key: string): string {
   return String(formData.get(key) ?? "").trim();
@@ -155,6 +155,17 @@ export async function submitQuote(
 
   const badges = await getLiveDealBadges();
   const logos = await Promise.all(items.map((i) => resolveLogo(i)));
+  // Tell the customer when a logo they attached could not be kept.
+  const droppedLogos = items.flatMap((i, idx) =>
+    i.logoToken != null && i.logoToken !== "" && !logos[idx].logoFile
+      ? [
+          typeof i.logoFileName === "string" && i.logoFileName.trim()
+            ? i.logoFileName.trim().slice(0, 120)
+            : "logo file",
+        ]
+      : [],
+  );
+  const dropped = droppedLogos.length ? { droppedLogos } : {};
 
   // A stale cart (localStorage) can reference products/variants deleted since
   // it was filled; the FK would reject the whole quote. Null out unknown ids —
@@ -207,6 +218,6 @@ export async function submitQuote(
   });
   after(() => sendInquiryEmails(inquiry.id));
   return session
-    ? { ok: true, outcome: MATCH_STATUS.VERIFIED }
-    : { ok: true, outcome: matchStatus, ref: ref ?? undefined };
+    ? { ok: true, outcome: MATCH_STATUS.VERIFIED, ...dropped }
+    : { ok: true, outcome: matchStatus, ref: ref ?? undefined, ...dropped };
 }

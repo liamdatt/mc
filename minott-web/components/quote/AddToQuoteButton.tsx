@@ -74,7 +74,7 @@ export function AddToQuoteButton({
         </>
       ) : (
         <>
-          <Plus className={icon} aria-hidden />{}
+          <Plus className={icon} aria-hidden />
           {inCart > 0 ? `In Quote · ${inCart}` : "Add to Quote"}
         </>
       )}

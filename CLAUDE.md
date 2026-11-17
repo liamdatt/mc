@@ -40,12 +40,12 @@ Multi-page App Router site backed by **SQLite via Prisma**. Public pages: Home (
 The root layout sets `export const dynamic = "force-dynamic"` so every route renders on demand — this keeps the nav category dropdown and catalog in sync with admin edits (Prisma reads are not auto-dynamic, so without this they would be prerendered stale).
 
 Component folders:
-- `components/sections/` — marketing page sections
-- `components/products/` — `ProductCard`, `ProductDetailActions`, `SampleRequestForm`
+- `components/sections/` — marketing page sections (homepage includes `SourceSpotlight`, `VisitShowroom`, `JamaicaOutline`, `DealsAnchorButton`)
+- `components/products/` — `ProductCard`, `ProductDetailActions`, `SampleRequestForm`, `CategoryChips` (listing category filter), `CustomLogoField` (mat logo upload on the detail page), `CustomLogoBanner` (listing notice for logo categories)
 - `components/quote/` — `QuoteCartProvider` (localStorage cart), `AddToQuoteButton`, `QuotePageClient`
 - `components/admin/` — admin forms + controls
 - `components/primitives/` — atoms: `Button`, `Card`, `Eyebrow`, `Container`, `Section`, `AnimatedNumber`
-- `components/layout/` — `Nav`, `Footer`, `PublicChrome` (hides Nav/Footer only on `/preview`; the portal shares the public chrome), `PageTransition`
+- `components/layout/` — `Nav`, `NavSearch` (global product search in the nav), `Footer`, `PublicChrome` (hides Nav/Footer only on `/preview`; Nav and Footer show on every other route including `/` and the portal), `PageTransition`
 - `components/motion/` — global motion infra (see below)
 - `lib/` — `db` (Prisma singleton), `products` (reads), `actions/*` (writes), `auth/session`, `constants`, `slug`, `cn`, `tokens`, `motion`, `use-reduced-motion`
 

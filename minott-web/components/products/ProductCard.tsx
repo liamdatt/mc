@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { FileText, FlaskConical } from "lucide-react";
 import { AddToQuoteButton } from "@/components/quote/AddToQuoteButton";
+import { isLogoCategory } from "@/lib/quote-logos-shared";
 
 // The shape toRow() in app/products/all/page.tsx produces. sdsUrl and
 // categoryName are carried for that mapper but not rendered here.
@@ -99,13 +100,15 @@ export function ProductCard({ product }: { product: ProductCardData }) {
           </Link>
         )}
         <div className="mt-auto pt-4">
-          {product.variantCount > 1 || !product.onlyVariant ? (
+          {product.variantCount > 1 || !product.onlyVariant || isLogoCategory(product.categorySlug) ? (
             <Link
               href={href}
               data-cursor="View"
               className="inline-flex w-full items-center justify-center gap-2 rounded-sm bg-mec-red px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-mec-pure transition-all duration-200 hover:bg-mec-red-hover active:scale-[0.97]"
             >
-              Select Options
+              {isLogoCategory(product.categorySlug) && product.onlyVariant && product.variantCount <= 1
+                ? "Customize & Add to Quote"
+                : "Select Options"}
             </Link>
           ) : (
             <AddToQuoteButton

@@ -6,7 +6,8 @@ import { Search, X } from "lucide-react";
 
 /**
  * Server-driven product search. Keeps a local input value, then debounces a
- * `router.replace` that writes `?q=` into the URL (preserving other filters).
+ * `router.replace` that writes `?q=` into the URL. Search is global: a query
+ * drops the category and filters, and keeps only sort.
  * The page reads `searchParams.q` server-side to query Prisma, so results are
  * always rendered in a Server Component.
  */

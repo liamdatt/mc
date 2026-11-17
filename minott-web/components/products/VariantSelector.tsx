@@ -58,11 +58,14 @@ export function VariantSelector({
   onSelect,
   dealBadges = [],
 }: Props) {
-  const [qty, setQty] = useState(1);
+  const [qtyDraft, setQtyDraft] = useState("1");
   const [logoState, setLogoState] = useState<CustomLogoState>(EMPTY_LOGO_STATE);
   const offersLogo = isLogoCategory(listing.categorySlug);
   const clampQty = (n: number) =>
     Number.isFinite(n) ? Math.min(999, Math.max(1, Math.floor(n))) : 1;
+  // Empty draft counts as 1; the draft is only normalised on blur/Enter.
+  const qty = clampQty(parseInt(qtyDraft, 10));
+  const stepQty = (delta: number) => setQtyDraft(String(clampQty(qty + delta)));
   const sizeHeading = optionLabel?.trim() || "Size";
   const sizes = useMemo(
     () => [...new Set(variants.map((v) => v.size).filter((s): s is string => !!s))],
@@ -195,12 +198,12 @@ export function VariantSelector({
       <div className="flex flex-wrap items-stretch gap-3">
         <div
           role="group"
-          aria-label="Quantity"
+          aria-label="Quantity selector"
           className="inline-flex items-stretch border border-black/15"
         >
           <button
             type="button"
-            onClick={() => setQty((n) => clampQty(n - 1))}
+            onClick={() => stepQty(-1)}
             disabled={qty <= 1}
             aria-label="Decrease quantity"
             className="px-3 text-mec-ink transition-colors hover:text-mec-red disabled:opacity-40"
@@ -208,18 +211,27 @@ export function VariantSelector({
             <Minus className="h-4 w-4" aria-hidden />
           </button>
           <input
-            type="number"
+            type="text"
             inputMode="numeric"
-            min={1}
-            max={999}
-            value={qty}
-            onChange={(e) => setQty(clampQty(e.target.valueAsNumber))}
+            pattern="[0-9]*"
+            value={qtyDraft}
+            onChange={(e) => {
+              const v = e.target.value;
+              if (v === "" || /^\d{1,4}$/.test(v)) setQtyDraft(v);
+            }}
+            onBlur={() => setQtyDraft(String(qty))}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                setQtyDraft(String(qty));
+              }
+            }}
             aria-label="Quantity"
             className="w-14 border-x border-black/15 bg-transparent text-center text-sm font-semibold text-mec-ink outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
           />
           <button
             type="button"
-            onClick={() => setQty((n) => clampQty(n + 1))}
+            onClick={() => stepQty(1)}
             disabled={qty >= 999}
             aria-label="Increase quantity"
             className="px-3 text-mec-ink transition-colors hover:text-mec-red disabled:opacity-40"

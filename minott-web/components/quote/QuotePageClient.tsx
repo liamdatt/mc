@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Trash2 } from "lucide-react";
@@ -25,6 +25,45 @@ export type QuoteDealLookup = {
   byProduct: Record<number, string>;
 };
 
+/** Quantity field with a draft string so it can be cleared while typing;
+ *  commits to the cart whenever the draft is a valid number, normalises on blur. */
+function QtyInput({
+  value,
+  onCommit,
+  label,
+}: {
+  value: number;
+  onCommit: (n: number) => void;
+  label: string;
+}) {
+  const [draft, setDraft] = useState<string | null>(null);
+  const clamp = (n: number) =>
+    Number.isFinite(n) ? Math.min(999, Math.max(1, Math.floor(n))) : 1;
+  return (
+    <input
+      type="text"
+      inputMode="numeric"
+      pattern="[0-9]*"
+      value={draft ?? String(value)}
+      onChange={(e) => {
+        const v = e.target.value;
+        if (v !== "" && !/^\d{1,4}$/.test(v)) return;
+        setDraft(v);
+        if (v !== "") onCommit(clamp(parseInt(v, 10)));
+      }}
+      onBlur={() => {
+        onCommit(clamp(parseInt(draft ?? String(value), 10)));
+        setDraft(null);
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") e.currentTarget.blur();
+      }}
+      className="w-20 rounded-sm border border-black/15 px-3 py-2 text-mec-ink outline-none focus:border-mec-red"
+      aria-label={label}
+    />
+  );
+}
+
 export function QuotePageClient({
   portalUser,
   deals,
@@ -45,6 +84,12 @@ export function QuotePageClient({
   }, [state.ok, clear]);
 
   if (state.ok) {
+    const dropNote = state.droppedLogos?.length ? (
+      <p role="status" className="mt-4 max-w-xl text-sm text-mec-ink/75">
+        We couldn&apos;t attach your logo file ({state.droppedLogos.join(", ")}). Please
+        email it to sales@minottchem.com and mention your quote.
+      </p>
+    ) : null;
     const panel = "rounded-md border border-mec-red/30 bg-mec-red/5 p-8";
     const primary =
       "mt-6 inline-block bg-mec-red px-6 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-mec-pure hover:bg-mec-red-hover";
@@ -60,6 +105,7 @@ export function QuotePageClient({
             details you provided. Sign in to attach this quote to your account, or
             recover access using the MEC account number shown on your invoices.
           </p>
+          {dropNote}
           <Link
             href={`/portal/sign-in?next=${encodeURIComponent(`/portal/claim?ref=${state.ref ?? ""}`)}`}
             className={primary}
@@ -80,6 +126,7 @@ export function QuotePageClient({
             prefilled it from your request. Your quote stays attached while your
             application is reviewed.
           </p>
+          {dropNote}
           <Link href={`/register?ref=${state.ref ?? ""}`} className={primary}>Complete New Customer Form</Link>
         </div>
       );
@@ -92,6 +139,7 @@ export function QuotePageClient({
           Thanks — a sales consultant will price your list and respond within one
           business day.
         </p>
+        {dropNote}
         <Link href="/products" className={primary}>Back to Products</Link>
         {portalUser && (
           <Link href="/portal/history" className={secondary}>View Quote History</Link>
@@ -186,15 +234,10 @@ export function QuotePageClient({
                     </p>
                   )}
                 </div>
-                <input
-                  type="number"
-                  min={1}
+                <QtyInput
                   value={it.quantity}
-                  onChange={(e) =>
-                    setQuantity(it.variantId, Number(e.target.value) || 1)
-                  }
-                  className="w-20 rounded-sm border border-black/15 px-3 py-2 text-mec-ink outline-none focus:border-mec-red"
-                  aria-label={`Quantity for ${it.name}`}
+                  onCommit={(n) => setQuantity(it.variantId, n)}
+                  label={`Quantity for ${it.name}`}
                 />
                 <button
                   type="button"
