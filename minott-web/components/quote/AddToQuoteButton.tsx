@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Check, Plus } from "lucide-react";
 import { useQuoteCart, type QuoteItem } from "./QuoteCartProvider";
 import { cn } from "@/lib/cn";
@@ -18,8 +18,24 @@ export function AddToQuoteButton({
   size?: "md" | "sm";
   className?: string;
 }) {
-  const { addItem } = useQuoteCart();
+  const { items, addItem } = useQuoteCart();
   const [added, setAdded] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // The cart hydrates from localStorage after mount; render the plain label
+  // until then so server and first client render agree.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+    return () => {
+      if (timer.current) clearTimeout(timer.current);
+    };
+  }, []);
+
+  const inCart = mounted
+    ? (items.find((i) => i.variantId === product.variantId)?.quantity ?? 0)
+    : 0;
 
   const base =
     "group inline-flex items-center justify-center gap-2 font-semibold uppercase tracking-[0.12em] transition-all duration-200 active:scale-[0.97]";
@@ -39,16 +55,18 @@ export function AddToQuoteButton({
       onClick={() => {
         addItem(product, quantity);
         setAdded(true);
-        setTimeout(() => setAdded(false), 1600);
+        if (timer.current) clearTimeout(timer.current);
+        timer.current = setTimeout(() => setAdded(false), 1600);
       }}
     >
       {added ? (
         <>
-          <Check className={icon} aria-hidden /> Added
+          <Check className={icon} aria-hidden /> Added · {inCart}
         </>
       ) : (
         <>
-          <Plus className={icon} aria-hidden /> Add to Quote
+          <Plus className={icon} aria-hidden />{}
+          {inCart > 0 ? `In Quote · ${inCart}` : "Add to Quote"}
         </>
       )}
     </button>

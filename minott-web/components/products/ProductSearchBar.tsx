@@ -42,15 +42,14 @@ export function ProductSearchBar({
   }, [urlQuery]);
 
   function pushQuery(next: string) {
-    // When navigating to a different page, start from a clean query string so
-    // we don't drag the landing page's params along; otherwise preserve the
-    // current filters and just swap `q`.
-    const params = navigates
-      ? new URLSearchParams()
-      : new URLSearchParams(searchParams.toString());
+    // Search is global: build the params from scratch so `category` (and any
+    // other filter) is dropped, keeping only `sort`. Clearing the query leaves
+    // just `sort`, so the category never comes back.
+    const params = new URLSearchParams();
     const trimmed = next.trim();
     if (trimmed) params.set("q", trimmed);
-    else params.delete("q");
+    const sort = searchParams.get("sort");
+    if (sort && !navigates) params.set("sort", sort);
     lastPushed.current = trimmed;
     const qs = params.toString();
     const url = qs ? `${pathname}?${qs}` : pathname;

@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { Minus, Plus } from "lucide-react";
 import { AddToQuoteButton } from "@/components/quote/AddToQuoteButton";
 
 /** A live deal badge already filtered down to one product by the server page.
@@ -50,6 +51,9 @@ export function VariantSelector({
   onSelect,
   dealBadges = [],
 }: Props) {
+  const [qty, setQty] = useState(1);
+  const clampQty = (n: number) =>
+    Number.isFinite(n) ? Math.min(999, Math.max(1, Math.floor(n))) : 1;
   const sizeHeading = optionLabel?.trim() || "Size";
   const sizes = useMemo(
     () => [...new Set(variants.map((v) => v.size).filter((s): s is string => !!s))],
@@ -177,18 +181,55 @@ export function VariantSelector({
         )}
       </p>
 
-      <AddToQuoteButton
-        product={{
-          productId: listing.id,
-          variantId: selected.id,
-          slug: listing.slug,
-          name: listing.name,
-          sku: selected.sku,
-          variantLabel: selected.label ?? "",
-          imagePath: selected.imagePath ?? listing.imagePath,
-          categorySlug: listing.categorySlug,
-        }}
-      />
+      <div className="flex flex-wrap items-stretch gap-3">
+        <div
+          role="group"
+          aria-label="Quantity"
+          className="inline-flex items-stretch border border-black/15"
+        >
+          <button
+            type="button"
+            onClick={() => setQty((n) => clampQty(n - 1))}
+            disabled={qty <= 1}
+            aria-label="Decrease quantity"
+            className="px-3 text-mec-ink transition-colors hover:text-mec-red disabled:opacity-40"
+          >
+            <Minus className="h-4 w-4" aria-hidden />
+          </button>
+          <input
+            type="number"
+            inputMode="numeric"
+            min={1}
+            max={999}
+            value={qty}
+            onChange={(e) => setQty(clampQty(e.target.valueAsNumber))}
+            aria-label="Quantity"
+            className="w-14 border-x border-black/15 bg-transparent text-center text-sm font-semibold text-mec-ink outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+          />
+          <button
+            type="button"
+            onClick={() => setQty((n) => clampQty(n + 1))}
+            disabled={qty >= 999}
+            aria-label="Increase quantity"
+            className="px-3 text-mec-ink transition-colors hover:text-mec-red disabled:opacity-40"
+          >
+            <Plus className="h-4 w-4" aria-hidden />
+          </button>
+        </div>
+        <AddToQuoteButton
+          quantity={qty}
+          product={{
+            productId: listing.id,
+            variantId: selected.id,
+            slug: listing.slug,
+            name: listing.name,
+            sku: selected.sku,
+            variantLabel: selected.label ?? "",
+            imagePath: selected.imagePath ?? listing.imagePath,
+            categorySlug: listing.categorySlug,
+          }}
+        />
+      </div>
     </div>
   );
 }

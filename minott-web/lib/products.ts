@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 
 export type ListingSort = "az" | "za";
 
-/** Categories with their active-product counts, for the filter sidebar. */
+/** Categories with their active-product counts, for the category chips. */
 export async function getCategoriesWithCounts() {
   const cats = await db.category.findMany({
     orderBy: { sortOrder: "asc" },
@@ -15,82 +15,6 @@ export async function getCategoriesWithCounts() {
     name: c.name,
     count: c.products.length,
   }));
-}
-
-/** Distinct "Form" spec values present on active variants (e.g. Liquid). */
-export async function getFormOptions(categorySlug?: string): Promise<string[]> {
-  const rows = await db.productVariant.findMany({
-    where: {
-      active: true,
-      specLabel: "Form",
-      specValue: { not: null },
-      product: {
-        active: true,
-        ...(categorySlug ? { category: { slug: categorySlug } } : {}),
-      },
-    },
-    select: { specValue: true },
-    distinct: ["specValue"],
-    orderBy: { specValue: "asc" },
-  });
-  return rows
-    .map((r) => r.specValue)
-    .filter((v): v is string => !!v && v.trim().length > 0);
-}
-
-/**
- * Distinct non-null values of a scalar product attribute (industry / color),
- * optionally scoped to a category. Returns [] when no data exists so filter UI
- * can hide itself. Empty/whitespace strings are dropped.
- */
-async function getDistinctAttr(
-  field: "industry" | "color",
-  categorySlug?: string,
-): Promise<string[]> {
-  const where: Prisma.ProductWhereInput = {
-    active: true,
-    [field]: { not: null },
-  };
-  if (categorySlug) where.category = { slug: categorySlug };
-  const rows = await db.product.findMany({
-    where,
-    select: { [field]: true },
-    distinct: [field],
-    orderBy: { [field]: "asc" },
-  });
-  return (rows as unknown as Record<string, string | null>[])
-    .map((r) => r[field])
-    .filter((v): v is string => !!v && v.trim().length > 0);
-}
-
-/** Distinct industries present on active products (optionally per category). */
-export function getIndustryOptions(categorySlug?: string): Promise<string[]> {
-  return getDistinctAttr("industry", categorySlug);
-}
-
-/** Distinct volumes present on active variants (optionally per category). */
-export async function getVolumeOptions(categorySlug?: string): Promise<string[]> {
-  const rows = await db.productVariant.findMany({
-    where: {
-      active: true,
-      volume: { not: null },
-      product: {
-        active: true,
-        ...(categorySlug ? { category: { slug: categorySlug } } : {}),
-      },
-    },
-    distinct: ["volume"],
-    select: { volume: true },
-    orderBy: { volume: "asc" },
-  });
-  return rows
-    .map((r) => r.volume)
-    .filter((v): v is string => !!v && v.trim().length > 0);
-}
-
-/** Distinct colors present on active products (optionally per category). */
-export function getColorOptions(categorySlug?: string): Promise<string[]> {
-  return getDistinctAttr("color", categorySlug);
 }
 
 /** Filtered + sorted product list for the catalog listing page. */

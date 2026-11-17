@@ -3,11 +3,7 @@ import Link from "next/link";
 import {
   getCategoriesWithCounts,
   getCategoryWithChildren,
-  getColorOptions,
-  getFormOptions,
-  getIndustryOptions,
   getProductsForListing,
-  getVolumeOptions,
   type ListingSort,
 } from "@/lib/products";
 import { Section } from "@/components/primitives/Section";
@@ -16,7 +12,7 @@ import { Eyebrow } from "@/components/primitives/Eyebrow";
 import { getLiveDealBadges, pickBadge, type DealBadge } from "@/lib/deals";
 import { ProductCard, type ProductCardData } from "@/components/products/ProductCard";
 import { ProductSubsection } from "@/components/products/ProductSubsection";
-import { ProductFilterSidebar } from "@/components/products/ProductFilterSidebar";
+import { CategoryChips } from "@/components/products/CategoryChips";
 import { ProductSort } from "@/components/products/ProductSort";
 import { ProductSearchBar } from "@/components/products/ProductSearchBar";
 import { ShowroomBanner } from "@/components/products/ShowroomBanner";
@@ -74,10 +70,6 @@ export default async function AllProductsPage({
 }: {
   searchParams: Promise<{
     category?: string;
-    form?: string;
-    industry?: string;
-    volume?: string;
-    color?: string;
     q?: string;
     sort?: string;
   }>;
@@ -86,29 +78,19 @@ export default async function AllProductsPage({
   const sort: ListingSort = sp.sort === "za" ? "za" : "az";
   const q = sp.q?.trim() || undefined;
 
-  // Filter-option pools are scoped to the active category when one is set, so
-  // e.g. Volume/Colour only surface values that actually exist for Chemicals.
-  const [categories, forms, industries, volumes, colors, dealBadges] =
-    await Promise.all([
-      getCategoriesWithCounts(),
-      getFormOptions(),
-      getIndustryOptions(sp.category),
-      getVolumeOptions(sp.category),
-      getColorOptions(sp.category),
-      getLiveDealBadges(),
-    ]);
+  const [categories, dealBadges] = await Promise.all([
+    getCategoriesWithCounts(),
+    getLiveDealBadges(),
+  ]);
 
   const activeCategory = categories.find((c) => c.slug === sp.category);
 
   // When a category is active, check whether it has child subsections; if so we
   // render products grouped under subsection headings. getCategoryWithChildren
-  // honors the same search/filter opts.
+  // honors the same search opts.
   const grouped = sp.category
     ? await getCategoryWithChildren(sp.category, {
         q,
-        industry: sp.industry,
-        volume: sp.volume,
-        color: sp.color,
         sort,
       })
     : null;
@@ -119,11 +101,7 @@ export default async function AllProductsPage({
     ? grouped!.products
     : await getProductsForListing({
         categorySlug: sp.category,
-        form: sp.form,
         q,
-        industry: sp.industry,
-        volume: sp.volume,
-        color: sp.color,
         sort,
       });
 
@@ -180,6 +158,10 @@ export default async function AllProductsPage({
         <h1 className="mt-4 font-display-tight text-h1 leading-[0.95]">
           {activeCategory ? (
             activeCategory.name
+          ) : q ? (
+            <>
+              Search <span className="text-mec-red">results</span>
+            </>
           ) : (
             <>
               All <span className="text-mec-red">Products</span>
@@ -200,26 +182,15 @@ export default async function AllProductsPage({
           <span className="font-semibold text-mec-ink/80">48 hours</span>.
         </p>
 
-        <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-[260px_minmax(0,1fr)]">
-          <div className="lg:sticky lg:top-24 lg:self-start">
-            <ProductFilterSidebar
-              categories={categories}
-              forms={forms}
-              industries={industries}
-              volumes={volumes}
-              colors={colors}
-              active={{
-                category: sp.category,
-                form: sp.form,
-                industry: sp.industry,
-                volume: sp.volume,
-                color: sp.color,
-                sort: sp.sort,
-                q,
-              }}
-            />
-          </div>
+        <div className="mt-5">
+          <CategoryChips
+            categories={categories}
+            activeSlug={activeCategory?.slug}
+            q={q}
+          />
+        </div>
 
+        <div className="mt-8">
           <div>
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-black/10 pb-4">
               <p className="text-sm text-mec-ink/70">
@@ -241,7 +212,7 @@ export default async function AllProductsPage({
 
             {totalCount === 0 ? (
               <p className="py-16 text-center text-mec-ink/60">
-                No products match these filters.
+                No products match your search.
               </p>
             ) : useSubsections ? (
               <div className="mt-6">
