@@ -17,6 +17,7 @@ model Category {
   parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
   children    Category[] @relation("CategoryHierarchy")
   products    Product[]
+  promotions  Promotion[]
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 }
@@ -90,6 +91,25 @@ model Deal {
   updatedAt   DateTime        @updatedAt
 
   @@index([productId])
+}
+
+model Promotion {
+  id         Int      @id @default(autoincrement())
+  eyebrow    String
+  title      String
+  body       String
+  badgeText  String?
+  ctaLabel   String   @default("Shop the Promotion")
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId Int
+  startsAt   DateTime? // Jamaica start-of-day; null = immediately
+  endsAt     DateTime? // Jamaica end-of-day; null = until switched off
+  active     Boolean  @default(true)
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([categoryId])
 }
 
 model Inquiry {
