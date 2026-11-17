@@ -128,7 +128,7 @@ export function Nav({ categories }: { categories: CategoryLink[] }) {
             aria-expanded={open}
             onClick={() => setOpen((v) => !v)}
           >
-            {open ? <X size={28} className="text-mec-pure" /> : <Menu size={28} />}
+            {open ? <X size={28} /> : <Menu size={28} />}
           </button>
         </div>
       </header>

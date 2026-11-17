@@ -18,10 +18,13 @@ export function NavSearch({
   const router = useRouter();
   const [open, setOpen] = useState(alwaysOpen);
   const [term, setTerm] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const refocus = useRef(false);
 
-  const close = () => {
-    if (!alwaysOpen) setOpen(false);
+  const close = (returnFocus = false) => {
+    if (alwaysOpen) return;
+    refocus.current = returnFocus;
+    setOpen(false);
   };
 
   const submit = (e: React.FormEvent) => {
@@ -35,6 +38,13 @@ export function NavSearch({
   if (!open) {
     return (
       <button
+        ref={(el) => {
+          buttonRef.current = el;
+          if (el && refocus.current) {
+            refocus.current = false;
+            el.focus();
+          }
+        }}
         type="button"
         aria-label="Search products"
         onClick={() => setOpen(true)}
@@ -59,7 +69,6 @@ export function NavSearch({
         aria-hidden
       />
       <input
-        ref={inputRef}
         autoFocus={!alwaysOpen}
         type="search"
         value={term}
@@ -70,14 +79,14 @@ export function NavSearch({
         onKeyDown={(e) => {
           if (e.key === "Escape") {
             if (alwaysOpen) setTerm("");
-            else if (!term.trim()) close();
+            else if (!term.trim()) close(true);
             else setTerm("");
           }
         }}
         aria-label="Search products"
         placeholder="Search products"
         className={cn(
-          "h-9 w-56 rounded-sm border border-black/15 bg-mec-pure pl-9 pr-3 text-sm normal-case tracking-normal text-mec-ink outline-none placeholder:text-mec-ink/40 focus:border-mec-red",
+          "h-9 w-32 rounded-sm xl:w-56 border border-black/15 bg-mec-pure pl-9 pr-3 text-sm normal-case tracking-normal text-mec-ink outline-none placeholder:text-mec-ink/40 focus:border-mec-red",
           inputClassName,
         )}
       />
